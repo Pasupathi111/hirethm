@@ -1,17 +1,25 @@
 import { ArrowLeft } from "lucide-react"
+import { motion } from "framer-motion"
 import { Link, Navigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 
+import { ReadinessRing } from "@/components/cards/ReadinessRing"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { jobs } from "@/data/mockData"
+import { estimateReadiness, matchReasonsFor } from "@/lib/matching"
+import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 export function JobDetail({ basePath = "/jobs", candidateMode = false }: { basePath?: string; candidateMode?: boolean }) {
   const { id } = useParams()
   const job = jobs.find((j) => j.id === id)
+  const reduced = useReducedMotion()
 
   if (!job) return <Navigate to={basePath} replace />
+
+  const readiness = estimateReadiness(job)
+  const reasons = matchReasonsFor(job)
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
@@ -20,7 +28,12 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
       </Link>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <motion.div
+          className="rounded-2xl border border-border bg-card p-6 sm:p-8"
+          variants={withReducedMotion(reduced, fadeInUp)}
+          initial="hidden"
+          animate="show"
+        >
           <div className="flex items-start gap-4">
             <Avatar className="size-16">
               <AvatarFallback className={`${job.companyColor} text-lg text-white`}>{job.companyInitials}</AvatarFallback>
@@ -90,9 +103,14 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
             <h2 className="text-xl font-bold">About {job.company}</h2>
             <p className="mt-3 text-muted-foreground">{job.companyBlurb}</p>
           </section>
-        </div>
+        </motion.div>
 
-        <div className="space-y-4">
+        <motion.div
+          className="space-y-4"
+          variants={withReducedMotion(reduced, fadeInUp)}
+          initial="hidden"
+          animate="show"
+        >
           <div className="sticky top-24 rounded-2xl border border-border bg-card p-6">
             <p className="text-xl font-extrabold">
               ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
@@ -130,12 +148,19 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
             <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
               <p className="text-xs font-bold tracking-wide text-emerald-400 uppercase">Your match score</p>
               <div className="mt-3 flex items-center gap-3">
-                <div className="relative flex size-14 items-center justify-center rounded-full border-4 border-primary/30">
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary" />
-                  <span className="text-sm font-extrabold">88%</span>
-                </div>
-                <p className="text-sm text-white/70">Strong alignment on skills and location preference.</p>
+                <ReadinessRing value={readiness} size={64} strokeWidth={6} />
+                <p className="text-sm text-white/70">
+                  {readiness >= 80 ? "Strong alignment" : readiness >= 60 ? "Good alignment" : "Partial alignment"} because:
+                </p>
               </div>
+              <ul className="mt-2 space-y-1">
+                {reasons.map((reason) => (
+                  <li key={reason} className="flex items-start gap-1.5 text-sm text-white/70">
+                    <span className="mt-0.5 text-emerald-400">✓</span>
+                    {reason}
+                  </li>
+                ))}
+              </ul>
             </div>
           ) : (
             <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
@@ -148,7 +173,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
               </Button>
             </div>
           )}
-        </div>
+        </motion.div>
       </div>
     </div>
   )

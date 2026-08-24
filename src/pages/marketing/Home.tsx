@@ -1,11 +1,14 @@
 import { ArrowRight, Check } from "lucide-react"
+import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
 
 import { JobCard } from "@/components/cards/JobCard"
+import { ReadinessRing } from "@/components/cards/ReadinessRing"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { jobs } from "@/data/mockData"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 const howItWorks = [
   {
@@ -49,13 +52,15 @@ const consentStates = [
 const featuredJobs = jobs.slice(0, 3)
 
 export function Home() {
+  const reduced = useReducedMotion()
+
   return (
     <div>
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,_var(--color-accent),_transparent_55%)] opacity-70" />
         <div className="relative mx-auto grid max-w-7xl gap-12 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8 lg:py-24">
-          <div>
+          <motion.div variants={withReducedMotion(reduced, fadeInUp)} initial="hidden" animate="show">
             <Badge variant="primary" className="mb-6">
               <span className="size-1.5 rounded-full bg-primary" /> Candidate-first matching
             </Badge>
@@ -73,21 +78,20 @@ export function Home() {
                 <Link to="/create-profile">Create Profile</Link>
               </Button>
             </div>
-          </div>
+          </motion.div>
 
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-lg">
+          <motion.div
+            variants={withReducedMotion(reduced, fadeInUp)}
+            initial="hidden"
+            animate="show"
+            className="rounded-2xl border border-border bg-card p-6 shadow-lg"
+          >
             <div className="flex items-center justify-between">
               <p className="text-xs font-bold tracking-wide text-primary uppercase">Mutual Readiness</p>
               <p className="text-xs text-muted-foreground">Match #8291</p>
             </div>
             <div className="mt-4 flex items-center gap-4">
-              <div className="relative flex size-24 shrink-0 items-center justify-center rounded-full border-8 border-primary/15">
-                <div className="absolute inset-0 rounded-full border-8 border-transparent border-t-primary border-r-primary" />
-                <div className="text-center">
-                  <p className="text-2xl font-extrabold leading-none">91%</p>
-                  <p className="mt-1 text-[9px] font-bold tracking-wide text-muted-foreground uppercase">Ready</p>
-                </div>
-              </div>
+              <ReadinessRing value={91} label="Ready" size={88} strokeWidth={7} />
               <div>
                 <h3 className="text-lg font-bold">Senior Product Engineer</h3>
                 <p className="text-sm text-muted-foreground">ABC Technologies · Remote</p>
@@ -116,7 +120,7 @@ export function Home() {
                 </div>
               ))}
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -128,17 +132,23 @@ export function Home() {
             A profile you own, matched to work worth your time.
           </h2>
 
-          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <motion.div
+            className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+            variants={withReducedMotion(reduced, staggerContainer)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+          >
             {howItWorks.map((item) => (
-              <div key={item.step} className="rounded-2xl border border-border bg-card p-6">
+              <motion.div key={item.step} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-2xl border border-border bg-card p-6">
                 <div className="flex size-9 items-center justify-center rounded-full bg-secondary text-sm font-bold text-secondary-foreground">
                   {item.step}
                 </div>
                 <h3 className="mt-4 text-lg font-bold">{item.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -216,11 +226,19 @@ export function Home() {
             </Button>
           </div>
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          <motion.div
+            className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-3"
+            variants={withReducedMotion(reduced, staggerContainer)}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, margin: "-80px" }}
+          >
             {featuredJobs.map((job) => (
-              <JobCard key={job.id} job={job} viewHref={`/jobs/${job.id}`} />
+              <motion.div key={job.id} variants={withReducedMotion(reduced, fadeInUp)}>
+                <JobCard job={job} viewHref={`/jobs/${job.id}`} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 

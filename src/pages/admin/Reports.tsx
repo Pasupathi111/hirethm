@@ -1,7 +1,9 @@
 import { FileText } from "lucide-react"
+import { motion } from "framer-motion"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 const reports = [
   { name: "Weekly platform summary", period: "17–23 Aug 2026", generated: "23 Aug 2026" },
@@ -11,6 +13,8 @@ const reports = [
 ]
 
 export function AdminReports() {
+  const reduced = useReducedMotion()
+
   return (
     <div className="space-y-6">
       <div>
@@ -19,9 +23,14 @@ export function AdminReports() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card">
-        <div className="divide-y divide-border">
+        <motion.div
+          className="divide-y divide-border"
+          variants={withReducedMotion(reduced, staggerContainer)}
+          initial="hidden"
+          animate="show"
+        >
           {reports.map((r) => (
-            <div key={r.name} className="flex flex-wrap items-center justify-between gap-4 p-5">
+            <motion.div key={r.name} variants={withReducedMotion(reduced, fadeInUp)} className="flex flex-wrap items-center justify-between gap-4 p-5">
               <div className="flex items-center gap-3">
                 <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
                   <FileText className="size-5" />
@@ -40,9 +49,9 @@ export function AdminReports() {
               >
                 Download
               </Button>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </div>
     </div>
   )

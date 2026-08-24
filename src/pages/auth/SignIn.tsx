@@ -1,3 +1,4 @@
+import { motion } from "framer-motion"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
@@ -5,11 +6,13 @@ import { Logo } from "@/components/layout/Logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 export function SignIn() {
   const navigate = useNavigate()
   const [email, setEmail] = useState("alex.johnson@email.com")
   const [password, setPassword] = useState("hirethm2026")
+  const reduced = useReducedMotion()
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-16">
@@ -17,7 +20,12 @@ export function SignIn() {
         <Logo />
       </Link>
 
-      <div className="w-full max-w-sm text-center">
+      <motion.div
+        className="w-full max-w-sm text-center"
+        variants={withReducedMotion(reduced, fadeInUp)}
+        initial="hidden"
+        animate="show"
+      >
         <h1 className="text-3xl font-extrabold">Welcome back</h1>
         <p className="mt-2 text-muted-foreground">Sign in to your HireThm profile.</p>
 
@@ -46,7 +54,7 @@ export function SignIn() {
             </Link>
           </p>
         </form>
-      </div>
+      </motion.div>
     </div>
   )
 }

@@ -5,17 +5,9 @@ import { ReadinessRing } from "@/components/cards/ReadinessRing"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { candidateProfile, jobs, matches } from "@/data/mockData"
+import { jobs } from "@/data/mockData"
+import { estimateReadiness } from "@/lib/matching"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
-import type { Job } from "@/types"
-
-/** Prefer the real computed readiness score when a match exists; otherwise estimate from skill overlap. */
-function estimateReadiness(job: Job) {
-  const match = matches.find((m) => m.jobId === job.id)
-  if (match) return match.readiness
-  const overlap = job.skills.filter((skill) => candidateProfile.skills.includes(skill)).length
-  return Math.min(96, 52 + overlap * 9)
-}
 
 export function Recommended() {
   const reduced = useReducedMotion()

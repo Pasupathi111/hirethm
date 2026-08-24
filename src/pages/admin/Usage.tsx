@@ -1,10 +1,14 @@
+import { motion } from "framer-motion"
+
 import { StatCard } from "@/components/cards/StatCard"
 import { Progress } from "@/components/ui/progress"
 import { adminEmployers } from "@/data/mockData"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 export function AdminUsage() {
   const totalApiCalls = 482910
   const aiJobsRun = 18492
+  const reduced = useReducedMotion()
 
   return (
     <div className="space-y-8">
@@ -13,11 +17,22 @@ export function AdminUsage() {
         <p className="mt-1 text-muted-foreground">Platform and per-employer resource consumption this billing cycle.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard value={totalApiCalls.toLocaleString()} label="API calls this month" hint="+12% vs last month" />
-        <StatCard value={aiJobsRun.toLocaleString()} label="AI matching runs" hint="Nightly batch + on-demand" />
-        <StatCard value="2.4 TB" label="Resume storage used" hint="of 5 TB allocated" />
-      </div>
+      <motion.div
+        className="grid gap-4 sm:grid-cols-3"
+        variants={withReducedMotion(reduced, staggerContainer)}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
+          <StatCard value={totalApiCalls.toLocaleString()} label="API calls this month" hint="+12% vs last month" />
+        </motion.div>
+        <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
+          <StatCard value={aiJobsRun.toLocaleString()} label="AI matching runs" hint="Nightly batch + on-demand" />
+        </motion.div>
+        <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
+          <StatCard value="2.4 TB" label="Resume storage used" hint="of 5 TB allocated" />
+        </motion.div>
+      </motion.div>
 
       <div className="rounded-2xl border border-border bg-card p-6">
         <h2 className="font-bold">Plan usage by employer</h2>

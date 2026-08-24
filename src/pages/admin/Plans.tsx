@@ -1,10 +1,14 @@
 import { Check } from "lucide-react"
+import { motion } from "framer-motion"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { plans } from "@/data/mockData"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 export function AdminPlans() {
+  const reduced = useReducedMotion()
+
   return (
     <div className="space-y-6">
       <div>
@@ -12,9 +16,14 @@ export function AdminPlans() {
         <p className="mt-1 text-muted-foreground">Commercial plans available to employer organizations.</p>
       </div>
 
-      <div className="grid gap-5 md:grid-cols-3">
+      <motion.div
+        className="grid gap-5 md:grid-cols-3"
+        variants={withReducedMotion(reduced, staggerContainer)}
+        initial="hidden"
+        animate="show"
+      >
         {plans.map((plan) => (
-          <div key={plan.id} className="rounded-2xl border border-border bg-card p-6">
+          <motion.div key={plan.id} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-2xl border border-border bg-card p-6">
             <p className="font-bold">{plan.name}</p>
             <p className="mt-2 text-3xl font-extrabold">
               {plan.price}
@@ -35,9 +44,9 @@ export function AdminPlans() {
             >
               Edit plan
             </Button>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
     </div>
   )
 }
