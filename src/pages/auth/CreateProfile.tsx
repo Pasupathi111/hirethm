@@ -3,13 +3,13 @@ import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 import { ChipGroup } from "@/components/forms/ChipGroup"
+import { Stepper } from "@/components/forms/Stepper"
 import { Logo } from "@/components/layout/Logo"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { cn } from "@/lib/utils"
 
 const steps = [
   { number: 1, title: "Account", description: "Name, email, password" },
@@ -25,37 +25,6 @@ const industryOptions = ["SaaS", "Fintech", "Healthcare", "Climate", "Public sec
 const locationOptions = ["Remote (US)", "Austin, TX", "Denver, CO", "New York, NY"]
 const workModeOptions = ["Remote", "Hybrid", "On-site", "Full Time", "Contract"]
 const availabilityOptions = ["Immediately", "2 weeks", "1 month", "3 months"]
-
-function HorizontalStepper({ current }: { current: number }) {
-  return (
-    <div className="mx-auto flex max-w-2xl items-start justify-between px-4">
-      {steps.map((step, i) => (
-        <div key={step.number} className="flex flex-1 items-center">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <div
-              className={cn(
-                "flex size-9 items-center justify-center rounded-full text-sm font-bold",
-                step.number < current
-                  ? "bg-primary text-primary-foreground"
-                  : step.number === current
-                    ? "bg-secondary text-secondary-foreground"
-                    : "bg-muted text-muted-foreground"
-              )}
-            >
-              {step.number < current ? <Check className="size-4" /> : step.number}
-            </div>
-            <span className={cn("text-xs font-semibold", step.number <= current ? "text-foreground" : "text-muted-foreground")}>
-              {step.title}
-            </span>
-          </div>
-          {i < steps.length - 1 && (
-            <div className={cn("mx-2 h-px flex-1", step.number < current ? "bg-primary" : "bg-border")} />
-          )}
-        </div>
-      ))}
-    </div>
-  )
-}
 
 export function CreateProfile() {
   const navigate = useNavigate()
@@ -135,24 +104,8 @@ export function CreateProfile() {
 
           <div className="rounded-2xl border border-border bg-card p-6">
             <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Onboarding</p>
-            <div className="mt-4 space-y-5">
-              {steps.map((s, i) => (
-                <div key={s.number} className="relative flex gap-3">
-                  {i < steps.length - 1 && <span className="absolute top-9 left-[15px] h-full w-px bg-border" />}
-                  <div
-                    className={cn(
-                      "z-10 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold",
-                      s.number === 1 ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground"
-                    )}
-                  >
-                    {s.number}
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold">{s.title}</p>
-                    <p className="text-xs text-muted-foreground">{s.description}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="mt-4">
+              <Stepper steps={steps} current={1} orientation="vertical" />
             </div>
           </div>
         </div>
@@ -168,7 +121,7 @@ export function CreateProfile() {
           <p className="text-sm font-semibold text-muted-foreground">Step {step} of 5</p>
         </div>
 
-        <HorizontalStepper current={step} />
+        <Stepper steps={steps} current={step} orientation="horizontal" />
 
         <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-border bg-card p-6 sm:p-8">
           {step === 2 && (

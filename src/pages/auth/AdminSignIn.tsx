@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
+import { Logo } from "@/components/layout/Logo"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,10 +16,7 @@ export function AdminSignIn() {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-secondary px-4 py-16 text-secondary-foreground">
       <div className="flex items-center gap-2">
-        <span className="flex size-9 items-center justify-center rounded-lg bg-primary">
-          <span className="size-3 rounded-[3px] bg-white" />
-        </span>
-        <span className="text-xl font-extrabold">HireThm</span>
+        <Logo className="text-white" />
         <Badge variant="dark" className="border border-white/20 bg-white/10 text-emerald-300">
           ADMIN
         </Badge>

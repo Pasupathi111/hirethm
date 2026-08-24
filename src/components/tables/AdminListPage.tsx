@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
+import { EmptyState } from "@/components/feedback/EmptyState"
+import { SkeletonListRow } from "@/components/feedback/Skeleton"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -36,6 +38,12 @@ export function AdminListPage<T extends { id: string }>({
   const [tab, setTab] = useState(tabs?.[0] ?? "All")
   const [query, setQuery] = useState("")
   const [selected, setSelected] = useState<string[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 450)
+    return () => clearTimeout(timer)
+  }, [])
 
   const filtered = useMemo(() => {
     let result = rows
@@ -94,52 +102,62 @@ export function AdminListPage<T extends { id: string }>({
         </div>
       )}
 
-      <div className="rounded-2xl border border-border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10">
-                <Checkbox
-                  checked={allSelected}
-                  onCheckedChange={(v) => setSelected(v ? filtered.map((r) => r.id) : [])}
-                />
-              </TableHead>
-              {columns.map((col) => (
-                <TableHead key={col.header} className={col.className}>
-                  {col.header}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((row) => (
-              <TableRow
-                key={row.id}
-                className={rowHref ? "cursor-pointer" : undefined}
-                onClick={() => rowHref && navigate(rowHref(row))}
-              >
-                <TableCell onClick={(e) => e.stopPropagation()}>
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonListRow key={i} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10">
                   <Checkbox
-                    checked={selected.includes(row.id)}
-                    onCheckedChange={(v) =>
-                      setSelected((prev) => (v ? [...prev, row.id] : prev.filter((id) => id !== row.id)))
-                    }
+                    checked={allSelected}
+                    onCheckedChange={(v) => setSelected(v ? filtered.map((r) => r.id) : [])}
                   />
-                </TableCell>
+                </TableHead>
                 {columns.map((col) => (
-                  <TableCell key={col.header} className={col.className}>
-                    {col.render(row)}
-                  </TableCell>
+                  <TableHead key={col.header} className={col.className}>
+                    {col.header}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((row) => (
+                <TableRow
+                  key={row.id}
+                  className={rowHref ? "cursor-pointer" : undefined}
+                  onClick={() => rowHref && navigate(rowHref(row))}
+                >
+                  <TableCell onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={selected.includes(row.id)}
+                      onCheckedChange={(v) =>
+                        setSelected((prev) => (v ? [...prev, row.id] : prev.filter((id) => id !== row.id)))
+                      }
+                    />
+                  </TableCell>
+                  {columns.map((col) => (
+                    <TableCell key={col.header} className={col.className}>
+                      {col.render(row)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-        {filtered.length === 0 && (
-          <p className="p-10 text-center text-muted-foreground">No results match your search.</p>
-        )}
-      </div>
+          {filtered.length === 0 && (
+            <div className="p-4">
+              <EmptyState title="No results match your search." description="Try a different search term or clear your filters." />
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

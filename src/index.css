@@ -33,6 +33,9 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  --color-ai: var(--ai);
+  --color-ai-foreground: var(--ai-foreground);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -103,6 +106,9 @@
 
   --info: oklch(0.55 0.18 255);
   --info-foreground: oklch(0.99 0 0);
+
+  --ai: oklch(0.56 0.19 293);
+  --ai-foreground: oklch(0.99 0.01 293);
 
   --border: oklch(0.9 0.008 95);
   --input: oklch(0.9 0.008 95);

@@ -1,10 +1,12 @@
-import { Search } from "lucide-react"
+import { SlidersHorizontal, Search } from "lucide-react"
 import { useMemo, useState } from "react"
 
 import { JobCard } from "@/components/cards/JobCard"
+import { EmptyState } from "@/components/feedback/EmptyState"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { jobs } from "@/data/mockData"
 
 const workModes = ["Remote", "Hybrid", "On-site"]
@@ -35,6 +37,112 @@ function FilterPill({
   )
 }
 
+interface FilterState {
+  selectedModes: string[]
+  setSelectedModes: (v: string[]) => void
+  selectedTypes: string[]
+  setSelectedTypes: (v: string[]) => void
+  selectedSkills: string[]
+  setSelectedSkills: (v: string[]) => void
+  selectedExperience: string[]
+  setSelectedExperience: (v: string[]) => void
+  selectedDatePosted: string[]
+  setSelectedDatePosted: (v: string[]) => void
+}
+
+function FiltersContent({
+  selectedModes,
+  setSelectedModes,
+  selectedTypes,
+  setSelectedTypes,
+  selectedSkills,
+  setSelectedSkills,
+  selectedExperience,
+  setSelectedExperience,
+  selectedDatePosted,
+  setSelectedDatePosted,
+}: FilterState) {
+  const toggle = (list: string[], setList: (v: string[]) => void, value: string) => {
+    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold">Filters</h2>
+        <button
+          type="button"
+          className="text-sm font-semibold text-primary"
+          onClick={() => {
+            setSelectedModes([])
+            setSelectedTypes([])
+            setSelectedSkills([])
+            setSelectedExperience([])
+            setSelectedDatePosted([])
+          }}
+        >
+          Clear
+        </button>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Work mode</p>
+        <div className="flex flex-wrap gap-2">
+          {workModes.map((mode) => (
+            <FilterPill key={mode} label={mode} active={selectedModes.includes(mode)} onClick={() => toggle(selectedModes, setSelectedModes, mode)} />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Employment type</p>
+        <div className="flex flex-wrap gap-2">
+          {employmentTypes.map((type) => (
+            <FilterPill key={type} label={type} active={selectedTypes.includes(type)} onClick={() => toggle(selectedTypes, setSelectedTypes, type)} />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Experience</p>
+        <div className="flex flex-wrap gap-2">
+          {experienceLevels.map((level) => (
+            <FilterPill
+              key={level}
+              label={level}
+              active={selectedExperience.includes(level)}
+              onClick={() => toggle(selectedExperience, setSelectedExperience, level)}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Skills</p>
+        <div className="flex flex-wrap gap-2">
+          {skillsList.map((skill) => (
+            <FilterPill key={skill} label={skill} active={selectedSkills.includes(skill)} onClick={() => toggle(selectedSkills, setSelectedSkills, skill)} />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Date posted</p>
+        <div className="flex flex-wrap gap-2">
+          {datePosted.map((d) => (
+            <FilterPill
+              key={d}
+              label={d}
+              active={selectedDatePosted.includes(d)}
+              onClick={() => toggle(selectedDatePosted, setSelectedDatePosted, d)}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function FindJobs({ basePath = "/jobs" }: { basePath?: string }) {
   const [query, setQuery] = useState("")
   const [selectedModes, setSelectedModes] = useState<string[]>([])
@@ -44,9 +152,20 @@ export function FindJobs({ basePath = "/jobs" }: { basePath?: string }) {
   const [selectedDatePosted, setSelectedDatePosted] = useState<string[]>([])
   const [sort, setSort] = useState("relevant")
 
-  const toggle = (list: string[], setList: (v: string[]) => void, value: string) => {
-    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
+  const filterProps: FilterState = {
+    selectedModes,
+    setSelectedModes,
+    selectedTypes,
+    setSelectedTypes,
+    selectedSkills,
+    setSelectedSkills,
+    selectedExperience,
+    setSelectedExperience,
+    selectedDatePosted,
+    setSelectedDatePosted,
   }
+
+  const activeFilterCount = selectedModes.length + selectedTypes.length + selectedSkills.length + selectedExperience.length + selectedDatePosted.length
 
   const filtered = useMemo(() => {
     let result = jobs.filter((job) => {
@@ -83,97 +202,33 @@ export function FindJobs({ basePath = "/jobs" }: { basePath?: string }) {
             className="h-12 pl-11"
           />
         </div>
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" size="lg" className="lg:hidden">
+              <SlidersHorizontal className="size-4" />
+              Filters
+              {activeFilterCount > 0 && (
+                <span className="ml-1 flex size-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="overflow-y-auto">
+            <SheetHeader>
+              <SheetTitle>Filters</SheetTitle>
+            </SheetHeader>
+            <div className="px-4 pb-6">
+              <FiltersContent {...filterProps} />
+            </div>
+          </SheetContent>
+        </Sheet>
         <Button size="lg">Search</Button>
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">
-        <aside className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-bold">Filters</h2>
-            <button
-              type="button"
-              className="text-sm font-semibold text-primary"
-              onClick={() => {
-                setSelectedModes([])
-                setSelectedTypes([])
-                setSelectedSkills([])
-                setSelectedExperience([])
-                setSelectedDatePosted([])
-              }}
-            >
-              Clear
-            </button>
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Work mode</p>
-            <div className="flex flex-wrap gap-2">
-              {workModes.map((mode) => (
-                <FilterPill
-                  key={mode}
-                  label={mode}
-                  active={selectedModes.includes(mode)}
-                  onClick={() => toggle(selectedModes, setSelectedModes, mode)}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Employment type</p>
-            <div className="flex flex-wrap gap-2">
-              {employmentTypes.map((type) => (
-                <FilterPill
-                  key={type}
-                  label={type}
-                  active={selectedTypes.includes(type)}
-                  onClick={() => toggle(selectedTypes, setSelectedTypes, type)}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Experience</p>
-            <div className="flex flex-wrap gap-2">
-              {experienceLevels.map((level) => (
-                <FilterPill
-                  key={level}
-                  label={level}
-                  active={selectedExperience.includes(level)}
-                  onClick={() => toggle(selectedExperience, setSelectedExperience, level)}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Skills</p>
-            <div className="flex flex-wrap gap-2">
-              {skillsList.map((skill) => (
-                <FilterPill
-                  key={skill}
-                  label={skill}
-                  active={selectedSkills.includes(skill)}
-                  onClick={() => toggle(selectedSkills, setSelectedSkills, skill)}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="mb-2 text-xs font-bold tracking-wide text-muted-foreground uppercase">Date posted</p>
-            <div className="flex flex-wrap gap-2">
-              {datePosted.map((d) => (
-                <FilterPill
-                  key={d}
-                  label={d}
-                  active={selectedDatePosted.includes(d)}
-                  onClick={() => toggle(selectedDatePosted, setSelectedDatePosted, d)}
-                />
-              ))}
-            </div>
-          </div>
+        <aside className="hidden lg:block">
+          <FiltersContent {...filterProps} />
         </aside>
 
         <div>
@@ -201,9 +256,21 @@ export function FindJobs({ basePath = "/jobs" }: { basePath?: string }) {
           </div>
 
           {filtered.length === 0 && (
-            <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
-              No roles match your filters yet.
-            </div>
+            <EmptyState
+              title="No roles match your filters yet."
+              description="Try widening your search or clearing a filter."
+              action={{
+                label: "Clear filters",
+                onClick: () => {
+                  setQuery("")
+                  setSelectedModes([])
+                  setSelectedTypes([])
+                  setSelectedSkills([])
+                  setSelectedExperience([])
+                  setSelectedDatePosted([])
+                },
+              }}
+            />
           )}
         </div>
       </div>

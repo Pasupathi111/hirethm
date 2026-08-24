@@ -19,6 +19,8 @@ const statusMap: Record<string, Variant> = {
   interview: "info",
   "in progress": "info",
   trial: "info",
+  upcoming: "info",
+  invited: "info",
   // warning / attention
   "needs attention": "warning",
   "waiting for decision": "warning",
@@ -28,6 +30,7 @@ const statusMap: Record<string, Variant> = {
   "quota reached": "warning",
   "enhancement offered": "warning",
   warning: "warning",
+  pending: "warning",
   draft: "default",
   // negative
   failed: "destructive",
@@ -46,6 +49,8 @@ const statusMap: Record<string, Variant> = {
   read: "info",
   full: "success",
   none: "default",
+  paid: "success",
+  refunded: "default",
 }
 
 export function StatusBadge({ status, className }: { status: string; className?: string }) {

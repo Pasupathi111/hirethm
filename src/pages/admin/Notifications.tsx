@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { SettingRow } from "@/components/forms/SettingRow"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 
@@ -25,21 +26,20 @@ export function AdminNotifications() {
         <Button onClick={() => toast.success("Templates saved")}>Save changes</Button>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card">
-        <div className="divide-y divide-border">
-          {rows.map((row, i) => (
-            <div key={row.name} className="flex items-center justify-between p-5">
-              <div>
-                <p className="font-semibold">{row.name}</p>
-                <p className="text-sm text-muted-foreground">{row.channel}</p>
-              </div>
+      <div className="rounded-2xl border border-border bg-card p-6">
+        {rows.map((row, i) => (
+          <SettingRow
+            key={row.name}
+            label={row.name}
+            description={row.channel}
+            control={
               <Switch
                 checked={row.enabled}
                 onCheckedChange={(v) => setRows((prev) => prev.map((r, idx) => (idx === i ? { ...r, enabled: v } : r)))}
               />
-            </div>
-          ))}
-        </div>
+            }
+          />
+        ))}
       </div>
     </div>
   )

@@ -1,10 +1,15 @@
 import { Check } from "lucide-react"
+import { motion } from "framer-motion"
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 
+import { EmptyState } from "@/components/feedback/EmptyState"
+import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { cn } from "@/lib/utils"
 import { applications } from "@/data/mockData"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
+import { cn } from "@/lib/utils"
 import type { Application, ApplicationStage } from "@/types"
 
 const stages: ApplicationStage[] = ["Applied", "Viewed", "Employer Review", "Shortlisted", "Interview"]
@@ -38,7 +43,9 @@ function StageTracker({ current }: { current: ApplicationStage }) {
 }
 
 export function Applications() {
+  const navigate = useNavigate()
   const [tab, setTab] = useState<(typeof tabs)[number]>("All")
+  const reduced = useReducedMotion()
   const filtered = tab === "All" ? applications : applications.filter((a) => a.status === tab)
 
   return (
@@ -58,9 +65,18 @@ export function Applications() {
         </TabsList>
       </Tabs>
 
-      <div className="space-y-4">
+      <motion.div
+        className="space-y-4"
+        variants={withReducedMotion(reduced, staggerContainer)}
+        initial="hidden"
+        animate="show"
+      >
         {filtered.map((app) => (
-          <div key={app.id} className="rounded-2xl border border-border bg-card p-6">
+          <motion.div
+            key={app.id}
+            variants={withReducedMotion(reduced, fadeInUp)}
+            className="rounded-2xl border border-border bg-card p-6"
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-3">
                 <Avatar>
@@ -73,19 +89,22 @@ export function Applications() {
                   </p>
                 </div>
               </div>
+              <StatusBadge status={app.status} />
             </div>
             <div className="mt-6">
               <StageTracker current={app.stage} />
             </div>
-          </div>
+          </motion.div>
         ))}
 
         {filtered.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
-            No applications in "{tab}" yet.
-          </div>
+          <EmptyState
+            title={`No applications in "${tab}" yet.`}
+            description="Start exploring opportunities that match your skills."
+            action={{ label: "Find Jobs", onClick: () => navigate("/app/jobs") }}
+          />
         )}
-      </div>
+      </motion.div>
     </div>
   )
 }

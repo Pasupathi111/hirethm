@@ -1,9 +1,13 @@
+import { motion } from "framer-motion"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { EmptyState } from "@/components/feedback/EmptyState"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { notifications as allNotifications } from "@/data/mockData"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 import type { NotificationItem } from "@/types"
 
 const tabs: (NotificationItem["category"] | "All")[] = ["All", "Matches", "Applications", "Interviews", "Profile", "System"]
@@ -11,6 +15,7 @@ const tabs: (NotificationItem["category"] | "All")[] = ["All", "Matches", "Appli
 export function Notifications() {
   const [tab, setTab] = useState<(typeof tabs)[number]>("All")
   const [notifications, setNotifications] = useState(allNotifications)
+  const reduced = useReducedMotion()
 
   const filtered = tab === "All" ? notifications : notifications.filter((n) => n.category === tab)
 
@@ -45,32 +50,35 @@ export function Notifications() {
         </TabsList>
       </Tabs>
 
-      <div className="space-y-3">
+      <motion.div
+        className="space-y-3"
+        variants={withReducedMotion(reduced, staggerContainer)}
+        initial="hidden"
+        animate="show"
+      >
         {filtered.map((n) => (
-          <div
+          <motion.div
             key={n.id}
+            variants={withReducedMotion(reduced, fadeInUp)}
             className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card p-5"
           >
             {n.unread && <span className="size-2 shrink-0 rounded-full bg-primary" />}
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-primary">
-                {n.category} · {n.timeAgo}
-              </p>
-              <p className="font-bold">{n.title}</p>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">{n.category}</Badge>
+                <span className="text-xs text-muted-foreground">{n.timeAgo}</span>
+              </div>
+              <p className="mt-1 font-bold">{n.title}</p>
               <p className="text-sm text-muted-foreground">{n.description}</p>
             </div>
             <Button variant="outline" size="sm" onClick={() => markRead(n.id)}>
               {n.action}
             </Button>
-          </div>
+          </motion.div>
         ))}
 
-        {filtered.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
-            No notifications in "{tab}".
-          </div>
-        )}
-      </div>
+        {filtered.length === 0 && <EmptyState title={`No notifications in "${tab}".`} description="You're all caught up." />}
+      </motion.div>
     </div>
   )
 }

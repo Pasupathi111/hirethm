@@ -35,7 +35,7 @@ export function MarketingHeader() {
               href={link.to}
               className={cn(
                 "text-sm font-semibold text-foreground/70 transition-colors hover:text-foreground",
-                location.pathname === link.to && "text-primary"
+                !link.to.startsWith("/#") && location.pathname === link.to && "text-primary"
               )}
             >
               {link.label}

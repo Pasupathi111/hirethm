@@ -1,13 +1,16 @@
-import { AlertTriangle } from "lucide-react"
+import { motion } from "framer-motion"
 
+import { SectionCard } from "@/components/cards/SectionCard"
 import { EditSectionDialog } from "@/components/dialogs/EditSectionDialog"
+import { Callout } from "@/components/feedback/Callout"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { candidateProfile } from "@/data/mockData"
+import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
-function SectionCard({
+function EditableSection({
   title,
   editValue,
   children,
@@ -17,9 +20,9 @@ function SectionCard({
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">{title}</h2>
+    <SectionCard
+      title={title}
+      actions={
         <EditSectionDialog
           section={title}
           defaultValue={editValue}
@@ -29,9 +32,10 @@ function SectionCard({
             </Button>
           }
         />
-      </div>
-      <div className="mt-4">{children}</div>
-    </div>
+      }
+    >
+      {children}
+    </SectionCard>
   )
 }
 
@@ -45,9 +49,16 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export function Profile() {
+  const reduced = useReducedMotion()
+
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-border bg-card p-6">
+      <motion.div
+        className="rounded-2xl border border-border bg-card p-6"
+        variants={withReducedMotion(reduced, fadeInUp)}
+        initial="hidden"
+        animate="show"
+      >
         <div className="flex flex-wrap items-center gap-6">
           <Avatar className="size-20">
             <AvatarFallback className="text-2xl">{candidateProfile.initials}</AvatarFallback>
@@ -66,30 +77,25 @@ export function Profile() {
             <Progress value={candidateProfile.completeness} />
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-amber-50 p-4 dark:bg-amber-500/10">
-        <p className="flex items-center gap-2 text-sm text-amber-800 dark:text-amber-300">
-          <AlertTriangle className="size-4" />
-          Add 2 more skills to improve your matches. Candidates with 12+ skills receive 40% more matches.
-        </p>
-        <Button size="sm">Add skills</Button>
-      </div>
+      <Callout tone="warning" actions={<Button size="sm">Add skills</Button>}>
+        Add 2 more skills to improve your matches. Candidates with 12+ skills receive 40% more matches.
+      </Callout>
 
-      <SectionCard title="Personal Information" editValue={candidateProfile.summary}>
+      <EditableSection title="Personal Information" editValue={candidateProfile.summary}>
         <Row label="Full name" value={candidateProfile.name} />
         <Row label="Email" value={candidateProfile.email} />
         <Row label="Phone" value={candidateProfile.phone} />
         <Row label="Location" value={candidateProfile.location} />
-      </SectionCard>
+      </EditableSection>
 
-      <SectionCard title="Summary" editValue={candidateProfile.summary}>
+      <EditableSection title="Summary" editValue={candidateProfile.summary}>
         <p className="text-sm text-muted-foreground">{candidateProfile.summary}</p>
-      </SectionCard>
+      </EditableSection>
 
-      <SectionCard
+      <EditableSection
         title="Experience"
-       
         editValue={candidateProfile.experience.map((e) => `${e.role} · ${e.company} · ${e.period}`).join("\n")}
       >
         <div className="space-y-3">
@@ -104,11 +110,10 @@ export function Profile() {
             </div>
           ))}
         </div>
-      </SectionCard>
+      </EditableSection>
 
-      <SectionCard
+      <EditableSection
         title="Education"
-       
         editValue={candidateProfile.education.map((e) => `${e.school} · ${e.period}`).join("\n")}
       >
         <div className="space-y-3">
@@ -119,9 +124,9 @@ export function Profile() {
             </div>
           ))}
         </div>
-      </SectionCard>
+      </EditableSection>
 
-      <SectionCard title="Skills" editValue={candidateProfile.skills.join(", ")}>
+      <EditableSection title="Skills" editValue={candidateProfile.skills.join(", ")}>
         <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Core</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {candidateProfile.skills.map((skill) => (
@@ -130,11 +135,10 @@ export function Profile() {
             </Badge>
           ))}
         </div>
-      </SectionCard>
+      </EditableSection>
 
-      <SectionCard
+      <EditableSection
         title="Certifications"
-       
         editValue={candidateProfile.certifications.map((c) => `${c.name} · ${c.year}`).join("\n")}
       >
         {candidateProfile.certifications.map((cert) => (
@@ -143,11 +147,10 @@ export function Profile() {
             <span className="text-muted-foreground">{cert.year}</span>
           </div>
         ))}
-      </SectionCard>
+      </EditableSection>
 
-      <SectionCard
+      <EditableSection
         title="Languages"
-       
         editValue={candidateProfile.languages.map((l) => `${l.name} · ${l.level}`).join("\n")}
       >
         <div className="space-y-3">
@@ -158,7 +161,7 @@ export function Profile() {
             </div>
           ))}
         </div>
-      </SectionCard>
+      </EditableSection>
     </div>
   )
 }

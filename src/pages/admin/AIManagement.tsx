@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { SettingRow } from "@/components/forms/SettingRow"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
@@ -24,40 +25,41 @@ export function AdminAIManagement() {
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="font-semibold">AI provider</p>
-            <p className="text-sm text-muted-foreground">Elevated latency reported on the primary provider.</p>
-          </div>
-          <Select value={provider} onValueChange={setProvider}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="primary">Primary provider</SelectItem>
-              <SelectItem value="fallback">Fallback provider</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <SettingRow
+          label="AI provider"
+          description="Elevated latency reported on the primary provider."
+          control={
+            <Select value={provider} onValueChange={setProvider}>
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="primary">Primary provider</SelectItem>
+                <SelectItem value="fallback">Fallback provider</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+        />
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-6">
         <h2 className="font-bold">Pipelines</h2>
-        <div className="mt-4 divide-y divide-border">
+        <div className="mt-2">
           {models.map((m, i) => (
-            <div key={m.name} className="flex items-center justify-between py-4">
-              <div>
-                <p className="font-semibold">{m.name}</p>
-                <p className="font-mono text-xs text-muted-foreground">{m.model}</p>
-              </div>
-              <Switch
-                checked={enabled[i]}
-                onCheckedChange={(v) => {
-                  setEnabled((prev) => prev.map((val, idx) => (idx === i ? v : val)))
-                  toast(`${m.name} ${v ? "enabled" : "disabled"}`)
-                }}
-              />
-            </div>
+            <SettingRow
+              key={m.name}
+              label={m.name}
+              description={<span className="font-mono text-xs">{m.model}</span>}
+              control={
+                <Switch
+                  checked={enabled[i]}
+                  onCheckedChange={(v) => {
+                    setEnabled((prev) => prev.map((val, idx) => (idx === i ? v : val)))
+                    toast(`${m.name} ${v ? "enabled" : "disabled"}`)
+                  }}
+                />
+              }
+            />
           ))}
         </div>
       </div>

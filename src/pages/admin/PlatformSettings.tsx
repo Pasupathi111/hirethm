@@ -1,28 +1,9 @@
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { SettingRow } from "@/components/forms/SettingRow"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-function SettingRow({
-  label,
-  description,
-  control,
-}: {
-  label: string
-  description: string
-  control: React.ReactNode
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border py-4 last:border-0">
-      <div>
-        <p className="font-semibold">{label}</p>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
-      {control}
-    </div>
-  )
-}
 
 export function AdminPlatformSettings() {
   const [consentExpiry, setConsentExpiry] = useState("90")

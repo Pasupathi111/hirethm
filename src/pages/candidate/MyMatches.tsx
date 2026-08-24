@@ -1,12 +1,17 @@
+import { motion } from "framer-motion"
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { ReadinessRing } from "@/components/cards/ReadinessRing"
+import { Callout } from "@/components/feedback/Callout"
+import { EmptyState } from "@/components/feedback/EmptyState"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { matches as allMatches } from "@/data/mockData"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 import type { Match } from "@/types"
 
 const tabs: Match["status"][] = ["New", "Waiting for Decision", "Accepted", "Rejected", "In Progress"]
@@ -14,6 +19,7 @@ const tabs: Match["status"][] = ["New", "Waiting for Decision", "Accepted", "Rej
 export function MyMatches() {
   const [tab, setTab] = useState<Match["status"]>("New")
   const [matches, setMatches] = useState(allMatches)
+  const reduced = useReducedMotion()
 
   const filtered = matches.filter((m) => m.status === tab)
 
@@ -43,9 +49,18 @@ export function MyMatches() {
         </TabsList>
       </Tabs>
 
-      <div className="space-y-5">
+      <motion.div
+        className="space-y-5"
+        variants={withReducedMotion(reduced, staggerContainer)}
+        initial="hidden"
+        animate="show"
+      >
         {filtered.map((match) => (
-          <div key={match.id} className="rounded-2xl border border-border bg-card p-6">
+          <motion.div
+            key={match.id}
+            variants={withReducedMotion(reduced, fadeInUp)}
+            className="rounded-2xl border border-border bg-card p-6"
+          >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-2">
                 <StatusBadge status={match.status} />
@@ -78,10 +93,11 @@ export function MyMatches() {
                 </ul>
 
                 {match.gap && (
-                  <div className="mt-4 rounded-xl bg-amber-50 p-3 text-sm dark:bg-amber-500/10">
-                    <p className="font-semibold text-amber-700 dark:text-amber-400">! Potential gap</p>
-                    <p className="text-amber-700/80 dark:text-amber-400/80">{match.gap}</p>
-                  </div>
+                  <Callout tone="warning" className="mt-4">
+                    <span>
+                      <span className="font-semibold">Potential gap:</span> {match.gap}
+                    </span>
+                  </Callout>
                 )}
 
                 {match.status === "New" && (
@@ -102,10 +118,7 @@ export function MyMatches() {
 
               <div className="rounded-2xl bg-muted p-5">
                 <div className="flex items-center gap-3">
-                  <div className="relative flex size-16 shrink-0 items-center justify-center rounded-full border-[6px] border-primary/20">
-                    <div className="absolute inset-0 rounded-full border-[6px] border-transparent border-t-primary border-r-primary" />
-                    <span className="text-lg font-extrabold">{match.readiness}%</span>
-                  </div>
+                  <ReadinessRing value={match.readiness} size={64} strokeWidth={6} />
                   <div>
                     <p className="font-bold">Mutual Readiness</p>
                     <p className="text-xs text-muted-foreground">8 criteria scored</p>
@@ -124,15 +137,13 @@ export function MyMatches() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
 
         {filtered.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-border p-12 text-center text-muted-foreground">
-            No matches in "{tab}" right now.
-          </div>
+          <EmptyState title={`No matches in "${tab}" right now.`} description="Check back soon — HireThm scores new roles every night." />
         )}
-      </div>
+      </motion.div>
     </div>
   )
 }

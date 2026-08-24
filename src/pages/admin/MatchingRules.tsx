@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { toast } from "sonner"
 
+import { Callout } from "@/components/feedback/Callout"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 
@@ -30,9 +31,15 @@ export function AdminMatchingRules() {
         <Button onClick={() => toast.success("Matching rules saved")}>Save changes</Button>
       </div>
 
-      <div className={`rounded-2xl border p-4 text-sm font-semibold ${total === 100 ? "border-border bg-muted text-muted-foreground" : "border-amber-300 bg-amber-50 text-amber-700"}`}>
-        Total weight: {total}% {total !== 100 && "— weights should sum to 100%"}
-      </div>
+      {total === 100 ? (
+        <div className="rounded-2xl border border-border bg-muted p-4 text-sm font-semibold text-muted-foreground">
+          Total weight: {total}%
+        </div>
+      ) : (
+        <Callout tone="warning">
+          <span className="font-semibold">Total weight: {total}%</span> — weights should sum to 100%
+        </Callout>
+      )}
 
       <div className="rounded-2xl border border-border bg-card p-6">
         <div className="space-y-6">

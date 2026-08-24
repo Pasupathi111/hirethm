@@ -2,9 +2,12 @@ import { useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
 
+import { SettingRow } from "@/components/forms/SettingRow"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { candidateProfile, consentHistory } from "@/data/mockData"
@@ -16,17 +19,7 @@ const visibilityOptions = [
   { value: "hidden", title: "Hidden", description: "Pause all matching and sourcing" },
 ]
 
-function Row({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <div className="flex items-center justify-between border-b border-border py-4 last:border-0">
-      <div>
-        <p className="font-semibold">{label}</p>
-        <p className="text-sm text-muted-foreground">{description}</p>
-      </div>
-      <Switch checked={checked} onCheckedChange={onChange} />
-    </div>
-  )
-}
+const consentToneVariant = { positive: "success", negative: "destructive", neutral: "default" } as const
 
 export function Settings() {
   const [phone, setPhone] = useState(true)
@@ -52,15 +45,17 @@ export function Settings() {
           <div className="rounded-2xl border border-border bg-card p-6">
             <h2 className="text-lg font-bold">Account</h2>
             <div className="mt-4 divide-y divide-border">
-              <div className="flex items-center justify-between py-4">
-                <div>
-                  <p className="font-semibold">Email address</p>
-                  <p className="text-sm text-muted-foreground">{candidateProfile.email}</p>
-                </div>
-                <Switch checked disabled />
-              </div>
-              <Row label="Phone number" description={candidateProfile.phone} checked={phone} onChange={setPhone} />
-              <Row label="Marketing emails" description="Product news and tips" checked={marketing} onChange={setMarketing} />
+              <SettingRow label="Email address" description={candidateProfile.email} control={<Switch checked disabled />} />
+              <SettingRow
+                label="Phone number"
+                description={candidateProfile.phone}
+                control={<Switch checked={phone} onCheckedChange={setPhone} />}
+              />
+              <SettingRow
+                label="Marketing emails"
+                description="Product news and tips"
+                control={<Switch checked={marketing} onCheckedChange={setMarketing} />}
+              />
             </div>
             <div className="mt-4 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
               <Label htmlFor="lang">Language</Label>
@@ -105,8 +100,16 @@ export function Settings() {
           <div className="rounded-2xl border border-border bg-card p-6">
             <h2 className="text-lg font-bold">Notification preferences</h2>
             <div className="mt-4 divide-y divide-border">
-              <Row label="New match alerts" description="Get notified when a new AI match is found" checked={matchAlerts} onChange={setMatchAlerts} />
-              <Row label="Application updates" description="Status changes on roles you applied to" checked={appAlerts} onChange={setAppAlerts} />
+              <SettingRow
+                label="New match alerts"
+                description="Get notified when a new AI match is found"
+                control={<Switch checked={matchAlerts} onCheckedChange={setMatchAlerts} />}
+              />
+              <SettingRow
+                label="Application updates"
+                description="Status changes on roles you applied to"
+                control={<Switch checked={appAlerts} onCheckedChange={setAppAlerts} />}
+              />
             </div>
           </div>
         </TabsContent>
@@ -119,14 +122,13 @@ export function Settings() {
                 Your profile is never visible to an employer until you accept a match. This setting controls whether
                 you appear in AI sourcing at all.
               </p>
-              <div className="mt-4 space-y-3">
+              <RadioGroup value={visibility} onValueChange={setVisibility} className="mt-4 space-y-3">
                 {visibilityOptions.map((opt) => (
-                  <button
+                  <label
                     key={opt.value}
-                    type="button"
-                    onClick={() => setVisibility(opt.value)}
+                    htmlFor={`visibility-${opt.value}`}
                     className={cn(
-                      "flex w-full items-center justify-between rounded-xl border p-4 text-left transition-colors",
+                      "flex w-full cursor-pointer items-center justify-between rounded-xl border p-4 text-left transition-colors",
                       visibility === opt.value ? "border-primary bg-accent" : "border-border hover:bg-muted"
                     )}
                   >
@@ -134,17 +136,10 @@ export function Settings() {
                       <p className="font-semibold">{opt.title}</p>
                       <p className="text-sm text-muted-foreground">{opt.description}</p>
                     </div>
-                    <span
-                      className={cn(
-                        "flex size-5 shrink-0 items-center justify-center rounded-full border-2",
-                        visibility === opt.value ? "border-primary" : "border-border"
-                      )}
-                    >
-                      {visibility === opt.value && <span className="size-2.5 rounded-full bg-primary" />}
-                    </span>
-                  </button>
+                    <RadioGroupItem value={opt.value} id={`visibility-${opt.value}`} />
+                  </label>
                 ))}
-              </div>
+              </RadioGroup>
             </div>
 
             <div className="rounded-2xl border border-border bg-card p-6">
@@ -154,15 +149,7 @@ export function Settings() {
                 {consentHistory.map((event) => (
                   <div key={event.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-4 text-sm last:border-0">
                     <span className="text-muted-foreground">{event.timestamp}</span>
-                    <span
-                      className={cn(
-                        "font-semibold",
-                        event.tone === "positive" && "text-emerald-600",
-                        event.tone === "negative" && "text-red-600"
-                      )}
-                    >
-                      {event.event}
-                    </span>
+                    <Badge variant={consentToneVariant[event.tone]}>{event.event}</Badge>
                     <span className="text-muted-foreground">{event.employer}</span>
                   </div>
                 ))}

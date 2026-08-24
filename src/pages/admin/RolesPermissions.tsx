@@ -1,3 +1,4 @@
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
 
 const roles = ["Platform Admin", "Operations Admin", "AI Admin", "Finance Admin", "Support Admin", "Read Only Admin"]
@@ -29,31 +30,29 @@ export function AdminRolesPermissions() {
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-        <table className="w-full min-w-[720px] text-sm">
-          <thead>
-            <tr className="border-b border-border">
-              <th className="p-4 text-left text-xs font-semibold tracking-wide text-muted-foreground uppercase">Area</th>
+      <div className="rounded-2xl border border-border bg-card">
+        <Table className="min-w-[720px]">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Area</TableHead>
               {roles.map((role) => (
-                <th key={role} className="p-4 text-left text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  {role}
-                </th>
+                <TableHead key={role}>{role}</TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {areas.map((row) => (
-              <tr key={row.area} className="border-b border-border last:border-0">
-                <td className="p-4 font-bold">{row.area}</td>
+              <TableRow key={row.area}>
+                <TableCell className="font-bold">{row.area}</TableCell>
                 {row.access.map((level, i) => (
-                  <td key={i} className={cn("p-4", tone[level])}>
+                  <TableCell key={i} className={cn(tone[level])}>
                     {level}
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   )
