@@ -1,7 +1,8 @@
 import { Navigate, useParams } from "react-router-dom"
 
-import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
+import { MetricTile } from "@/components/cards/MetricTile"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
+import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -34,18 +35,14 @@ export function AdminEmployerDetail() {
           <p className="text-sm text-muted-foreground">Plan</p>
           <p className="mt-1"><StatusBadge status={employer.plan} className="text-base" /></p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Active jobs</p>
-          <p className="mt-1 text-2xl font-extrabold">{employer.activeJobs}</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Applications</p>
-          <p className="mt-1 text-2xl font-extrabold">{employer.applications}</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Plan usage</p>
-          <p className="mt-1 text-2xl font-extrabold">{employer.usage}%</p>
-        </div>
+        <MetricTile label="Active jobs" value={employer.activeJobs} />
+        <MetricTile label="Applications" value={employer.applications} />
+        <MetricTile
+          label="Plan usage"
+          value={`${employer.usage}%`}
+          hint={employer.usage >= 90 ? "Near quota limit" : undefined}
+          tone="warning"
+        />
       </div>
 
       <Tabs defaultValue="jobs">

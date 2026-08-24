@@ -1,7 +1,8 @@
 import { Navigate, useParams } from "react-router-dom"
 
-import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
+import { MetricTile } from "@/components/cards/MetricTile"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
+import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -34,18 +35,9 @@ export function AdminJobDetail() {
           <p className="text-sm text-muted-foreground">Status</p>
           <p className="mt-1"><StatusBadge status={job.status} className="text-base" /></p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">JD completeness</p>
-          <p className="mt-1 text-2xl font-extrabold">{job.jdComplete}%</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">Applications</p>
-          <p className="mt-1 text-2xl font-extrabold">{job.applications}</p>
-        </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <p className="text-sm text-muted-foreground">AI matches</p>
-          <p className="mt-1 text-2xl font-extrabold">{job.matches}</p>
-        </div>
+        <MetricTile label="JD completeness" value={`${job.jdComplete}%`} />
+        <MetricTile label="Applications" value={job.applications} />
+        <MetricTile label="AI matches" value={job.matches} />
       </div>
 
       <Tabs defaultValue="details">

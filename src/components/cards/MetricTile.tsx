@@ -16,7 +16,7 @@ export function MetricTile({
   label: string
   value: string | number
   hint?: string
-  tone?: "default" | "positive" | "negative"
+  tone?: "default" | "positive" | "negative" | "warning"
   className?: string
 }) {
   const reduced = useReducedMotion()
@@ -39,6 +39,7 @@ export function MetricTile({
             "mt-1 text-xs font-semibold",
             tone === "positive" && "text-emerald-600",
             tone === "negative" && "text-red-600",
+            tone === "warning" && "text-amber-600",
             tone === "default" && "text-muted-foreground"
           )}
         >

@@ -1,7 +1,8 @@
 import { Navigate, useParams } from "react-router-dom"
 
-import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
+import { MetricTile } from "@/components/cards/MetricTile"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
+import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -43,20 +44,14 @@ export function AdminCandidateDetail() {
 
         <TabsContent value="overview" className="space-y-6">
           <div className="grid gap-4 sm:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <p className="text-sm text-muted-foreground">Profile completeness</p>
-              <p className="mt-1 text-3xl font-extrabold">{candidate.profilePercent}%</p>
-            </div>
+            <MetricTile label="Profile completeness" value={`${candidate.profilePercent}%`} />
             <div className="rounded-2xl border border-border bg-card p-5">
               <p className="text-sm text-muted-foreground">CV status</p>
               <p className="mt-1 text-2xl font-extrabold">
                 <StatusBadge status={candidate.cvStatus} className="text-base" /> <span className="text-base text-muted-foreground">· v3</span>
               </p>
             </div>
-            <div className="rounded-2xl border border-border bg-card p-5">
-              <p className="text-sm text-muted-foreground">Applications</p>
-              <p className="mt-1 text-3xl font-extrabold">{candidate.applications}</p>
-            </div>
+            <MetricTile label="Applications" value={candidate.applications} />
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">

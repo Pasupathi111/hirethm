@@ -1,16 +1,11 @@
-import { cn } from "@/lib/utils"
+import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { systemServices } from "@/data/mockData"
+import { cn } from "@/lib/utils"
 
 const dotTone: Record<string, string> = {
   Healthy: "bg-emerald-500",
   Degraded: "bg-amber-500",
   Down: "bg-red-500",
-}
-
-const badgeTone: Record<string, string> = {
-  Healthy: "bg-emerald-50 text-emerald-700",
-  Degraded: "bg-amber-50 text-amber-700",
-  Down: "bg-red-50 text-red-700",
 }
 
 const bottomStats = [
@@ -35,8 +30,8 @@ export function AdminSystemHealth() {
               <span className={cn("size-2 rounded-full", dotTone[s.status])} />
               {s.name}
             </p>
-            <span className={cn("mt-2 inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold", badgeTone[s.status])}>
-              {s.status}
+            <span className="mt-2 inline-block">
+              <StatusBadge status={s.status} />
             </span>
             <p className="mt-2 text-sm text-muted-foreground">{s.detail}</p>
           </div>
