@@ -1,3 +1,4 @@
+import { motion } from "framer-motion"
 import { CalendarCheck2, ListChecks, Sparkles, UserCircle2 } from "lucide-react"
 import { Link } from "react-router-dom"
 
@@ -6,8 +7,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { applications, candidateProfile, interviews, jobs, matches } from "@/data/mockData"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 export function Dashboard() {
+  const reduced = useReducedMotion()
   const newMatches = matches.filter((m) => m.status === "New")
   const featured = matches[0]
   const recommended = jobs.slice(0, 4)
@@ -27,26 +30,47 @@ export function Dashboard() {
         </Button>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={UserCircle2}
-          value={`${candidateProfile.completeness}%`}
-          label="Profile completion"
-          hint="Add 2 skills to reach 95%"
-        />
-        <StatCard icon={Sparkles} value={newMatches.length} label="New AI matches" hint="Awaiting your decision" />
-        <StatCard icon={ListChecks} value={applications.length} label="Active applications" hint="1 shortlisted" />
-        <StatCard
-          icon={CalendarCheck2}
-          value={nextInterview?.date ?? "—"}
-          label="Upcoming interview"
-          hint={nextInterview ? `${nextInterview.type} · ${nextInterview.company}` : "None scheduled"}
-        />
-      </div>
+      <motion.div
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+        variants={withReducedMotion(reduced, staggerContainer)}
+        initial="hidden"
+        animate="show"
+      >
+        <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
+          <StatCard
+            icon={UserCircle2}
+            value={`${candidateProfile.completeness}%`}
+            label="Profile completion"
+            hint="Add 2 skills to reach 95%"
+          />
+        </motion.div>
+        <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
+          <StatCard icon={Sparkles} value={newMatches.length} label="New AI matches" hint="Awaiting your decision" />
+        </motion.div>
+        <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
+          <StatCard icon={ListChecks} value={applications.length} label="Active applications" hint="1 shortlisted" />
+        </motion.div>
+        <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
+          <StatCard
+            icon={CalendarCheck2}
+            value={nextInterview?.date ?? "—"}
+            label="Upcoming interview"
+            hint={nextInterview ? `${nextInterview.type} · ${nextInterview.company}` : "None scheduled"}
+          />
+        </motion.div>
+      </motion.div>
 
-      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+      <motion.div
+        className="grid gap-6 lg:grid-cols-[1fr_320px]"
+        variants={withReducedMotion(reduced, staggerContainer)}
+        initial="hidden"
+        animate="show"
+      >
         {featured && (
-          <div className="rounded-2xl bg-gradient-to-br from-secondary to-emerald-950 p-6 text-white">
+          <motion.div
+            variants={withReducedMotion(reduced, fadeInUp)}
+            className="rounded-2xl bg-gradient-to-br from-secondary to-emerald-950 p-6 text-white"
+          >
             <div className="flex items-center justify-between">
               <Badge variant="dark" className="border border-white/20 bg-white/10 text-emerald-300">
                 New opportunity
@@ -76,10 +100,10 @@ export function Dashboard() {
                 Decline
               </Button>
             </div>
-          </div>
+          </motion.div>
         )}
 
-        <div className="rounded-2xl border border-border bg-card p-6">
+        <motion.div variants={withReducedMotion(reduced, fadeInUp)} className="rounded-2xl border border-border bg-card p-6">
           <div className="flex items-center justify-between">
             <h3 className="font-bold">Profile completion</h3>
             <span className="text-lg font-extrabold">{candidateProfile.completeness}%</span>
@@ -94,8 +118,8 @@ export function Dashboard() {
           <Button asChild variant="outline" className="mt-4 w-full">
             <Link to="/app/profile">Improve my profile</Link>
           </Button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
         <div>
@@ -105,26 +129,32 @@ export function Dashboard() {
               See all →
             </Link>
           </div>
-          <div className="mt-4 space-y-3">
+          <motion.div
+            className="mt-4 space-y-3"
+            variants={withReducedMotion(reduced, staggerContainer)}
+            initial="hidden"
+            animate="show"
+          >
             {recommended.map((job) => (
-              <Link
-                key={job.id}
-                to={`/app/jobs/${job.id}`}
-                className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4 transition-shadow hover:shadow-sm"
-              >
-                <div>
-                  <p className="font-bold">{job.title}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {job.company} · {job.workMode} · ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
-                  </p>
-                </div>
-                <div className="relative flex size-12 shrink-0 items-center justify-center rounded-full border-4 border-primary/20">
-                  <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary" />
-                  <span className="text-xs font-extrabold">{88 - recommended.indexOf(job) * 4}%</span>
-                </div>
-              </Link>
+              <motion.div key={job.id} variants={withReducedMotion(reduced, fadeInUp)}>
+                <Link
+                  to={`/app/jobs/${job.id}`}
+                  className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-4 transition-shadow hover:shadow-sm"
+                >
+                  <div>
+                    <p className="font-bold">{job.title}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {job.company} · {job.workMode} · ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
+                    </p>
+                  </div>
+                  <div className="relative flex size-12 shrink-0 items-center justify-center rounded-full border-4 border-primary/20">
+                    <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary" />
+                    <span className="text-xs font-extrabold">{88 - recommended.indexOf(job) * 4}%</span>
+                  </div>
+                </Link>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         <div className="rounded-2xl border border-border bg-card p-6">
