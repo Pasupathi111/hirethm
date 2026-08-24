@@ -21,6 +21,7 @@ export function AdminPayments() {
       getTab={(p) => p.status}
       columns={columns}
       rows={payments}
+      rowHref={(p) => `/admin/payments/${p.id}`}
       searchPlaceholder="Search payments..."
     />
   )

@@ -21,6 +21,7 @@ export function AdminInterviews() {
       getTab={(i) => i.status}
       columns={columns}
       rows={adminInterviews}
+      rowHref={(i) => `/admin/interviews/${i.id}`}
       searchPlaceholder="Search interviews..."
     />
   )

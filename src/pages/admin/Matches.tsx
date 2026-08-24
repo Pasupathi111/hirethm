@@ -22,6 +22,7 @@ export function AdminMatches() {
       getTab={(m) => m.status}
       columns={columns}
       rows={adminMatches}
+      rowHref={(m) => `/admin/matches/${m.id}`}
       searchPlaceholder="Search matches..."
     />
   )

@@ -34,6 +34,7 @@ export function AdminRecruiters() {
       getTab={(r) => r.status}
       columns={columns}
       rows={adminRecruiters}
+      rowHref={(r) => `/admin/recruiters/${r.id}`}
       searchPlaceholder="Search recruiters..."
     />
   )

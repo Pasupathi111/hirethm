@@ -24,16 +24,21 @@ import { AdminCandidates } from "@/pages/admin/Candidates"
 import { AdminDashboard } from "@/pages/admin/Dashboard"
 import { AdminEmployerDetail } from "@/pages/admin/EmployerDetail"
 import { AdminEmployers } from "@/pages/admin/Employers"
+import { AdminHiringManagerDetail } from "@/pages/admin/HiringManagerDetail"
 import { AdminHiringManagers } from "@/pages/admin/HiringManagers"
+import { AdminInterviewDetail } from "@/pages/admin/InterviewDetail"
 import { AdminInterviews } from "@/pages/admin/Interviews"
 import { AdminJobDetail } from "@/pages/admin/JobDetail"
 import { AdminJobs } from "@/pages/admin/Jobs"
+import { AdminMatchDetail } from "@/pages/admin/MatchDetail"
 import { AdminMatches } from "@/pages/admin/Matches"
 import { AdminMatchingRules } from "@/pages/admin/MatchingRules"
 import { AdminNotifications } from "@/pages/admin/Notifications"
+import { AdminPaymentDetail } from "@/pages/admin/PaymentDetail"
 import { AdminPayments } from "@/pages/admin/Payments"
 import { AdminPlans } from "@/pages/admin/Plans"
 import { AdminPlatformSettings } from "@/pages/admin/PlatformSettings"
+import { AdminRecruiterDetail } from "@/pages/admin/RecruiterDetail"
 import { AdminRecruiters } from "@/pages/admin/Recruiters"
 import { AdminReports } from "@/pages/admin/Reports"
 import { AdminRolesPermissions } from "@/pages/admin/RolesPermissions"
@@ -83,14 +88,19 @@ export const router = createBrowserRouter([
       { path: "employers", element: <AdminEmployers /> },
       { path: "employers/:id", element: <AdminEmployerDetail /> },
       { path: "recruiters", element: <AdminRecruiters /> },
+      { path: "recruiters/:id", element: <AdminRecruiterDetail /> },
       { path: "hiring-managers", element: <AdminHiringManagers /> },
+      { path: "hiring-managers/:id", element: <AdminHiringManagerDetail /> },
       { path: "jobs", element: <AdminJobs /> },
       { path: "jobs/:id", element: <AdminJobDetail /> },
       { path: "applications", element: <AdminApplications /> },
       { path: "matches", element: <AdminMatches /> },
+      { path: "matches/:id", element: <AdminMatchDetail /> },
       { path: "interviews", element: <AdminInterviews /> },
+      { path: "interviews/:id", element: <AdminInterviewDetail /> },
       { path: "plans", element: <AdminPlans /> },
       { path: "payments", element: <AdminPayments /> },
+      { path: "payments/:id", element: <AdminPaymentDetail /> },
       { path: "usage", element: <AdminUsage /> },
       { path: "ai-management", element: <AdminAIManagement /> },
       { path: "matching-rules", element: <AdminMatchingRules /> },
