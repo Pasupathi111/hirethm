@@ -1,0 +1,225 @@
+export type WorkMode = "Remote" | "Hybrid" | "On-site"
+export type EmploymentType = "Full Time" | "Contract" | "Part Time"
+
+export interface Job {
+  id: string
+  reqId: string
+  title: string
+  company: string
+  companyInitials: string
+  companyColor: string
+  location: string
+  workMode: WorkMode
+  employmentType: EmploymentType
+  experience: string
+  salaryMin: number
+  salaryMax: number
+  skills: string[]
+  postedAt: string
+  about: string
+  responsibilities: string[]
+  requirements: string[]
+  benefits: string[]
+  companyBlurb: string
+  status: "Published" | "Draft" | "Closed" | "Processing" | "AI Failed"
+  jdComplete: number
+  aiStatus: "Analysed" | "Queued" | "Enhancement offered" | "Processing"
+  applications: number
+  matches: number
+}
+
+export interface ReadinessCriterion {
+  label: string
+  value: number
+}
+
+export interface Match {
+  id: string
+  jobId: string
+  title: string
+  company: string
+  companyInitials: string
+  companyColor: string
+  status: "New" | "Waiting for Decision" | "Accepted" | "Rejected" | "In Progress"
+  matchedAt: string
+  readiness: number
+  criteria: ReadinessCriterion[]
+  reasons: string[]
+  gap?: string
+}
+
+export type ApplicationStage = "Applied" | "Viewed" | "Employer Review" | "Shortlisted" | "Interview"
+
+export interface Application {
+  id: string
+  jobId: string
+  title: string
+  company: string
+  companyInitials: string
+  companyColor: string
+  appliedAt: string
+  status: "Applied" | "Under Review" | "Shortlisted" | "Interview"
+  stage: ApplicationStage
+}
+
+export interface Interview {
+  id: string
+  jobId: string
+  title: string
+  company: string
+  type: string
+  date: string
+  time: string
+  location: string
+  status: "Upcoming" | "Completed" | "Cancelled"
+  slotConfirmed: boolean
+}
+
+export interface NotificationItem {
+  id: string
+  category: "Matches" | "Applications" | "Interviews" | "Profile" | "System"
+  title: string
+  description: string
+  timeAgo: string
+  action: string
+  unread: boolean
+}
+
+export interface ConsentEvent {
+  id: string
+  timestamp: string
+  event: string
+  employer: string
+  tone: "positive" | "negative" | "neutral"
+}
+
+export interface CandidateProfile {
+  name: string
+  initials: string
+  title: string
+  location: string
+  email: string
+  phone: string
+  completeness: number
+  summary: string
+  experience: { role: string; company: string; period: string }[]
+  education: { school: string; period: string }[]
+  skills: string[]
+  certifications: { name: string; year: string }[]
+  languages: { name: string; level: string }[]
+}
+
+export interface AdminCandidate {
+  id: string
+  name: string
+  initials: string
+  email: string
+  location: string
+  profilePercent: number
+  cvStatus: "Analysed" | "Processing" | "Failed"
+  applications: number
+  matches: number
+  status: "Active" | "Needs attention" | "Suspended"
+  created: string
+}
+
+export interface AdminEmployer {
+  id: string
+  company: string
+  domain: string
+  recruiters: number
+  activeJobs: number
+  applications: number
+  plan: "Enterprise" | "Premium" | "Free"
+  usage: number
+  status: "Active" | "Trial" | "Past due" | "Quota reached" | "Suspended"
+  created: string
+}
+
+export interface AuditLogEntry {
+  id: string
+  timestamp: string
+  actor: string
+  role: "Candidate" | "AI Engine" | "Recruiter" | "Admin" | "Employer"
+  action: string
+  resource: string
+  resourceId: string
+  previousState: string
+  newState: string
+  category: "Consent" | "Visibility" | "Admin action" | "Auth" | "Billing"
+}
+
+export interface SystemService {
+  name: string
+  status: "Healthy" | "Degraded" | "Down"
+  detail: string
+}
+
+export interface AdminRecruiter {
+  id: string
+  name: string
+  initials: string
+  email: string
+  employer: string
+  activeJobs: number
+  status: "Active" | "Invited" | "Suspended"
+  created: string
+}
+
+export interface AdminHiringManager {
+  id: string
+  name: string
+  initials: string
+  email: string
+  employer: string
+  department: string
+  status: "Active" | "Invited" | "Suspended"
+  created: string
+}
+
+export interface AdminApplication {
+  id: string
+  candidate: string
+  job: string
+  employer: string
+  status: "Applied" | "Under Review" | "Shortlisted" | "Interview" | "Rejected"
+  applied: string
+}
+
+export interface AdminMatch {
+  id: string
+  candidate: string
+  job: string
+  employer: string
+  readiness: number
+  status: "New" | "Waiting for Decision" | "Accepted" | "Rejected"
+  created: string
+}
+
+export interface AdminInterview {
+  id: string
+  candidate: string
+  job: string
+  employer: string
+  type: string
+  date: string
+  status: "Upcoming" | "Completed" | "Cancelled"
+}
+
+export interface Plan {
+  id: string
+  name: string
+  price: string
+  billingPeriod: string
+  employers: number
+  features: string[]
+}
+
+export interface Payment {
+  id: string
+  employer: string
+  amount: string
+  plan: string
+  status: "Paid" | "Failed" | "Refunded" | "Pending"
+  date: string
+}

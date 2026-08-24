@@ -1,0 +1,43 @@
+import { Check } from "lucide-react"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+import { plans } from "@/data/mockData"
+
+export function AdminPlans() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-extrabold tracking-tight">Plans</h1>
+        <p className="mt-1 text-muted-foreground">Commercial plans available to employer organizations.</p>
+      </div>
+
+      <div className="grid gap-5 md:grid-cols-3">
+        {plans.map((plan) => (
+          <div key={plan.id} className="rounded-2xl border border-border bg-card p-6">
+            <p className="font-bold">{plan.name}</p>
+            <p className="mt-2 text-3xl font-extrabold">
+              {plan.price}
+              <span className="text-base font-medium text-muted-foreground">{plan.billingPeriod}</span>
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{plan.employers} employers on this plan</p>
+            <ul className="mt-4 space-y-2 text-sm">
+              {plan.features.map((f) => (
+                <li key={f} className="flex items-center gap-2">
+                  <Check className="size-4 text-primary" /> {f}
+                </li>
+              ))}
+            </ul>
+            <Button
+              variant="outline"
+              className="mt-5 w-full"
+              onClick={() => toast(`Editing ${plan.name} plan`, { description: "Pricing and feature changes apply platform-wide." })}
+            >
+              Edit plan
+            </Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
