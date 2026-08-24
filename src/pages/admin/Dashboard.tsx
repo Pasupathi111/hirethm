@@ -1,7 +1,9 @@
+import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 const stats = [
   { label: "Total candidates", value: "12,842", change: "+312 this week", positive: true },
@@ -29,6 +31,8 @@ const alerts = [
 ]
 
 export function AdminDashboard() {
+  const reduced = useReducedMotion()
+
   return (
     <div className="space-y-8">
       <div>
@@ -36,15 +40,20 @@ export function AdminDashboard() {
         <p className="mt-1 text-muted-foreground">Week of 17–23 August 2026 · all figures live</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <motion.div
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+        variants={withReducedMotion(reduced, staggerContainer)}
+        initial="hidden"
+        animate="show"
+      >
         {stats.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-border bg-card p-5">
+          <motion.div key={s.label} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-2xl border border-border bg-card p-5">
             <p className="text-sm text-muted-foreground">{s.label}</p>
             <p className="mt-1 text-2xl font-extrabold">{s.value}</p>
             <p className={`mt-1 text-xs font-semibold ${s.positive ? "text-emerald-600" : "text-red-600"}`}>{s.change}</p>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {["Candidate growth", "Employer growth", "Jobs published"].map((label, i) => (
