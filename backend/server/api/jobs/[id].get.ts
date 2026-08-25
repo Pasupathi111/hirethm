@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
       salaryUnit: true,
       salaryNegotiable: true,
       remoteStatus: true,
+      skills: true,
       validThrough: true,
       phoneRequirement: true,
       requireResume: true,

@@ -41,6 +41,7 @@ const form = ref({
   salaryNegotiable: false,
   remoteStatus: '' as string,
   experienceLevel: '' as string,
+  skills: [] as string[],
   validThrough: '',
   requireResume: false,
   requireCoverLetter: false,
@@ -62,6 +63,7 @@ watch(job, (j) => {
       salaryNegotiable: j.salaryNegotiable ?? false,
       remoteStatus: j.remoteStatus ?? '',
       experienceLevel: j.experienceLevel ?? '',
+      skills: j.skills ?? [],
       validThrough: j.validThrough ? new Date(j.validThrough).toISOString().split('T')[0] ?? '' : '',
       requireResume: j.requireResume ?? false,
       requireCoverLetter: j.requireCoverLetter ?? false,
@@ -97,6 +99,7 @@ const editSchema = z.object({
   salaryNegotiable: z.boolean().optional(),
   remoteStatus: z.enum(['remote', 'hybrid', 'onsite']).optional().or(z.literal('')),
   experienceLevel: z.enum(['junior', 'mid', 'senior', 'lead']).optional().or(z.literal('')),
+  skills: z.array(z.string().trim().min(1).max(100)).max(50).optional(),
   validThrough: z.string().optional(),
   requireResume: z.boolean().optional(),
   requireCoverLetter: z.boolean().optional(),
@@ -138,6 +141,7 @@ async function handleSave() {
       salaryUnit: form.value.salaryNegotiable ? null : (form.value.salaryUnit || null),
       remoteStatus: form.value.remoteStatus || null,
       experienceLevel: (form.value.experienceLevel as 'junior' | 'mid' | 'senior' | 'lead' | null) || null,
+      skills: form.value.skills,
       // Send null when cleared so the DB column is set to NULL
       validThrough: form.value.validThrough ? new Date(form.value.validThrough) : null,
     }
@@ -301,6 +305,15 @@ function onSalaryMaxChange(e: Event) {
                 placeholder="Describe the role, responsibilities, and requirements…"
                 class="w-full rounded-lg border border-surface-300 dark:border-surface-700 px-3 py-2 text-sm text-surface-900 dark:text-surface-100 bg-white dark:bg-surface-800 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
               />
+            </div>
+
+            <!-- Skills -->
+            <div>
+              <label for="settings-skills" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1">
+                Required skills
+              </label>
+              <SkillsInput id="settings-skills" v-model="form.skills" />
+              <p class="mt-1 text-xs text-surface-500 dark:text-surface-400">Used to match and rank candidates — the more specific, the better the match scores.</p>
             </div>
 
             <!-- Location + Type row -->
