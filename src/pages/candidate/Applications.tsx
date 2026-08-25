@@ -75,11 +75,11 @@ export function Applications() {
           <motion.div
             key={app.id}
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="rounded-lg border border-border bg-card p-6"
+            className="rounded-lg border border-border bg-card p-5"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <Avatar>
+                <Avatar className="size-9">
                   <AvatarFallback className={`${app.companyColor} text-white`}>{app.companyInitials}</AvatarFallback>
                 </Avatar>
                 <div>
@@ -91,7 +91,7 @@ export function Applications() {
               </div>
               <StatusBadge status={app.status} />
             </div>
-            <div className="mt-6">
+            <div className="mt-4">
               <StageTracker current={app.stage} />
             </div>
           </motion.div>

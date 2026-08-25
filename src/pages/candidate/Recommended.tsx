@@ -21,7 +21,7 @@ export function Recommended() {
       </div>
 
       <motion.div
-        className="space-y-4"
+        className="space-y-3"
         variants={withReducedMotion(reduced, staggerContainer)}
         initial="hidden"
         animate="show"
@@ -30,9 +30,9 @@ export function Recommended() {
           <motion.div
             key={job.id}
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="flex flex-wrap items-center gap-5 rounded-lg border border-border bg-card p-6"
+            className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card p-4"
           >
-            <Avatar className="size-12 shrink-0">
+            <Avatar className="size-11 shrink-0">
               <AvatarFallback className={`${job.companyColor} text-white`}>{job.companyInitials}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
@@ -48,8 +48,8 @@ export function Recommended() {
                 ))}
               </div>
             </div>
-            <ReadinessRing value={estimateReadiness(job)} size={72} strokeWidth={6} />
-            <Button asChild variant="outline">
+            <ReadinessRing value={estimateReadiness(job)} size={60} strokeWidth={5} />
+            <Button asChild variant="outline" size="sm">
               <Link to={`/app/jobs/${job.id}`}>View Job</Link>
             </Button>
           </motion.div>

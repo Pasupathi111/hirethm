@@ -41,7 +41,7 @@ export function Interviews() {
       </Tabs>
 
       <motion.div
-        className="space-y-4"
+        className="space-y-3"
         variants={withReducedMotion(reduced, staggerContainer)}
         initial="hidden"
         animate="show"
@@ -50,11 +50,11 @@ export function Interviews() {
           <motion.div
             key={interview.id}
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="flex flex-wrap items-center gap-5 rounded-lg border border-border bg-card p-6"
+            className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card p-4"
           >
-            <div className="flex size-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
-              <span className="text-lg font-display font-semibold tracking-[-0.02em] leading-none">{interview.date.split(" ")[0]}</span>
-              <span className="text-[10px] font-bold tracking-wide uppercase">{interview.date.split(" ")[1]}</span>
+            <div className="flex size-12 shrink-0 flex-col items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+              <span className="font-display text-sm leading-none font-semibold tracking-[-0.02em]">{interview.date.split(" ")[0]}</span>
+              <span className="text-[9px] font-bold tracking-wide uppercase">{interview.date.split(" ")[1]}</span>
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -69,13 +69,13 @@ export function Interviews() {
             {interview.status === "Upcoming" && (
               <div className="flex shrink-0 gap-2">
                 {interview.slotConfirmed ? (
-                  <Button disabled variant="secondary">
+                  <Button disabled variant="secondary" size="sm">
                     Slot confirmed
                   </Button>
                 ) : (
-                  <Button onClick={() => confirm(interview.id)}>Confirm Slot</Button>
+                  <Button size="sm" onClick={() => confirm(interview.id)}>Confirm Slot</Button>
                 )}
-                <Button variant="outline" onClick={() => toast("Pick a new time", { description: "Reschedule requests notify the employer." })}>
+                <Button variant="outline" size="sm" onClick={() => toast("Pick a new time", { description: "Reschedule requests notify the employer." })}>
                   Change Slot
                 </Button>
               </div>
