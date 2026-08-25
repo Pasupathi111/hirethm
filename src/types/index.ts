@@ -269,3 +269,96 @@ export interface ChatMessage {
   content: string
   timestamp: string
 }
+
+export interface OrgSearchResult {
+  id: string
+  name: string
+  slug: string
+}
+
+// ── Real backend API shapes (Reqcore) ───────────────────────────────────────
+
+export type ApiJobType = "full_time" | "part_time" | "contract" | "internship"
+export type ApiJobStatus = "draft" | "open" | "closed" | "archived"
+export type ApiRemoteStatus = "remote" | "hybrid" | "onsite"
+export type ApiExperienceLevel = "junior" | "mid" | "senior" | "lead"
+
+export interface ApiJobPipeline {
+  new: number
+  screening: number
+  interview: number
+  offer: number
+  hired: number
+  rejected: number
+}
+
+export interface ApiJob {
+  id: string
+  title: string
+  slug: string
+  description: string | null
+  location: string | null
+  type: ApiJobType
+  status: ApiJobStatus
+  experienceLevel: ApiExperienceLevel | null
+  remoteStatus: ApiRemoteStatus | null
+  createdAt: string
+  updatedAt: string
+  pipeline: ApiJobPipeline
+}
+
+export type ApiGender = "male" | "female" | "other" | "prefer_not_to_say"
+
+export interface ApiCandidate {
+  id: string
+  firstName: string
+  lastName: string
+  displayName: string | null
+  email: string
+  phone: string | null
+  gender: ApiGender | null
+  dateOfBirth: string | null
+  quickNotes: string | null
+  createdAt: string
+  updatedAt: string
+  applicationCount: number
+}
+
+export type ApiApplicationStatus = "new" | "screening" | "interview" | "offer" | "hired" | "rejected"
+
+export interface ApiApplication {
+  id: string
+  status: ApiApplicationStatus
+  score: number | null
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  candidateId: string
+  candidateFirstName: string
+  candidateLastName: string
+  candidateEmail: string
+  jobId: string
+  jobTitle: string
+  jobStatus: ApiJobStatus
+}
+
+export type ApiInterviewType = "phone" | "video" | "in_person" | "panel" | "technical" | "take_home"
+export type ApiInterviewStatus = "scheduled" | "completed" | "cancelled" | "no_show"
+
+export interface ApiInterview {
+  id: string
+  title: string
+  type: ApiInterviewType
+  status: ApiInterviewStatus
+  scheduledAt: string
+  duration: number
+  location: string | null
+  notes: string | null
+  interviewers: string[] | null
+  applicationId: string
+  candidateFirstName: string
+  candidateLastName: string
+  candidateEmail: string
+  jobId: string
+  jobTitle: string
+}

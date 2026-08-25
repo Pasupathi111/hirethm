@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom"
 
+import { RequireAuth } from "@/components/auth/RequireAuth"
 import { AcceptInvitation } from "@/pages/auth/AcceptInvitation"
 import { AdminSignIn } from "@/pages/auth/AdminSignIn"
 import { CreateProfile } from "@/pages/auth/CreateProfile"
@@ -111,9 +112,12 @@ export const router = createBrowserRouter([
   },
   {
     path: "/admin",
-    element: <AdminLayout />,
+    element: <RequireAuth />,
     children: [
-      { index: true, element: <AdminDashboard /> },
+      {
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <AdminDashboard /> },
       { path: "candidates", element: <AdminCandidates /> },
       { path: "candidates/new", element: <AdminCandidateNew /> },
       { path: "candidates/:id", element: <AdminCandidateDetail /> },
@@ -151,7 +155,9 @@ export const router = createBrowserRouter([
       { path: "audit-logs", element: <AdminAuditLogs /> },
       { path: "roles-permissions", element: <AdminRolesPermissions /> },
       { path: "platform-settings", element: <AdminPlatformSettings /> },
-      { path: "system-health", element: <AdminSystemHealth /> },
+          { path: "system-health", element: <AdminSystemHealth /> },
+        ],
+      },
     ],
   },
 ])

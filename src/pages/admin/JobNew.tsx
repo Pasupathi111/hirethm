@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-import { ChipGroup } from "@/components/forms/ChipGroup"
 import { SectionCard } from "@/components/cards/SectionCard"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Button } from "@/components/ui/button"
@@ -10,74 +9,108 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { ApiError, api } from "@/lib/api"
+import type { ApiExperienceLevel, ApiJob, ApiJobType, ApiRemoteStatus } from "@/types"
 
-const skillOptions = ["React", "TypeScript", "Node.js", "GraphQL", "Python", "AWS", "SQL", "Kubernetes"]
-const workModes = ["Remote", "Hybrid", "On-site"]
-const employmentTypes = ["Full Time", "Contract", "Part Time"]
+const typeOptions: { value: ApiJobType; label: string }[] = [
+  { value: "full_time", label: "Full Time" },
+  { value: "part_time", label: "Part Time" },
+  { value: "contract", label: "Contract" },
+  { value: "internship", label: "Internship" },
+]
+
+const remoteOptions: { value: ApiRemoteStatus; label: string }[] = [
+  { value: "remote", label: "Remote" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "onsite", label: "On-site" },
+]
+
+const experienceOptions: { value: ApiExperienceLevel; label: string }[] = [
+  { value: "junior", label: "Junior" },
+  { value: "mid", label: "Mid-level" },
+  { value: "senior", label: "Senior" },
+  { value: "lead", label: "Lead" },
+]
 
 export function AdminJobNew() {
   const navigate = useNavigate()
   const [title, setTitle] = useState("")
-  const [company, setCompany] = useState("")
   const [location, setLocation] = useState("")
-  const [workMode, setWorkMode] = useState(workModes[0])
-  const [employmentType, setEmploymentType] = useState(employmentTypes[0])
+  const [type, setType] = useState<ApiJobType>("full_time")
+  const [remoteStatus, setRemoteStatus] = useState<ApiRemoteStatus | "">("")
+  const [experienceLevel, setExperienceLevel] = useState<ApiExperienceLevel | "">("")
   const [salaryMin, setSalaryMin] = useState("")
   const [salaryMax, setSalaryMax] = useState("")
-  const [about, setAbout] = useState("")
-  const [skills, setSkills] = useState<string[]>([])
+  const [description, setDescription] = useState("")
+  const [error, setError] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+
+  const submit = async (status: "draft" | "open") => {
+    setError("")
+    setIsSaving(true)
+    try {
+      const job = await api.post<ApiJob>("/api/jobs", {
+        title: title.trim(),
+        location: location.trim() || undefined,
+        type,
+        remoteStatus: remoteStatus || undefined,
+        experienceLevel: experienceLevel || undefined,
+        salaryMin: salaryMin ? Number(salaryMin) : undefined,
+        salaryMax: salaryMax ? Number(salaryMax) : undefined,
+        description: description.trim() || undefined,
+        status,
+      })
+      toast.success(status === "open" ? "Job published" : "Draft saved", { description: `${job.title} was created.` })
+      navigate("/admin/jobs")
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to create job")
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
       <AdminDetailHeader
         backHref="/admin/jobs"
         backLabel="Back to jobs"
-        initials={company ? company.slice(0, 2).toUpperCase() : "NW"}
+        initials="NW"
         name="New job posting"
         meta="Draft, not yet published"
         actions={
           <>
-            <Button variant="outline" onClick={() => toast("Draft saved")}>
+            <Button variant="outline" disabled={isSaving || !title.trim()} onClick={() => submit("draft")}>
               Save draft
             </Button>
-            <Button
-              variant="dark"
-              disabled={!title || !company}
-              onClick={() => {
-                toast.success("Job published", { description: `${title} is now live.` })
-                navigate("/admin/jobs")
-              }}
-            >
+            <Button variant="dark" disabled={isSaving || !title.trim()} onClick={() => submit("open")}>
               Publish job
             </Button>
           </>
         }
       />
 
-      <SectionCard title="Role details" animate={false}>
+      {error && <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+
+      <SectionCard title="Role details" description="Only the job title is required." animate={false}>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="title">Job title</Label>
+          <div className="space-y-2 sm:col-span-2">
+            <Label htmlFor="title">Job title *</Label>
             <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Senior React Developer" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="company">Company</Label>
-            <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} placeholder="ABC Technologies" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
             <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Remote" />
           </div>
           <div className="space-y-2">
-            <Label>Work mode</Label>
-            <Select value={workMode} onValueChange={setWorkMode}>
+            <Label>Workplace</Label>
+            <Select value={remoteStatus} onValueChange={(v) => setRemoteStatus(v as ApiRemoteStatus)}>
               <SelectTrigger className="w-full">
-                <SelectValue />
+                <SelectValue placeholder="Not specified" />
               </SelectTrigger>
               <SelectContent>
-                {workModes.map((w) => (
-                  <SelectItem key={w} value={w}>
-                    {w}
+                {remoteOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -85,14 +118,29 @@ export function AdminJobNew() {
           </div>
           <div className="space-y-2">
             <Label>Employment type</Label>
-            <Select value={employmentType} onValueChange={setEmploymentType}>
+            <Select value={type} onValueChange={(v) => setType(v as ApiJobType)}>
               <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {employmentTypes.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                {typeOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Experience level</Label>
+            <Select value={experienceLevel} onValueChange={(v) => setExperienceLevel(v as ApiExperienceLevel)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Not specified" />
+              </SelectTrigger>
+              <SelectContent>
+                {experienceOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -111,19 +159,8 @@ export function AdminJobNew() {
         </div>
       </SectionCard>
 
-      <SectionCard title="Job description" animate={false}>
-        <div className="space-y-2">
-          <Label htmlFor="about">About the role</Label>
-          <Textarea id="about" value={about} onChange={(e) => setAbout(e.target.value)} rows={5} placeholder="Describe the role, team, and mission..." />
-        </div>
-      </SectionCard>
-
-      <SectionCard title="Required skills" description="Used for AI matching." animate={false}>
-        <ChipGroup
-          options={skillOptions}
-          selected={skills}
-          onToggle={(v) => setSkills((prev) => (prev.includes(v) ? prev.filter((s) => s !== v) : [...prev, v]))}
-        />
+      <SectionCard title="Job description" description="A clear description improves AI scoring and attracts better candidates." animate={false}>
+        <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={5} placeholder="Describe the role, team, and mission..." />
       </SectionCard>
     </div>
   )

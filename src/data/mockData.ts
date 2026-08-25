@@ -670,3 +670,4 @@ const canned = [
 export function nextAiReply(turn: number) {
   return canned[turn % canned.length]
 }
+

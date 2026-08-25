@@ -2,67 +2,111 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-import { ChipGroup } from "@/components/forms/ChipGroup"
 import { SectionCard } from "@/components/cards/SectionCard"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ApiError, api } from "@/lib/api"
+import type { ApiCandidate, ApiGender } from "@/types"
 
-const skillOptions = ["React", "TypeScript", "Node.js", "GraphQL", "Python", "AWS", "SQL", "Product Management"]
+const genderOptions: { value: ApiGender; label: string }[] = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "other", label: "Other" },
+  { value: "prefer_not_to_say", label: "Prefer not to say" },
+]
 
 export function AdminCandidateNew() {
   const navigate = useNavigate()
-  const [name, setName] = useState("")
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
   const [email, setEmail] = useState("")
-  const [location, setLocation] = useState("")
-  const [skills, setSkills] = useState<string[]>([])
+  const [phone, setPhone] = useState("")
+  const [gender, setGender] = useState<ApiGender | "">("")
+  const [dateOfBirth, setDateOfBirth] = useState("")
+  const [error, setError] = useState("")
+  const [isSaving, setIsSaving] = useState(false)
+
+  const canSubmit = firstName.trim() && lastName.trim() && email.trim()
+
+  const handleSubmit = async () => {
+    setError("")
+    setIsSaving(true)
+    try {
+      const candidate = await api.post<ApiCandidate>("/api/candidates", {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+        phone: phone.trim() || undefined,
+        gender: gender || undefined,
+        dateOfBirth: dateOfBirth || undefined,
+      })
+      toast.success("Candidate added", { description: `${candidate.firstName} ${candidate.lastName} was added.` })
+      navigate("/admin/candidates")
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Failed to create candidate")
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
       <AdminDetailHeader
         backHref="/admin/candidates"
         backLabel="Back to candidates"
-        initials={name ? name.split(" ").map((p) => p[0]).slice(0, 2).join("").toUpperCase() : "NW"}
-        name="New candidate"
+        initials={firstName || lastName ? `${firstName[0] ?? ""}${lastName[0] ?? ""}`.toUpperCase() : "NW"}
+        name="Add Candidate"
         meta="Manually created profile"
         actions={
-          <Button
-            variant="dark"
-            disabled={!name || !email}
-            onClick={() => {
-              toast.success("Candidate created", { description: `${name} has been added to the platform.` })
-              navigate("/admin/candidates")
-            }}
-          >
-            Create candidate
+          <Button variant="dark" disabled={!canSubmit || isSaving} onClick={handleSubmit}>
+            Add Candidate
           </Button>
         }
       />
 
+      {error && <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
+
       <SectionCard title="Basic information" animate={false}>
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="name">Full name</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Jordan Blake" required />
+            <Label htmlFor="firstName">First Name *</Label>
+            <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Jane" required />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jordan@email.com" required />
+            <Label htmlFor="lastName">Last Name *</Label>
+            <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" required />
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="location">Location</Label>
-            <Input id="location" value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Austin, TX" />
+            <Label htmlFor="email">Email *</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane.doe@example.com" required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">Phone</Label>
+            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 123-4567" />
+          </div>
+          <div className="space-y-2">
+            <Label>Gender</Label>
+            <Select value={gender} onValueChange={(v) => setGender(v as ApiGender)}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Not specified" />
+              </SelectTrigger>
+              <SelectContent>
+                {genderOptions.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="dob">Date of Birth</Label>
+            <Input id="dob" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
           </div>
         </div>
-      </SectionCard>
-
-      <SectionCard title="Skills" description="Used for AI matching." animate={false}>
-        <ChipGroup
-          options={skillOptions}
-          selected={skills}
-          onToggle={(v) => setSkills((prev) => (prev.includes(v) ? prev.filter((s) => s !== v) : [...prev, v]))}
-        />
       </SectionCard>
     </div>
   )

@@ -1,172 +1,152 @@
+import { Briefcase, Plus } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Navigate, useParams } from "react-router-dom"
+import { toast } from "sonner"
 
-import { MetricTile } from "@/components/cards/MetricTile"
+import { EmptyState } from "@/components/feedback/EmptyState"
+import { Skeleton } from "@/components/feedback/Skeleton"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { adminCandidates, auditLogs, candidateProfile, consentHistory, jobs, matches } from "@/data/mockData"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ApiError, api, type PaginatedResponse } from "@/lib/api"
+import type { ApiApplication, ApiCandidate, ApiJob } from "@/types"
+
+interface CandidateApplication {
+  id: string
+  status: string
+  createdAt: string
+  job: { id: string; title: string }
+}
+
+interface CandidateDetailResponse extends ApiCandidate {
+  applications: CandidateApplication[]
+}
 
 export function AdminCandidateDetail() {
   const { id } = useParams()
-  const candidate = adminCandidates.find((c) => c.id === id)
+  const [candidate, setCandidate] = useState<CandidateDetailResponse | null>(null)
+  const [notFound, setNotFound] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [jobs, setJobs] = useState<ApiJob[]>([])
+  const [selectedJobId, setSelectedJobId] = useState("")
+  const [isApplying, setIsApplying] = useState(false)
+  const [showApplyPicker, setShowApplyPicker] = useState(false)
 
-  if (!candidate) return <Navigate to="/admin/candidates" replace />
+  const load = () => {
+    if (!id) return
+    api
+      .get<CandidateDetailResponse>(`/api/candidates/${id}`)
+      .then(setCandidate)
+      .catch(() => setNotFound(true))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(load, [id])
+
+  useEffect(() => {
+    api.get<PaginatedResponse<ApiJob>>("/api/jobs?limit=100").then((res) => setJobs(res.data))
+  }, [])
+
+  const handleApply = async () => {
+    if (!id || !selectedJobId) return
+    setIsApplying(true)
+    try {
+      await api.post<ApiApplication>("/api/applications", { candidateId: id, jobId: selectedJobId })
+      toast.success("Application created")
+      setShowApplyPicker(false)
+      setSelectedJobId("")
+      setLoading(true)
+      load()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to create application")
+    } finally {
+      setIsApplying(false)
+    }
+  }
+
+  if (notFound) return <Navigate to="/admin/candidates" replace />
+  if (loading || !candidate) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    )
+  }
+
+  const initials = `${candidate.firstName[0] ?? ""}${candidate.lastName[0] ?? ""}`.toUpperCase()
+  const appliedJobIds = new Set(candidate.applications.map((a) => a.job.id))
+  const availableJobs = jobs.filter((j) => !appliedJobIds.has(j.id))
 
   return (
     <div className="space-y-6">
       <AdminDetailHeader
         backHref="/admin/candidates"
         backLabel="Back to candidates"
-        initials={candidate.initials}
-        name={candidate.name}
-        meta={`${candidate.id} · ${candidate.email} · ${candidate.location} · Created ${candidate.created}`}
-        actions={
-          <>
-            <Button variant="outline">Message</Button>
-            <Button variant="dark">Suspend</Button>
-          </>
-        }
+        initials={initials}
+        name={candidate.displayName || `${candidate.firstName} ${candidate.lastName}`}
+        meta={`${candidate.email}${candidate.phone ? ` · ${candidate.phone}` : ""} · Created ${new Date(candidate.createdAt).toLocaleDateString()}`}
       />
 
-      <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="resume">Resume</TabsTrigger>
-          <TabsTrigger value="applications">Applications</TabsTrigger>
-          <TabsTrigger value="matches">Matches</TabsTrigger>
-          <TabsTrigger value="consent">Consent</TabsTrigger>
-          <TabsTrigger value="audit">Audit</TabsTrigger>
-        </TabsList>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2>Applications ({candidate.applications.length})</h2>
+          <Button variant="dark" size="sm" onClick={() => setShowApplyPicker((v) => !v)}>
+            <Plus className="size-4" /> Apply to Job
+          </Button>
+        </div>
 
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <MetricTile label="Profile completeness" value={`${candidate.profilePercent}%`} />
-            <div className="rounded-lg border border-border bg-card p-5">
-              <p className="text-sm text-muted-foreground">CV status</p>
-              <p className="mt-1 text-2xl font-extrabold">
-                <StatusBadge status={candidate.cvStatus} className="text-base" /> <span className="text-base text-muted-foreground">· v3</span>
-              </p>
-            </div>
-            <MetricTile label="Applications" value={candidate.applications} />
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-lg border border-border bg-card p-6">
-              <h2>Consent and visibility record</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Which employers have been granted visibility, and when.</p>
-              <Table className="mt-4">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Employer</TableHead>
-                    <TableHead>Decision</TableHead>
-                    <TableHead>Visibility</TableHead>
-                    <TableHead>When</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {consentHistory.map((c) => (
-                    <TableRow key={c.id}>
-                      <TableCell>{c.employer}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={c.tone === "positive" ? "Accepted" : c.tone === "negative" ? "Rejected" : "Given"} />
-                      </TableCell>
-                      <TableCell>{c.tone === "positive" ? "Visible" : "Hidden"}</TableCell>
-                      <TableCell className="text-muted-foreground">{c.timestamp.split(" · ")[0]}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-
-            <div className="rounded-lg border border-border bg-card p-6">
-              <h2>Recent activity</h2>
-              <ul className="mt-4 space-y-4">
-                {auditLogs.slice(0, 4).map((log) => (
-                  <li key={log.id}>
-                    <p className="text-sm font-semibold">{log.action.replace(/_/g, " ")}</p>
-                    <p className="text-xs text-muted-foreground">{log.timestamp}</p>
-                  </li>
+        {showApplyPicker && (
+          <div className="mt-4 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/50 p-3">
+            <Select value={selectedJobId} onValueChange={setSelectedJobId}>
+              <SelectTrigger className="w-64">
+                <SelectValue placeholder="Choose a job..." />
+              </SelectTrigger>
+              <SelectContent>
+                {availableJobs.map((j) => (
+                  <SelectItem key={j.id} value={j.id}>
+                    {j.title}
+                  </SelectItem>
                 ))}
-              </ul>
-            </div>
+              </SelectContent>
+            </Select>
+            <Button size="sm" disabled={!selectedJobId || isApplying} onClick={handleApply}>
+              {isApplying ? "Applying..." : "Confirm"}
+            </Button>
+            {availableJobs.length === 0 && <p className="text-xs text-muted-foreground">No other open jobs to apply to.</p>}
           </div>
-        </TabsContent>
+        )}
 
-        <TabsContent value="profile" className="space-y-4">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2>Summary</h2>
-            <p className="mt-2 text-sm text-muted-foreground">{candidateProfile.summary}</p>
-          </div>
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2>Skills</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {candidateProfile.skills.map((s) => (
-                <Badge key={s} variant="outline">
-                  {s}
-                </Badge>
-              ))}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="resume">
-          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
-            resume-v3.pdf · Analysed on 02 Aug 2026 · Extracted {candidateProfile.experience.length} roles and{" "}
-            {candidateProfile.skills.length} skills.
-          </div>
-        </TabsContent>
-
-        <TabsContent value="applications">
-          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
-            {candidate.applications} applications submitted, most recently to {jobs[0].title} at {jobs[0].company}.
-          </div>
-        </TabsContent>
-
-        <TabsContent value="matches">
-          <div className="space-y-3">
-            {matches.map((m) => (
-              <div key={m.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-4">
-                <div>
-                  <p className="font-semibold">{m.title}</p>
-                  <p className="text-sm text-muted-foreground">{m.company}</p>
+        <div className="mt-4">
+          {candidate.applications.length === 0 ? (
+            <EmptyState
+              icon={Briefcase}
+              title="No applications yet."
+              description="Use Apply to Job above to link this candidate to a role."
+            />
+          ) : (
+            <div className="space-y-2">
+              {candidate.applications.map((a) => (
+                <div key={a.id} className="flex items-center justify-between border-b border-hairline py-3 text-sm last:border-0">
+                  <div>
+                    <p className="font-semibold">{a.job.title}</p>
+                    <p className="text-xs text-muted-foreground">Applied {new Date(a.createdAt).toLocaleDateString()}</p>
+                  </div>
+                  <StatusBadge status={a.status} />
                 </div>
-                <StatusBadge status={m.status} />
-              </div>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="consent">
-          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
-            Visibility setting: Open to AI matching. 0 consent breaches recorded for this candidate.
-          </div>
-        </TabsContent>
-
-        <TabsContent value="audit">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>Action</TableHead>
-                <TableHead>Resource</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {auditLogs.map((log) => (
-                <TableRow key={log.id}>
-                  <TableCell className="text-muted-foreground">{log.timestamp}</TableCell>
-                  <TableCell className="font-mono text-xs font-semibold">{log.action}</TableCell>
-                  <TableCell>{log.resourceId}</TableCell>
-                </TableRow>
               ))}
-            </TableBody>
-          </Table>
-        </TabsContent>
-      </Tabs>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {candidate.quickNotes && (
+        <div className="rounded-lg border border-border bg-card p-6">
+          <h2>Notes</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{candidate.quickNotes}</p>
+        </div>
+      )}
     </div>
   )
 }

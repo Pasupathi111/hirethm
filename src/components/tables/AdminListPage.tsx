@@ -24,6 +24,8 @@ export function AdminListPage<T extends { id: string }>({
   rows,
   rowHref,
   searchPlaceholder,
+  loading: externalLoading,
+  headerActions,
 }: {
   title: string
   subtitle: string
@@ -33,17 +35,23 @@ export function AdminListPage<T extends { id: string }>({
   rows: T[]
   rowHref?: (row: T) => string
   searchPlaceholder?: string
+  /** Pass to drive the loading skeleton from real async data instead of the built-in fake delay. */
+  loading?: boolean
+  /** Extra buttons rendered before the built-in Export CSV / Bulk actions buttons. */
+  headerActions?: React.ReactNode
 }) {
   const navigate = useNavigate()
   const [tab, setTab] = useState(tabs?.[0] ?? "All")
   const [query, setQuery] = useState("")
   const [selected, setSelected] = useState<string[]>([])
-  const [loading, setLoading] = useState(true)
+  const [fakeLoading, setFakeLoading] = useState(externalLoading === undefined)
+  const loading = externalLoading ?? fakeLoading
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 450)
+    if (externalLoading !== undefined) return
+    const timer = setTimeout(() => setFakeLoading(false), 450)
     return () => clearTimeout(timer)
-  }, [])
+  }, [externalLoading])
 
   const filtered = useMemo(() => {
     let result = rows
@@ -66,6 +74,7 @@ export function AdminListPage<T extends { id: string }>({
           <p className="mt-1 text-muted-foreground">{subtitle}</p>
         </div>
         <div className="flex gap-2">
+          {headerActions}
           <Button variant="outline" onClick={() => toast.success("CSV export started", { description: "You'll get a download link shortly." })}>
             Export CSV
           </Button>
