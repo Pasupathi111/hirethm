@@ -1,29 +1,66 @@
-import { FileText, Sparkles, Trash2, Upload } from "lucide-react"
-import { useRef, useState } from "react"
+import { FileText, Trash2, Upload } from "lucide-react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 
-import { ReadinessRing } from "@/components/cards/ReadinessRing"
+import { EmptyState } from "@/components/feedback/EmptyState"
+import { ErrorState } from "@/components/feedback/ErrorState"
+import { Skeleton } from "@/components/feedback/Skeleton"
 import { SectionCard } from "@/components/cards/SectionCard"
 import { Button } from "@/components/ui/button"
-import { candidateProfile } from "@/data/mockData"
+import { ApiError, api } from "@/lib/api"
+import type { ApiDocument } from "@/types"
 
-/** Deterministic resume-score estimate derived from what HireThm extracted, not a random number. */
-function estimateResumeScore() {
-  const { skills, experience, certifications, languages } = candidateProfile
-  return Math.min(100, 50 + skills.length * 3 + experience.length * 4 + certifications.length * 5 + languages.length * 2)
+function formatSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 export function Resume() {
-  const [fileName, setFileName] = useState<string | null>("alex-johnson-resume-v3.pdf")
   const inputRef = useRef<HTMLInputElement>(null)
-  const score = estimateResumeScore()
+  const [documents, setDocuments] = useState<ApiDocument[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [uploading, setUploading] = useState(false)
 
-  const checklist = [
-    { ok: candidateProfile.experience.length >= 2, label: "Strong experience section" },
-    { ok: candidateProfile.skills.length >= 3, label: "Skills detected and matched" },
-    { ok: Boolean(candidateProfile.summary), label: "Professional summary present" },
-    { ok: false, label: "Add measurable achievements (e.g. \"reduced load time by 40%\")" },
-  ]
+  const load = useCallback(() => {
+    setLoading(true)
+    setError("")
+    api
+      .get<{ data: ApiDocument[] }>("/api/me/documents")
+      .then((res) => setDocuments(res.data))
+      .catch((err) => setError(err instanceof ApiError ? err.message : "Failed to load your documents"))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(load, [load])
+
+  const uploadFile = async (file: File) => {
+    setUploading(true)
+    const formData = new FormData()
+    formData.append("file", file)
+    try {
+      await api.upload<ApiDocument>("/api/me/documents", formData)
+      toast.success("Resume uploaded", { description: "HireThm is analysing your CV." })
+      load()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to upload resume")
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const removeDocument = async (id: string) => {
+    const previous = documents
+    setDocuments((prev) => prev.filter((d) => d.id !== id))
+    try {
+      await api.del(`/api/me/documents/${id}`)
+      toast.success("Document removed")
+    } catch (err) {
+      setDocuments(previous)
+      toast.error(err instanceof ApiError ? err.message : "Failed to remove document")
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -40,10 +77,7 @@ export function Resume() {
         onDrop={(e) => {
           e.preventDefault()
           const file = e.dataTransfer.files?.[0]
-          if (file) {
-            setFileName(file.name)
-            toast.success("Resume uploaded", { description: "HireThm is analysing your CV." })
-          }
+          if (file) uploadFile(file)
         }}
       >
         <div className="flex size-14 items-center justify-center rounded-lg bg-accent">
@@ -52,11 +86,13 @@ export function Resume() {
         <p className="text-lg font-bold">Upload your resume</p>
         <p className="text-sm text-muted-foreground">PDF, DOC, DOCX · up to 10 MB</p>
         <div className="mt-2 flex gap-3">
-          <Button onClick={() => inputRef.current?.click()}>
+          <Button onClick={() => inputRef.current?.click()} disabled={uploading}>
             <Upload className="size-4" />
-            Browse files
+            {uploading ? "Uploading…" : "Browse files"}
           </Button>
-          <Button variant="outline">Drag & drop</Button>
+          <Button variant="outline" disabled={uploading}>
+            Drag & drop
+          </Button>
         </div>
         <input
           ref={inputRef}
@@ -65,75 +101,60 @@ export function Resume() {
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0]
-            if (file) {
-              setFileName(file.name)
-              toast.success("Resume uploaded", { description: "HireThm is analysing your CV." })
-            }
+            if (file) uploadFile(file)
+            e.target.value = ""
           }}
         />
       </div>
 
-      {fileName && (
-        <div className="flex items-center justify-between rounded-lg border border-border bg-card p-5">
-          <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-md bg-muted">
-              <FileText className="size-5" />
-            </div>
-            <div>
-              <p className="font-semibold">{fileName}</p>
-              <p className="text-sm text-muted-foreground">CV status: Analysed · v3</p>
-            </div>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => setFileName(null)}>
-            <Trash2 className="size-4" />
-            Remove
-          </Button>
+      {loading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-20 w-full" />
         </div>
-      )}
-
-      {fileName && (
-        <SectionCard title="Resume score" description="How your resume reads to employers and applicant tracking systems.">
-          <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
-            <ReadinessRing value={score} label="ATS Ready" />
-            <div className="flex-1 space-y-2">
-              {checklist.map((item) => (
-                <p key={item.label} className={item.ok ? "flex items-start gap-2 text-sm text-primary" : "flex items-start gap-2 text-sm text-warning"}>
-                  <span className="mt-0.5">{item.ok ? "✓" : "!"}</span>
-                  <span className="text-foreground">{item.label}</span>
-                </p>
-              ))}
-              <Button
-                size="sm"
-                variant="outline"
-                className="mt-3"
-                onClick={() => toast("Improving your resume", { description: "HireThm will suggest stronger phrasing for your weakest sections." })}
-              >
-                <Sparkles className="size-4" />
-                Improve Resume with AI
-              </Button>
-            </div>
+      ) : error ? (
+        <ErrorState description={error} onRetry={load} />
+      ) : documents.length === 0 ? (
+        <EmptyState icon={FileText} title="No resume uploaded yet." description="Upload a resume so HireThm can extract your experience and skills." />
+      ) : (
+        <SectionCard title="Your documents">
+          <div className="space-y-3">
+            {documents.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between rounded-lg border border-border bg-card p-5">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-md bg-muted">
+                    <FileText className="size-5" />
+                  </div>
+                  <div>
+                    <p className="font-semibold">{doc.originalFilename}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {formatSize(doc.sizeBytes)} · Uploaded {new Date(doc.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => removeDocument(doc.id)}>
+                  <Trash2 className="size-4" />
+                  Remove
+                </Button>
+              </div>
+            ))}
           </div>
         </SectionCard>
       )}
 
-      <SectionCard title="What HireThm extracted">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Experience</p>
-            <ul className="mt-2 space-y-1 text-sm">
-              {candidateProfile.experience.map((e) => (
-                <li key={e.role}>
-                  {e.role} · {e.company}
-                </li>
+      {documents.some((d) => d.parsedContent) && (
+        <SectionCard title="What HireThm extracted">
+          <div className="space-y-4">
+            {documents
+              .filter((d) => d.parsedContent)
+              .map((d) => (
+                <div key={d.id}>
+                  <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">{d.originalFilename}</p>
+                  <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{d.parsedContent}</p>
+                </div>
               ))}
-            </ul>
           </div>
-          <div>
-            <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Skills</p>
-            <p className="mt-2 text-sm text-muted-foreground">{candidateProfile.skills.join(", ")}</p>
-          </div>
-        </div>
-      </SectionCard>
+        </SectionCard>
+      )}
     </div>
   )
 }

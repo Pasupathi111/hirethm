@@ -10,12 +10,10 @@ import type {
   AuditLogEntry,
   CandidateProfile,
   ChatMessage,
-  ConsentEvent,
   Interview,
   InterviewTemplate,
   Job,
   Match,
-  NotificationItem,
   Payment,
   Plan,
   SourceTrackingEntry,
@@ -394,60 +392,6 @@ export const interviews: Interview[] = [
     status: "Completed",
     slotConfirmed: true,
   },
-]
-
-export const notifications: NotificationItem[] = [
-  {
-    id: "notif-1",
-    category: "Matches",
-    title: "New match found",
-    description: "Senior Product Engineer at ABC Technologies · 91% Mutual Readiness",
-    timeAgo: "2h ago",
-    action: "Review Opportunity",
-    unread: true,
-  },
-  {
-    id: "notif-2",
-    category: "Matches",
-    title: "New match found",
-    description: "React Team Lead at Verta Labs · 85% Mutual Readiness",
-    timeAgo: "1d ago",
-    action: "Review Opportunity",
-    unread: true,
-  },
-  {
-    id: "notif-3",
-    category: "Applications",
-    title: "Your application was viewed",
-    description: "ABC Technologies opened your application for Senior React Developer",
-    timeAgo: "1d ago",
-    action: "View Application",
-    unread: false,
-  },
-  {
-    id: "notif-4",
-    category: "Interviews",
-    title: "Interview slot proposed",
-    description: "Verta Labs proposed a slot for your Hiring Manager Interview",
-    timeAgo: "2d ago",
-    action: "Choose Slot",
-    unread: false,
-  },
-  {
-    id: "notif-5",
-    category: "Profile",
-    title: "CV re-analysed",
-    description: "HireThm refreshed your extracted skills after your latest upload",
-    timeAgo: "3d ago",
-    action: "View Profile",
-    unread: false,
-  },
-]
-
-export const consentHistory: ConsentEvent[] = [
-  { id: "c-1", timestamp: "18 Aug 2026 · 14:02", event: "Profile visibility granted", employer: "TechFlow", tone: "positive" },
-  { id: "c-2", timestamp: "14 Aug 2026 · 09:41", event: "Match declined, no data shared", employer: "CloudWorks", tone: "negative" },
-  { id: "c-3", timestamp: "02 Aug 2026 · 17:20", event: "CV analysis consent given", employer: "HireThm platform", tone: "neutral" },
 ]
 
 // ---------------- Admin mock data ----------------
