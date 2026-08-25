@@ -37,6 +37,8 @@ export const createJobSchema = z.object({
   autoScoreOnApply: z.boolean().optional().default(false),
   /** Experience level required for this role */
   experienceLevel: z.enum(['junior', 'mid', 'senior', 'lead']).optional(),
+  /** Required skills used for candidate matching (see server/utils/matching.ts) */
+  skills: z.array(z.string().trim().min(1).max(100)).max(50).optional().default([]),
 })
 
 /**
@@ -91,6 +93,8 @@ export const updateJobSchema = z.object({
   /** Experience level required for this role */
   experienceLevel: z.enum(['junior', 'mid', 'senior', 'lead']).nullable().optional(),
   status: z.enum(['draft', 'open', 'closed', 'archived']).optional(),
+  /** Required skills used for candidate matching (see server/utils/matching.ts) */
+  skills: z.array(z.string().trim().min(1).max(100)).max(50).optional(),
 })
 
 /** Schema for job list query params */

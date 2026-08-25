@@ -60,6 +60,7 @@ export default defineEventHandler(async (event) => {
       requireCoverLetter: job.requireCoverLetter,
       autoScoreOnApply: job.autoScoreOnApply,
       experienceLevel: job.experienceLevel,
+      skills: job.skills,
       createdAt: job.createdAt,
       updatedAt: job.updatedAt,
     })
