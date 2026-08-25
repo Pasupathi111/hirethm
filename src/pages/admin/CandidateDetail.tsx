@@ -1,4 +1,4 @@
-import { Briefcase, Plus } from "lucide-react"
+import { Briefcase, FileText, Plus } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
@@ -8,10 +8,11 @@ import { EmptyState } from "@/components/feedback/EmptyState"
 import { Skeleton } from "@/components/feedback/Skeleton"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ApiError, api, type PaginatedResponse } from "@/lib/api"
-import type { ApiApplication, ApiCandidate, ApiJob } from "@/types"
+import type { ApiApplication, ApiCandidate, ApiDocument, ApiJob } from "@/types"
 
 interface CandidateApplication {
   id: string
@@ -20,8 +21,25 @@ interface CandidateApplication {
   job: { id: string; title: string }
 }
 
+interface CandidateDocumentSummary {
+  id: string
+  type: string
+  originalFilename: string
+  mimeType: string
+  sizeBytes: number
+  createdAt: string
+  parsed: boolean
+}
+
 interface CandidateDetailResponse extends ApiCandidate {
   applications: CandidateApplication[]
+  documents: CandidateDocumentSummary[]
+}
+
+function formatSize(bytes: number) {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
 export function AdminCandidateDetail() {
@@ -36,6 +54,27 @@ export function AdminCandidateDetail() {
   const [showApplyPicker, setShowApplyPicker] = useState(false)
   const [showDelete, setShowDelete] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [expandedDocId, setExpandedDocId] = useState<string | null>(null)
+  const [docDetails, setDocDetails] = useState<Record<string, ApiDocument>>({})
+  const [docLoading, setDocLoading] = useState<string | null>(null)
+
+  const toggleDocument = async (docId: string) => {
+    if (expandedDocId === docId) {
+      setExpandedDocId(null)
+      return
+    }
+    setExpandedDocId(docId)
+    if (docDetails[docId]) return
+    setDocLoading(docId)
+    try {
+      const data = await api.get<ApiDocument>(`/api/documents/${docId}`)
+      setDocDetails((prev) => ({ ...prev, [docId]: data }))
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to load parsed resume content")
+    } finally {
+      setDocLoading(null)
+    }
+  }
 
   const load = () => {
     if (!id) return
@@ -177,6 +216,84 @@ export function AdminCandidateDetail() {
             </div>
           )}
         </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2>Documents ({candidate.documents.length})</h2>
+
+        {candidate.documents.length === 0 ? (
+          <EmptyState
+            icon={FileText}
+            title="No documents uploaded."
+            description="Resumes uploaded by the candidate or by your team will show up here."
+          />
+        ) : (
+          <div className="mt-4 space-y-2">
+            {candidate.documents.map((doc) => {
+              const detail = docDetails[doc.id]
+              const isExpanded = expandedDocId === doc.id
+              return (
+                <div key={doc.id} className="rounded-md border border-hairline">
+                  <button
+                    type="button"
+                    className="flex w-full items-center justify-between gap-3 p-3 text-left text-sm"
+                    onClick={() => doc.parsed && toggleDocument(doc.id)}
+                    disabled={!doc.parsed}
+                  >
+                    <div>
+                      <p className="font-semibold">{doc.originalFilename}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatSize(doc.sizeBytes)} · {new Date(doc.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    {doc.parsed ? (
+                      <span className="text-xs font-semibold text-primary">{isExpanded ? "Hide" : "View extracted content"} →</span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">Not parsed</span>
+                    )}
+                  </button>
+
+                  {isExpanded && (
+                    <div className="border-t border-hairline p-3">
+                      {docLoading === doc.id ? (
+                        <Skeleton className="h-16 w-full" />
+                      ) : detail?.parsedContent ? (
+                        <div className="space-y-3">
+                          {detail.parsedContent.structured.skills.length > 0 && (
+                            <div>
+                              <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Detected skills</p>
+                              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                                {detail.parsedContent.structured.skills.map((skill) => (
+                                  <Badge key={skill} variant="outline">
+                                    {skill}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {(detail.parsedContent.structured.email || detail.parsedContent.structured.phone) && (
+                            <p className="text-sm text-muted-foreground">
+                              Detected contact:{" "}
+                              {[detail.parsedContent.structured.email, detail.parsedContent.structured.phone].filter(Boolean).join(" · ")}
+                            </p>
+                          )}
+                          {detail.parsedContent.sections.map((section) => (
+                            <div key={section.heading}>
+                              <p className="text-xs font-semibold">{section.heading}</p>
+                              <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{section.content}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">No extracted content available.</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {candidate.quickNotes && (

@@ -12,6 +12,7 @@
 import mammoth from 'mammoth'
 // @ts-ignore — word-extractor has no bundled type declarations
 import WordExtractor from 'word-extractor'
+import { extractSkillsFromText } from './skills-taxonomy'
 
 // pdfjs-dist uses browser APIs (DOMMatrix, Path2D, ImageData) at module scope.
 // In Node.js these don't exist, so we install minimal stubs before importing.
@@ -44,6 +45,8 @@ export interface ParsedResume {
   text: string
   /** Detected sections (best-effort heuristic) */
   sections: ResumeSection[]
+  /** Best-effort structured fields pulled from the extracted text/sections */
+  structured: ParsedResumeStructured
   /** Parsing metadata */
   metadata: {
     pageCount: number | null
@@ -53,6 +56,13 @@ export interface ParsedResume {
     parserVersion: string
     sourceFormat: 'pdf' | 'docx' | 'doc'
   }
+}
+
+export interface ParsedResumeStructured {
+  email: string | null
+  phone: string | null
+  /** Deduplicated skill strings, pulled from a detected Skills-type section */
+  skills: string[]
 }
 
 export interface ResumeSection {
@@ -114,9 +124,11 @@ async function parsePdf(buffer: Buffer): Promise<ParsedResume | null> {
     return null
   }
 
+  const sections = extractSections(text)
   const parsed: ParsedResume = {
     text,
-    sections: extractSections(text),
+    sections,
+    structured: extractStructuredFields(text, sections),
     metadata: {
       pageCount: result.total,
       wordCount: countWords(text),
@@ -139,9 +151,11 @@ async function parseDocx(buffer: Buffer): Promise<ParsedResume | null> {
   const text = normalizeText(result.value)
   if (!text) return null
 
+  const sections = extractSections(text)
   return {
     text,
-    sections: extractSections(text),
+    sections,
+    structured: extractStructuredFields(text, sections),
     metadata: {
       pageCount: null, // DOCX doesn't have pages
       wordCount: countWords(text),
@@ -170,9 +184,11 @@ async function parseDoc(buffer: Buffer): Promise<ParsedResume | null> {
   const text = normalizeText(rawText)
   if (!text) return null
 
+  const sections = extractSections(text)
   return {
     text,
-    sections: extractSections(text),
+    sections,
+    structured: extractStructuredFields(text, sections),
     metadata: {
       pageCount: null,
       wordCount: countWords(text),
@@ -312,6 +328,33 @@ function extractSections(text: string): ResumeSection[] {
   return sections
 }
 
+// ─── Structured Field Extraction ──────────────────────────────────
+
+const EMAIL_PATTERN = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+// Loosely matches common phone formats: +1 (555) 123-4567, 555.123.4567, etc.
+// Requires 7-15 digits total to avoid matching dates, zip codes, or IDs.
+const PHONE_PATTERN = /(\+?\d[\d\s().-]{6,}\d)/
+
+/**
+ * Best-effort structured field extraction — a candidate's email/phone from
+ * the raw text via regex, and a skills list via the same taxonomy-based
+ * matcher used to auto-fill candidate.skills on upload (see
+ * server/api/me/documents/index.post.ts) — one skill-extraction mechanism,
+ * reused here so this field reflects exactly what auto-fill would apply.
+ */
+function extractStructuredFields(text: string, _sections: ResumeSection[]): ParsedResumeStructured {
+  const emailMatch = text.match(EMAIL_PATTERN)
+  const phoneMatch = text.match(PHONE_PATTERN)
+  const phoneDigits = phoneMatch?.[0]?.replace(/\D/g, '') ?? ''
+
+  return {
+    email: emailMatch?.[0] ?? null,
+    // 7-15 digits covers most real phone numbers while excluding short numeric noise
+    phone: phoneDigits.length >= 7 && phoneDigits.length <= 15 ? phoneMatch![0].trim() : null,
+    skills: extractSkillsFromText(text),
+  }
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────
 
 function countWords(text: string): number {
@@ -328,6 +371,33 @@ function countWords(text: string): number {
  * @param parsedContent - The raw JSONB value from document.parsedContent
  * @returns The extracted text, or null if no content is available
  */
+/**
+ * Normalize a raw parsedContent JSONB value for API responses. Documents
+ * parsed before the `structured` field was added only have
+ * { text, sections, metadata } — this backfills empty structured defaults
+ * so every caller can rely on the field being present, instead of scattering
+ * optional-chaining across every UI that reads it.
+ */
+export function normalizeParsedContent(parsedContent: unknown): ParsedResume | null {
+  if (!parsedContent || typeof parsedContent !== 'object') return null
+  const raw = parsedContent as Partial<ParsedResume>
+  if (typeof raw.text !== 'string') return null
+
+  return {
+    text: raw.text,
+    sections: raw.sections ?? [],
+    structured: raw.structured ?? { email: null, phone: null, skills: [] },
+    metadata: raw.metadata ?? {
+      pageCount: null,
+      wordCount: countWords(raw.text),
+      characterCount: raw.text.length,
+      extractedAt: new Date(0).toISOString(),
+      parserVersion: 'unknown',
+      sourceFormat: 'pdf',
+    },
+  }
+}
+
 export function extractResumeText(parsedContent: unknown): string | null {
   if (!parsedContent) return null
 

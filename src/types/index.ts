@@ -491,11 +491,36 @@ export interface ApiPreferences {
   notifyInterviews: boolean
 }
 
+export interface ResumeSection {
+  heading: string
+  content: string
+}
+
+export interface ParsedResumeStructured {
+  email: string | null
+  phone: string | null
+  skills: string[]
+}
+
+export interface ParsedResume {
+  text: string
+  sections: ResumeSection[]
+  structured: ParsedResumeStructured
+  metadata: {
+    pageCount: number | null
+    wordCount: number
+    characterCount: number
+    extractedAt: string
+    parserVersion: string
+    sourceFormat: "pdf" | "docx" | "doc"
+  }
+}
+
 export interface ApiDocument {
   id: string
   originalFilename: string
   mimeType: string
   sizeBytes: number
   createdAt: string
-  parsedContent?: string | null
+  parsedContent?: ParsedResume | null
 }

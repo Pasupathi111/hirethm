@@ -6,6 +6,7 @@ import { EmptyState } from "@/components/feedback/EmptyState"
 import { ErrorState } from "@/components/feedback/ErrorState"
 import { Skeleton } from "@/components/feedback/Skeleton"
 import { SectionCard } from "@/components/cards/SectionCard"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { ApiError, api } from "@/lib/api"
 import type { ApiDocument } from "@/types"
@@ -143,13 +144,44 @@ export function Resume() {
 
       {documents.some((d) => d.parsedContent) && (
         <SectionCard title="What HireThm extracted">
-          <div className="space-y-4">
+          <div className="space-y-6">
             {documents
               .filter((d) => d.parsedContent)
               .map((d) => (
                 <div key={d.id}>
                   <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">{d.originalFilename}</p>
-                  <p className="mt-2 whitespace-pre-wrap text-sm text-muted-foreground">{d.parsedContent}</p>
+
+                  {d.parsedContent!.structured.skills.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-xs text-muted-foreground">
+                        Detected skills — already added to your profile:
+                      </p>
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {d.parsedContent!.structured.skills.map((skill) => (
+                          <Badge key={skill} variant="outline">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {(d.parsedContent!.structured.email || d.parsedContent!.structured.phone) && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      Detected contact info: {[d.parsedContent!.structured.email, d.parsedContent!.structured.phone].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
+
+                  {d.parsedContent!.sections.length > 0 && (
+                    <div className="mt-3 space-y-3">
+                      {d.parsedContent!.sections.map((section) => (
+                        <div key={section.heading}>
+                          <p className="text-xs font-semibold text-foreground">{section.heading}</p>
+                          <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-sm text-muted-foreground">{section.content}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
           </div>
