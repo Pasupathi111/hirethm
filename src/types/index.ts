@@ -305,6 +305,7 @@ export interface ApiJob {
   salaryMin?: number | null
   salaryMax?: number | null
   validThrough?: string | null
+  skills?: string[]
   createdAt: string
   updatedAt: string
   pipeline: ApiJobPipeline

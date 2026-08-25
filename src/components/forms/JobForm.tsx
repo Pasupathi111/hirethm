@@ -37,6 +37,7 @@ export interface JobFormValues {
   salaryMax: string
   closingDate: string
   description: string
+  skills: string[]
 }
 
 export function useJobFormState(initial?: Partial<JobFormValues>) {
@@ -49,9 +50,10 @@ export function useJobFormState(initial?: Partial<JobFormValues>) {
   const [salaryMax, setSalaryMax] = useState(initial?.salaryMax ?? "")
   const [closingDate, setClosingDate] = useState(initial?.closingDate ?? "")
   const [description, setDescription] = useState(initial?.description ?? "")
+  const [skills, setSkills] = useState<string[]>(initial?.skills ?? [])
 
   return {
-    values: { title, location, type, remoteStatus, experienceLevel, salaryMin, salaryMax, closingDate, description },
+    values: { title, location, type, remoteStatus, experienceLevel, salaryMin, salaryMax, closingDate, description, skills },
     setTitle,
     setLocation,
     setType,
@@ -61,6 +63,7 @@ export function useJobFormState(initial?: Partial<JobFormValues>) {
     setSalaryMax,
     setClosingDate,
     setDescription,
+    setSkills,
   }
 }
 
