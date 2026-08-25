@@ -43,7 +43,7 @@ export function AdminPaymentDetail() {
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">Status</p>
           <p className="mt-1">
             <StatusBadge status={payment.status} className="text-base" />
@@ -54,8 +54,8 @@ export function AdminPaymentDetail() {
       </div>
 
       {employer && (
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="font-bold">Employer account</h2>
+        <div className="rounded-lg border border-border bg-card p-6">
+          <h2>Employer account</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {employer.domain} · {employer.recruiters} recruiters · {employer.activeJobs} active jobs · {employer.usage}% of plan quota used
           </p>

@@ -56,12 +56,12 @@ export function CreateProfile() {
 
         <div className="mx-auto grid max-w-5xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_320px] lg:items-start">
           <div>
-            <p className="text-xs font-bold tracking-wide text-primary uppercase">Step 1 of 5</p>
-            <h1 className="mt-2 text-4xl font-extrabold tracking-tight">Create your account</h1>
+            <p className="eyebrow">Step 1 of 5</p>
+            <h1 className="mt-2 text-4xl">Create your account</h1>
             <p className="mt-3 text-muted-foreground">One profile. Reusable across every employer.</p>
 
             <form
-              className="mt-8 space-y-5 rounded-2xl border border-border bg-card p-6"
+              className="mt-8 space-y-5 rounded-lg border border-border bg-card p-6"
               onSubmit={(e) => {
                 e.preventDefault()
                 next()
@@ -102,7 +102,7 @@ export function CreateProfile() {
             </form>
           </div>
 
-          <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="rounded-lg border border-border bg-card p-6">
             <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Onboarding</p>
             <div className="mt-4">
               <Stepper steps={steps} current={1} orientation="vertical" />
@@ -123,10 +123,10 @@ export function CreateProfile() {
 
         <Stepper steps={steps} current={step} orientation="horizontal" />
 
-        <div className="mx-auto mt-10 max-w-2xl rounded-2xl border border-border bg-card p-6 sm:p-8">
+        <div className="mx-auto mt-10 max-w-2xl rounded-lg border border-border bg-card p-6 sm:p-8">
           {step === 2 && (
             <>
-              <h2 className="text-2xl font-extrabold">Tell us about your work</h2>
+              <h2 className="text-2xl">Tell us about your work</h2>
               <p className="mt-2 text-muted-foreground">
                 This becomes your reusable HireThm profile. Employers never see it without your consent.
               </p>
@@ -157,12 +157,12 @@ export function CreateProfile() {
 
           {step === 3 && (
             <>
-              <h2 className="text-2xl font-extrabold">Upload your CV</h2>
+              <h2 className="text-2xl">Upload your CV</h2>
               <p className="mt-2 text-muted-foreground">
                 HireThm extracts your experience and skills, and shows you exactly what it read.
               </p>
-              <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border py-16 text-center">
-                <div className="flex size-14 items-center justify-center rounded-2xl bg-accent">
+              <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border py-16 text-center">
+                <div className="flex size-14 items-center justify-center rounded-lg bg-accent">
                   <Upload className="size-6 text-accent-foreground" />
                 </div>
                 <p className="font-bold">Upload your resume</p>
@@ -173,7 +173,7 @@ export function CreateProfile() {
 
           {step === 4 && (
             <>
-              <h2 className="text-2xl font-extrabold">What are you looking for?</h2>
+              <h2 className="text-2xl">What are you looking for?</h2>
               <p className="mt-2 text-muted-foreground">Preferences drive five of the eight Mutual Readiness criteria.</p>
 
               <div className="mt-6 space-y-6">
@@ -211,13 +211,13 @@ export function CreateProfile() {
 
           {step === 5 && (
             <div className="py-6 text-center">
-              <h2 className="text-2xl font-extrabold">You're all set</h2>
+              <h2 className="text-2xl">You're all set</h2>
               <p className="mt-2 text-muted-foreground">Your profile is complete and matching is active.</p>
 
-              <div className="mx-auto mt-8 flex size-16 items-center justify-center rounded-2xl bg-accent">
+              <div className="mx-auto mt-8 flex size-16 items-center justify-center rounded-lg bg-accent">
                 <Check className="size-8 text-accent-foreground" />
               </div>
-              <h3 className="mt-4 text-xl font-bold">Your profile is live</h3>
+              <h3 className="mt-4 text-xl">Your profile is live</h3>
               <p className="mx-auto mt-2 max-w-sm text-muted-foreground">
                 HireThm will start scoring you against open roles tonight. You will hear about a match before any
                 employer sees you.

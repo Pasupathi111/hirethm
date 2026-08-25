@@ -12,7 +12,7 @@ export function AdminPlans() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Plans</h1>
+        <h1 className="text-3xl">Plans</h1>
         <p className="mt-1 text-muted-foreground">Commercial plans available to employer organizations.</p>
       </div>
 
@@ -23,9 +23,9 @@ export function AdminPlans() {
         animate="show"
       >
         {plans.map((plan) => (
-          <motion.div key={plan.id} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-2xl border border-border bg-card p-6">
+          <motion.div key={plan.id} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-lg border border-border bg-card p-6">
             <p className="font-bold">{plan.name}</p>
-            <p className="mt-2 text-3xl font-extrabold">
+            <p className="font-display mt-2 text-3xl font-semibold tracking-[-0.02em]">
               {plan.price}
               <span className="text-base font-medium text-muted-foreground">{plan.billingPeriod}</span>
             </p>

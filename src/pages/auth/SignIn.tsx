@@ -26,11 +26,11 @@ export function SignIn() {
         initial="hidden"
         animate="show"
       >
-        <h1 className="text-3xl font-extrabold">Welcome back</h1>
+        <h1 className="text-3xl">Welcome back</h1>
         <p className="mt-2 text-muted-foreground">Sign in to your HireThm profile.</p>
 
         <form
-          className="mt-8 space-y-5 rounded-2xl border border-border bg-card p-6 text-left shadow-sm"
+          className="mt-8 space-y-5 rounded-lg border border-border bg-card p-6 text-left"
           onSubmit={(e) => {
             e.preventDefault()
             navigate("/app")

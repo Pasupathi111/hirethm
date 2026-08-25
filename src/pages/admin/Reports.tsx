@@ -18,13 +18,13 @@ export function AdminReports() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Reports</h1>
+        <h1 className="text-3xl">Reports</h1>
         <p className="mt-1 text-muted-foreground">Generated exports for finance, compliance and growth teams.</p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card">
+      <div className="rounded-lg border border-border bg-card">
         <motion.div
-          className="divide-y divide-border"
+          className="divide-y divide-hairline"
           variants={withReducedMotion(reduced, staggerContainer)}
           initial="hidden"
           animate="show"
@@ -32,7 +32,7 @@ export function AdminReports() {
           {reports.map((r) => (
             <motion.div key={r.name} variants={withReducedMotion(reduced, fadeInUp)} className="flex flex-wrap items-center justify-between gap-4 p-5">
               <div className="flex items-center gap-3">
-                <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
+                <div className="flex size-10 items-center justify-center rounded-md bg-muted">
                   <FileText className="size-5" />
                 </div>
                 <div>

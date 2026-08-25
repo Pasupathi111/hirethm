@@ -20,11 +20,11 @@ export function AdminAIManagement() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">AI management</h1>
+        <h1 className="text-3xl">AI management</h1>
         <p className="mt-1 text-muted-foreground">Control which AI pipelines are active and which provider serves them.</p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
+      <div className="rounded-lg border border-border bg-card p-6">
         <SettingRow
           label="AI provider"
           description="Elevated latency reported on the primary provider."
@@ -42,8 +42,8 @@ export function AdminAIManagement() {
         />
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-bold">Pipelines</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2>Pipelines</h2>
         <div className="mt-2">
           {models.map((m, i) => (
             <SettingRow

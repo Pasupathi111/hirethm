@@ -30,7 +30,7 @@ export function AdminDetailHeader({
             <AvatarFallback className="text-lg">{initials}</AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-2xl font-extrabold">{name}</h1>
+            <h1 className="text-2xl">{name}</h1>
             <p className="text-sm text-muted-foreground">{meta}</p>
           </div>
         </div>

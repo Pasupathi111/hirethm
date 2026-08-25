@@ -64,10 +64,10 @@ export function Home() {
             <Badge variant="primary" className="mb-6">
               <span className="size-1.5 rounded-full bg-primary" /> Candidate-first matching
             </Badge>
-            <h1 className="text-5xl font-extrabold tracking-tight text-balance sm:text-6xl">
+            <h1 className="text-5xl text-balance sm:text-6xl">
               Find work that fits you.
             </h1>
-            <p className="mt-5 max-w-md text-lg text-muted-foreground">
+            <p className="mt-5 max-w-md text-lg text-ink-70">
               Discover opportunities matched to your skills, experience and career goals.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
@@ -84,16 +84,16 @@ export function Home() {
             variants={withReducedMotion(reduced, fadeInUp)}
             initial="hidden"
             animate="show"
-            className="rounded-2xl border border-border bg-card p-6 shadow-lg"
+            className="rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]"
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-bold tracking-wide text-primary uppercase">Mutual Readiness</p>
+              <p className="eyebrow">Mutual Readiness</p>
               <p className="text-xs text-muted-foreground">Match #8291</p>
             </div>
             <div className="mt-4 flex items-center gap-4">
               <ReadinessRing value={91} label="Ready" size={88} strokeWidth={7} />
               <div>
-                <h3 className="text-lg font-bold">Senior Product Engineer</h3>
+                <h3 className="text-lg">Senior Product Engineer</h3>
                 <p className="text-sm text-muted-foreground">ABC Technologies · Remote</p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {["React", "TypeScript", "Node.js"].map((s) => (
@@ -127,8 +127,8 @@ export function Home() {
       {/* How it works */}
       <section id="how-it-works" className="border-t border-border py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <p className="text-xs font-bold tracking-wide text-primary uppercase">How HireThm works</p>
-          <h2 className="mt-2 max-w-2xl text-4xl font-extrabold tracking-tight text-balance">
+          <p className="eyebrow">How HireThm works</p>
+          <h2 className="mt-2 max-w-2xl text-4xl text-balance">
             A profile you own, matched to work worth your time.
           </h2>
 
@@ -140,11 +140,11 @@ export function Home() {
             viewport={{ once: true, margin: "-80px" }}
           >
             {howItWorks.map((item) => (
-              <motion.div key={item.step} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-2xl border border-border bg-card p-6">
-                <div className="flex size-9 items-center justify-center rounded-full bg-secondary text-sm font-bold text-secondary-foreground">
+              <motion.div key={item.step} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-lg border border-border bg-card p-6">
+                <div className="font-display flex size-9 items-center justify-center rounded-full bg-secondary text-sm font-semibold text-secondary-foreground">
                   {item.step}
                 </div>
-                <h3 className="mt-4 text-lg font-bold">{item.title}</h3>
+                <h3 className="mt-4 text-lg">{item.title}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{item.description}</p>
               </motion.div>
             ))}
@@ -156,10 +156,10 @@ export function Home() {
       <section id="for-candidates" className="border-t border-border py-20">
         <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
           <div>
-            <h2 className="text-4xl font-extrabold tracking-tight text-balance">
+            <h2 className="text-4xl text-balance">
               Nothing happens until you say yes.
             </h2>
-            <p className="mt-4 text-muted-foreground">
+            <p className="mt-4 text-ink-70">
               HireThm notifies you of a match before the employer receives any visibility into your profile. Consent
               is a recorded step in the hiring process, not a setting buried in an account page.
             </p>
@@ -175,8 +175,8 @@ export function Home() {
             </ul>
           </div>
 
-          <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
-            <p className="text-xs font-bold tracking-wide text-white/60 uppercase">Consent state machine</p>
+          <div className="rounded-xl bg-secondary p-6 text-secondary-foreground">
+            <p className="text-xs font-bold tracking-wide text-mint uppercase">Consent state machine</p>
             <div className="mt-4 space-y-5">
               {consentStates.map((state, i) => (
                 <div key={state.key} className="relative flex gap-3 pl-1">
@@ -216,8 +216,8 @@ export function Home() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-bold tracking-wide text-primary uppercase">Featured jobs</p>
-              <h2 className="mt-2 text-4xl font-extrabold tracking-tight">Roles hiring this week</h2>
+              <p className="eyebrow">Featured jobs</p>
+              <h2 className="mt-2 text-4xl">Roles hiring this week</h2>
             </div>
             <Button asChild variant="outline">
               <Link to="/jobs">
@@ -244,10 +244,10 @@ export function Home() {
 
       {/* CTA */}
       <section className="px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl overflow-hidden rounded-3xl bg-gradient-to-br from-secondary to-emerald-950 p-10 sm:p-14">
+        <div className="mx-auto max-w-7xl overflow-hidden rounded-2xl bg-secondary p-10 sm:p-14">
           <div className="flex flex-wrap items-center justify-between gap-8">
             <div className="max-w-lg">
-              <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              <h2 className="text-3xl text-white sm:text-4xl">
                 Build the profile once. Get matched for years.
               </h2>
               <p className="mt-3 text-white/60">Free for candidates. Your data, your decisions, always.</p>

@@ -30,7 +30,7 @@ export function AdminTopbar({ title }: { title?: string }) {
       </div>
 
       <div className="ml-auto flex items-center gap-4">
-        <span className="hidden items-center gap-1.5 text-sm font-semibold text-amber-600 sm:flex">
+        <span className="hidden items-center gap-1.5 text-sm font-semibold text-warning sm:flex">
           <AlertTriangle className="size-4" />
           2 services degraded
         </span>

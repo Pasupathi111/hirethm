@@ -69,7 +69,7 @@ function FiltersContent({
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-bold">Filters</h2>
+        <h2 className="text-lg">Filters</h2>
         <button
           type="button"
           className="text-sm font-semibold text-primary"
@@ -190,7 +190,7 @@ export function FindJobs({ basePath = "/jobs" }: { basePath?: string }) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-extrabold tracking-tight">Open roles on HireThm</h1>
+      <h1 className="text-4xl">Open roles on HireThm</h1>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <div className="relative flex-1">

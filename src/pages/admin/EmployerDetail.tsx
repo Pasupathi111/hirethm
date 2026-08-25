@@ -31,7 +31,7 @@ export function AdminEmployerDetail() {
       />
 
       <div className="grid gap-4 sm:grid-cols-4">
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">Plan</p>
           <p className="mt-1"><StatusBadge status={employer.plan} className="text-base" /></p>
         </div>
@@ -80,13 +80,13 @@ export function AdminEmployerDetail() {
         </TabsContent>
 
         <TabsContent value="recruiters">
-          <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
             {employer.recruiters} recruiter seats provisioned for {employer.company}.
           </div>
         </TabsContent>
 
         <TabsContent value="billing">
-          <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
             Current plan: {employer.plan} · {employer.usage}% of monthly quota used · Renews on the 1st of each month.
           </div>
         </TabsContent>

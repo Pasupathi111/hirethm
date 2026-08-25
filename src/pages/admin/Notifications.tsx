@@ -20,13 +20,13 @@ export function AdminNotifications() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Notification templates</h1>
+          <h1 className="text-3xl">Notification templates</h1>
           <p className="mt-1 text-muted-foreground">Platform-wide notification channels sent to candidates and employers.</p>
         </div>
         <Button onClick={() => toast.success("Templates saved")}>Save changes</Button>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
+      <div className="rounded-lg border border-border bg-card p-6">
         {rows.map((row, i) => (
           <SettingRow
             key={row.name}

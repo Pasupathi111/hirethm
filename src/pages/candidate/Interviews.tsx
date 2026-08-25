@@ -26,7 +26,7 @@ export function Interviews() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">My interviews</h1>
+        <h1 className="text-3xl">My interviews</h1>
         <p className="mt-1 text-muted-foreground">You choose the slot. Nothing is booked without your confirmation.</p>
       </div>
 
@@ -50,10 +50,10 @@ export function Interviews() {
           <motion.div
             key={interview.id}
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="flex flex-wrap items-center gap-5 rounded-2xl border border-border bg-card p-6"
+            className="flex flex-wrap items-center gap-5 rounded-lg border border-border bg-card p-6"
           >
             <div className="flex size-16 shrink-0 flex-col items-center justify-center rounded-2xl bg-secondary text-secondary-foreground">
-              <span className="text-lg font-extrabold leading-none">{interview.date.split(" ")[0]}</span>
+              <span className="text-lg font-display font-semibold tracking-[-0.02em] leading-none">{interview.date.split(" ")[0]}</span>
               <span className="text-[10px] font-bold tracking-wide uppercase">{interview.date.split(" ")[1]}</span>
             </div>
             <div className="min-w-0 flex-1">
@@ -61,7 +61,7 @@ export function Interviews() {
                 <p className="text-xs font-bold text-primary">{interview.type}</p>
                 <StatusBadge status={interview.status} />
               </div>
-              <h2 className="text-lg font-bold">{interview.title}</h2>
+              <h2 className="text-lg">{interview.title}</h2>
               <p className="text-sm text-muted-foreground">
                 {interview.company} · {interview.date} 2026 · {interview.time} · {interview.location}
               </p>

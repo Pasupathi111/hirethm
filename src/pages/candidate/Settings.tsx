@@ -30,7 +30,7 @@ export function Settings() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-extrabold tracking-tight">Settings</h1>
+      <h1 className="text-3xl">Settings</h1>
 
       <Tabs defaultValue="account">
         <TabsList>
@@ -42,9 +42,9 @@ export function Settings() {
         </TabsList>
 
         <TabsContent value="account">
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <h2 className="text-lg font-bold">Account</h2>
-            <div className="mt-4 divide-y divide-border">
+          <div className="rounded-lg border border-border bg-card p-6">
+            <h2 className="text-lg">Account</h2>
+            <div className="mt-4 divide-y divide-hairline">
               <SettingRow label="Email address" description={candidateProfile.email} control={<Switch checked disabled />} />
               <SettingRow
                 label="Phone number"
@@ -66,8 +66,8 @@ export function Settings() {
 
         <TabsContent value="security">
           <div className="space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="text-lg font-bold">Password</h2>
+            <div className="rounded-lg border border-border bg-card p-6">
+              <h2 className="text-lg">Password</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="current-pw">Current password</Label>
@@ -82,7 +82,7 @@ export function Settings() {
                 Update password
               </Button>
             </div>
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="rounded-lg border border-border bg-card p-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-semibold">Two-factor authentication</p>
@@ -97,9 +97,9 @@ export function Settings() {
         </TabsContent>
 
         <TabsContent value="notifications">
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <h2 className="text-lg font-bold">Notification preferences</h2>
-            <div className="mt-4 divide-y divide-border">
+          <div className="rounded-lg border border-border bg-card p-6">
+            <h2 className="text-lg">Notification preferences</h2>
+            <div className="mt-4 divide-y divide-hairline">
               <SettingRow
                 label="New match alerts"
                 description="Get notified when a new AI match is found"
@@ -116,8 +116,8 @@ export function Settings() {
 
         <TabsContent value="privacy">
           <div className="space-y-6">
-            <div className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="text-lg font-bold">Profile visibility</h2>
+            <div className="rounded-lg border border-border bg-card p-6">
+              <h2 className="text-lg">Profile visibility</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Your profile is never visible to an employer until you accept a match. This setting controls whether
                 you appear in AI sourcing at all.
@@ -142,12 +142,12 @@ export function Settings() {
               </RadioGroup>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="text-lg font-bold">Consent history</h2>
+            <div className="rounded-lg border border-border bg-card p-6">
+              <h2 className="text-lg">Consent history</h2>
               <p className="mt-1 text-sm text-muted-foreground">Every visibility decision is recorded and auditable.</p>
               <div className="mt-4 space-y-4">
                 {consentHistory.map((event) => (
-                  <div key={event.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-4 text-sm last:border-0">
+                  <div key={event.id} className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline pb-4 text-sm last:border-0">
                     <span className="text-muted-foreground">{event.timestamp}</span>
                     <Badge variant={consentToneVariant[event.tone]}>{event.event}</Badge>
                     <span className="text-muted-foreground">{event.employer}</span>
@@ -156,8 +156,8 @@ export function Settings() {
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="text-lg font-bold">Your data</h2>
+            <div className="rounded-lg border border-border bg-card p-6">
+              <h2 className="text-lg">Your data</h2>
               <div className="mt-4 flex flex-wrap gap-3">
                 <Button variant="outline" onClick={() => toast("Preparing export", { description: "We'll email a download link shortly." })}>
                   Export my data
@@ -178,7 +178,7 @@ export function Settings() {
         </TabsContent>
 
         <TabsContent value="career">
-          <div className="rounded-2xl border border-border bg-card p-6 text-center text-muted-foreground">
+          <div className="rounded-lg border border-border bg-card p-6 text-center text-muted-foreground">
             Manage your role, skill and salary preferences on the{" "}
             <Link to="/app/preferences" className="font-semibold text-primary">
               Career Preferences

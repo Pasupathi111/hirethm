@@ -17,17 +17,17 @@ export function AdminSignIn() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-secondary px-4 py-16 text-secondary-foreground">
       <div className="flex items-center gap-2">
         <Logo className="text-white" />
-        <Badge variant="dark" className="border border-white/20 bg-white/10 text-emerald-300">
+        <Badge variant="dark" className="border border-white/20 bg-white/10 text-mint">
           ADMIN
         </Badge>
       </div>
 
       <div className="mt-8 w-full max-w-sm text-center">
-        <h1 className="text-3xl font-extrabold text-white">Platform administration</h1>
+        <h1 className="text-3xl text-white">Platform administration</h1>
         <p className="mt-2 text-sm text-white/50">Restricted access. All actions are recorded in the audit log.</p>
 
         <form
-          className="mt-8 space-y-5 rounded-2xl border border-white/10 bg-white/5 p-6 text-left"
+          className="mt-8 space-y-5 rounded-lg border border-white/10 bg-white/5 p-6 text-left"
           onSubmit={(e) => {
             e.preventDefault()
             navigate("/admin")

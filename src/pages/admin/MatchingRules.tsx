@@ -25,14 +25,14 @@ export function AdminMatchingRules() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Matching rules</h1>
+          <h1 className="text-3xl">Matching rules</h1>
           <p className="mt-1 text-muted-foreground">Criteria weighting used to compute the Mutual Readiness Score.</p>
         </div>
         <Button onClick={() => toast.success("Matching rules saved")}>Save changes</Button>
       </div>
 
       {total === 100 ? (
-        <div className="rounded-2xl border border-border bg-muted p-4 text-sm font-semibold text-muted-foreground">
+        <div className="rounded-lg border border-border bg-muted p-4 text-sm font-semibold text-muted-foreground">
           Total weight: {total}%
         </div>
       ) : (
@@ -41,7 +41,7 @@ export function AdminMatchingRules() {
         </Callout>
       )}
 
-      <div className="rounded-2xl border border-border bg-card p-6">
+      <div className="rounded-lg border border-border bg-card p-6">
         <div className="space-y-6">
           {weights.map((w, i) => (
             <div key={w.key}>

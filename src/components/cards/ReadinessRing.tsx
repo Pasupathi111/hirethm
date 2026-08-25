@@ -24,7 +24,7 @@ export function ReadinessRing({
   return (
     <div className={cn("relative inline-flex items-center justify-center", className)} style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--color-muted)" strokeWidth={strokeWidth} />
+        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--hairline)" strokeWidth={strokeWidth} />
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -40,7 +40,7 @@ export function ReadinessRing({
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-extrabold leading-none">{value}%</span>
+        <span className="font-display text-2xl leading-none font-semibold tracking-[-0.02em]">{value}%</span>
         {label && <span className="mt-1 text-[10px] font-bold tracking-wide text-muted-foreground uppercase">{label}</span>}
       </div>
     </div>

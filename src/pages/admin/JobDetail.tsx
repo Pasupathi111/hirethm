@@ -31,7 +31,7 @@ export function AdminJobDetail() {
       />
 
       <div className="grid gap-4 sm:grid-cols-4">
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">Status</p>
           <p className="mt-1"><StatusBadge status={job.status} className="text-base" /></p>
         </div>
@@ -48,12 +48,12 @@ export function AdminJobDetail() {
         </TabsList>
 
         <TabsContent value="details" className="space-y-4">
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <h2 className="font-bold">About the role</h2>
+          <div className="rounded-lg border border-border bg-card p-6">
+            <h2>About the role</h2>
             <p className="mt-2 text-sm text-muted-foreground">{job.about}</p>
           </div>
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <h2 className="font-bold">Skills</h2>
+          <div className="rounded-lg border border-border bg-card p-6">
+            <h2>Skills</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {job.skills.map((s) => (
                 <Badge key={s} variant="outline">
@@ -65,14 +65,14 @@ export function AdminJobDetail() {
         </TabsContent>
 
         <TabsContent value="ai">
-          <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
             AI status: <StatusBadge status={job.aiStatus} /> · Extracted {job.requirements.length} requirements and{" "}
             {job.skills.length} skills from the job description.
           </div>
         </TabsContent>
 
         <TabsContent value="applications">
-          <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border bg-card p-6 text-sm text-muted-foreground">
             {job.applications} applications received · {job.matches} AI matches generated.
           </div>
         </TabsContent>

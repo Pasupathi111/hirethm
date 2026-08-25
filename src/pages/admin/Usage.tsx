@@ -13,7 +13,7 @@ export function AdminUsage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Usage</h1>
+        <h1 className="text-3xl">Usage</h1>
         <p className="mt-1 text-muted-foreground">Platform and per-employer resource consumption this billing cycle.</p>
       </div>
 
@@ -34,8 +34,8 @@ export function AdminUsage() {
         </motion.div>
       </motion.div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-bold">Plan usage by employer</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Plan usage by employer</h2>
         <p className="mt-1 text-sm text-muted-foreground">Percentage of monthly job posting quota consumed.</p>
         <div className="mt-5 space-y-4">
           {adminEmployers.map((e) => (

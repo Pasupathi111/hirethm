@@ -9,11 +9,11 @@ export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void })
   return (
     <div className="flex h-full flex-col bg-secondary text-secondary-foreground">
       <div className="flex items-center gap-2 px-6 py-6">
-        <span className="flex size-8 items-center justify-center rounded-lg bg-primary">
+        <span className="flex size-8 items-center justify-center rounded-md bg-primary">
           <span className="size-3 rounded-[3px] bg-white" />
         </span>
-        <span className="text-lg font-extrabold">HireThm</span>
-        <Badge variant="dark" className="border border-white/20 bg-white/10 text-[10px] text-emerald-300">
+        <span className="font-display text-lg font-semibold tracking-[-0.02em]">HireThm</span>
+        <Badge variant="dark" className="border border-white/20 bg-white/10 text-[10px] text-mint">
           ADMIN
         </Badge>
       </div>
@@ -21,7 +21,7 @@ export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void })
         {adminNav.map((group, i) => (
           <div key={i} className={cn(i > 0 && "border-t border-white/10 pt-4")}>
             {group.label && (
-              <p className="mb-2 px-3 text-xs font-bold tracking-wide text-white/40 uppercase">
+              <p className="mb-2 px-3 text-xs font-bold tracking-wide text-slate-label uppercase">
                 {group.label}
               </p>
             )}
@@ -34,7 +34,7 @@ export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void })
                   onClick={onNavigate}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
+                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors duration-200",
                       isActive
                         ? "bg-white/10 text-white"
                         : "text-white/60 hover:bg-white/5 hover:text-white"
@@ -52,7 +52,7 @@ export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void })
       <div className="border-t border-white/10 p-4">
         <Link
           to="/admin/login"
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-white/50 hover:bg-white/5 hover:text-white"
+          className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold text-white/50 hover:bg-white/5 hover:text-white"
         >
           <LogOut className="size-4.5" />
           Sign out

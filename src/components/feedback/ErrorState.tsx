@@ -17,15 +17,15 @@ export function ErrorState({
   return (
     <div
       className={cn(
-        "flex flex-col items-center gap-3 rounded-2xl border border-dashed border-destructive/30 bg-destructive/5 p-12 text-center",
+        "flex flex-col items-center gap-3 rounded-lg border border-dashed border-destructive/30 bg-destructive/5 p-12 text-center",
         className
       )}
     >
-      <div className="flex size-12 items-center justify-center rounded-2xl bg-destructive/10">
+      <div className="flex size-12 items-center justify-center rounded-md bg-destructive/10">
         <AlertCircle className="size-5 text-destructive" />
       </div>
       <div>
-        <p className="font-bold">{title}</p>
+        <p className="font-display font-semibold tracking-[-0.02em]">{title}</p>
         {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
       </div>
       {onRetry && (

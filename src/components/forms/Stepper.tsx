@@ -27,7 +27,7 @@ export function Stepper({
             {i < steps.length - 1 && <span className="absolute top-9 left-[15px] h-full w-px bg-border" />}
             <div
               className={cn(
-                "z-10 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-bold transition-colors",
+                "z-10 flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold transition-colors",
                 step.number < current
                   ? "bg-primary text-primary-foreground"
                   : step.number === current
@@ -38,7 +38,7 @@ export function Stepper({
               {step.number < current ? <Check className="size-4" /> : step.number}
             </div>
             <div>
-              <p className="text-sm font-bold">{step.title}</p>
+              <p className="text-sm font-semibold">{step.title}</p>
               {step.description && <p className="text-xs text-muted-foreground">{step.description}</p>}
             </div>
           </div>
@@ -54,7 +54,7 @@ export function Stepper({
           <div className="flex flex-col items-center gap-2 text-center">
             <div
               className={cn(
-                "flex size-9 items-center justify-center rounded-full text-sm font-bold transition-colors",
+                "flex size-9 items-center justify-center rounded-full text-sm font-semibold transition-colors",
                 step.number < current
                   ? "bg-primary text-primary-foreground"
                   : step.number === current

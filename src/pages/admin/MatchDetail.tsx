@@ -51,12 +51,12 @@ export function AdminMatchDetail() {
       />
 
       <div className="grid gap-6 lg:grid-cols-[220px_1fr]">
-        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-card p-6 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 rounded-lg border border-border bg-card p-6 text-center">
           <ReadinessRing value={match.readiness} label="Mutual Readiness" />
           <StatusBadge status={match.status} />
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-6">
+        <div className="rounded-lg border border-border bg-card p-6">
           {detail ? (
             <>
               <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Why HireThm matched them</p>

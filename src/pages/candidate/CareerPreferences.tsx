@@ -33,7 +33,7 @@ export function CareerPreferences() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Career preferences</h1>
+          <h1 className="text-3xl">Career preferences</h1>
           <p className="mt-1 text-muted-foreground">These preferences help HireThm improve your job recommendations.</p>
         </div>
         <Button onClick={() => toast.success("Preferences saved")}>Save changes</Button>
@@ -80,7 +80,7 @@ export function CareerPreferences() {
           <SectionCard title="Salary expectation" description="Base salary, USD per year. Used for the Salary Fit criterion." animate={false}>
             <div className="flex items-center gap-4">
               <Slider value={salary} onValueChange={setSalary} min={60000} max={300000} step={5000} className="flex-1" />
-              <span className="w-24 shrink-0 text-right font-bold">${(salary[0] / 1000).toFixed(0)}K</span>
+              <span className="w-24 shrink-0 text-right font-display font-semibold tracking-[-0.02em]">${(salary[0] / 1000).toFixed(0)}K</span>
             </div>
           </SectionCard>
         </motion.div>

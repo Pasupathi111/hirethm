@@ -51,7 +51,7 @@ export function Applications() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">My applications</h1>
+        <h1 className="text-3xl">My applications</h1>
         <p className="mt-1 text-muted-foreground">Roles you applied to directly. AI matches are tracked separately under My Matches.</p>
       </div>
 
@@ -75,7 +75,7 @@ export function Applications() {
           <motion.div
             key={app.id}
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="rounded-2xl border border-border bg-card p-6"
+            className="rounded-lg border border-border bg-card p-6"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -83,7 +83,7 @@ export function Applications() {
                   <AvatarFallback className={`${app.companyColor} text-white`}>{app.companyInitials}</AvatarFallback>
                 </Avatar>
                 <div>
-                  <h2 className="font-bold">{app.title}</h2>
+                  <h2>{app.title}</h2>
                   <p className="text-sm text-muted-foreground">
                     {app.company} · Applied {app.appliedAt}
                   </p>

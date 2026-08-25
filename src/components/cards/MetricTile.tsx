@@ -26,20 +26,20 @@ export function MetricTile({
       initial="hidden"
       whileInView="show"
       viewport={{ once: true, margin: "-20px" }}
-      className={cn("rounded-2xl border border-border bg-card p-5", className)}
+      className={cn("rounded-lg border border-border bg-card p-5", className)}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">{label}</p>
         {Icon && <Icon className="size-4 shrink-0 text-muted-foreground" />}
       </div>
-      <p className="mt-1 text-2xl font-extrabold">{value}</p>
+      <p className="font-display mt-1 text-2xl font-semibold tracking-[-0.02em]">{value}</p>
       {hint && (
         <p
           className={cn(
             "mt-1 text-xs font-semibold",
-            tone === "positive" && "text-emerald-600",
-            tone === "negative" && "text-red-600",
-            tone === "warning" && "text-amber-600",
+            tone === "positive" && "text-primary",
+            tone === "negative" && "text-destructive",
+            tone === "warning" && "text-warning",
             tone === "default" && "text-muted-foreground"
           )}
         >

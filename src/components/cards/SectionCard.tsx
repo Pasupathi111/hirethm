@@ -24,11 +24,11 @@ export function SectionCard({
 
   if (!animate) {
     return (
-      <div className={cn("rounded-2xl border border-border bg-card p-6", className)}>
+      <div className={cn("rounded-lg border border-border bg-card p-6", className)}>
         {hasHeader && (
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              {title && <h2 className="text-lg font-bold">{title}</h2>}
+              {title && <h2 className="text-lg">{title}</h2>}
               {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
             </div>
             {actions}
@@ -41,7 +41,7 @@ export function SectionCard({
 
   return (
     <motion.div
-      className={cn("rounded-2xl border border-border bg-card p-6", className)}
+      className={cn("rounded-lg border border-border bg-card p-6", className)}
       variants={withReducedMotion(reduced, fadeInUp)}
       initial="hidden"
       whileInView="show"

@@ -49,24 +49,24 @@ export function AdminInterviewDetail() {
       />
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">Status</p>
           <p className="mt-1">
             <StatusBadge status={interview.status} className="text-base" />
           </p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">Interview type</p>
-          <p className="mt-1 text-lg font-bold">{interview.type}</p>
+          <p className="font-display mt-1 text-lg font-semibold tracking-[-0.02em]">{interview.type}</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">Date</p>
-          <p className="mt-1 text-lg font-bold">{interview.date}</p>
+          <p className="font-display mt-1 text-lg font-semibold tracking-[-0.02em]">{interview.date}</p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-bold">Schedule</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2>Schedule</h2>
         {detail ? (
           <p className="mt-2 text-sm text-muted-foreground">
             {detail.time} · {detail.location} · Slot {detail.slotConfirmed ? "confirmed by the candidate" : "not yet confirmed"}.

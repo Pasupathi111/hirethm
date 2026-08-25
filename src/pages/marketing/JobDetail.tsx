@@ -29,7 +29,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         <motion.div
-          className="rounded-2xl border border-border bg-card p-6 sm:p-8"
+          className="rounded-lg border border-border bg-card p-6 sm:p-8"
           variants={withReducedMotion(reduced, fadeInUp)}
           initial="hidden"
           animate="show"
@@ -39,7 +39,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
               <AvatarFallback className={`${job.companyColor} text-lg text-white`}>{job.companyInitials}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-3xl font-extrabold">{job.title}</h1>
+              <h1 className="text-3xl">{job.title}</h1>
               <p className="mt-1 text-muted-foreground">
                 {job.company} · {job.workMode} · Posted {job.postedAt}
               </p>
@@ -50,17 +50,17 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
             <Badge>{job.employmentType}</Badge>
             <Badge>{job.experience}</Badge>
           </div>
-          <p className="mt-3 text-xl font-bold text-primary">
+          <p className="mt-3 text-xl font-display font-semibold tracking-[-0.02em] text-primary">
             ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
           </p>
 
           <section className="mt-8">
-            <h2 className="text-xl font-bold">About the role</h2>
+            <h2 className="text-xl">About the role</h2>
             <p className="mt-3 text-muted-foreground">{job.about}</p>
           </section>
 
           <section className="mt-8">
-            <h2 className="text-xl font-bold">Responsibilities</h2>
+            <h2 className="text-xl">Responsibilities</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">
               {job.responsibilities.map((r) => (
                 <li key={r}>{r}</li>
@@ -69,7 +69,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
           </section>
 
           <section className="mt-8">
-            <h2 className="text-xl font-bold">Requirements</h2>
+            <h2 className="text-xl">Requirements</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">
               {job.requirements.map((r) => (
                 <li key={r}>{r}</li>
@@ -78,7 +78,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
           </section>
 
           <section className="mt-8">
-            <h2 className="text-xl font-bold">Benefits</h2>
+            <h2 className="text-xl">Benefits</h2>
             <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">
               {job.benefits.map((b) => (
                 <li key={b}>{b}</li>
@@ -87,7 +87,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
           </section>
 
           <section className="mt-8">
-            <h2 className="text-xl font-bold">Skills</h2>
+            <h2 className="text-xl">Skills</h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {job.skills.map((s) => (
                 <Badge key={s} variant="outline">
@@ -100,7 +100,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
           <hr className="my-8 border-border" />
 
           <section>
-            <h2 className="text-xl font-bold">About {job.company}</h2>
+            <h2 className="text-xl">About {job.company}</h2>
             <p className="mt-3 text-muted-foreground">{job.companyBlurb}</p>
           </section>
         </motion.div>
@@ -111,8 +111,8 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
           initial="hidden"
           animate="show"
         >
-          <div className="sticky top-24 rounded-2xl border border-border bg-card p-6">
-            <p className="text-xl font-extrabold">
+          <div className="sticky top-24 rounded-lg border border-border bg-card p-6">
+            <p className="text-xl font-display font-semibold tracking-[-0.02em]">
               ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
             </p>
             <p className="text-sm text-muted-foreground">Base range · {job.employmentType}</p>
@@ -146,7 +146,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
 
           {candidateMode ? (
             <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
-              <p className="text-xs font-bold tracking-wide text-emerald-400 uppercase">Your match score</p>
+              <p className="text-xs font-bold tracking-wide text-mint uppercase">Your match score</p>
               <div className="mt-3 flex items-center gap-3">
                 <ReadinessRing value={readiness} size={64} strokeWidth={6} />
                 <p className="text-sm text-white/70">
@@ -156,7 +156,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
               <ul className="mt-2 space-y-1">
                 {reasons.map((reason) => (
                   <li key={reason} className="flex items-start gap-1.5 text-sm text-white/70">
-                    <span className="mt-0.5 text-emerald-400">✓</span>
+                    <span className="mt-0.5 text-mint">✓</span>
                     {reason}
                   </li>
                 ))}
@@ -164,7 +164,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
             </div>
           ) : (
             <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
-              <p className="text-xs font-bold tracking-wide text-emerald-400 uppercase">See your match score</p>
+              <p className="text-xs font-bold tracking-wide text-mint uppercase">See your match score</p>
               <p className="mt-2 text-sm text-white/70">
                 Sign in to see how your skills, experience and goals score against this role.
               </p>

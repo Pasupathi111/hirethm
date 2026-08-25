@@ -27,7 +27,7 @@ export function Notifications() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-3xl font-extrabold tracking-tight">Notifications</h1>
+        <h1 className="text-3xl">Notifications</h1>
         <Button
           variant="outline"
           size="sm"
@@ -60,7 +60,7 @@ export function Notifications() {
           <motion.div
             key={n.id}
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card p-5"
+            className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card p-5"
           >
             {n.unread && <span className="size-2 shrink-0 rounded-full bg-primary" />}
             <div className="min-w-0 flex-1">

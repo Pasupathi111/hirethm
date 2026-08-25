@@ -36,7 +36,7 @@ export function AdminDashboard() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Platform overview</h1>
+        <h1 className="text-3xl">Platform overview</h1>
         <p className="mt-1 text-muted-foreground">Week of 17–23 August 2026 · all figures live</p>
       </div>
 
@@ -47,20 +47,20 @@ export function AdminDashboard() {
         animate="show"
       >
         {stats.map((s) => (
-          <motion.div key={s.label} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-2xl border border-border bg-card p-5">
+          <motion.div key={s.label} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-lg border border-border bg-card p-5">
             <p className="text-sm text-muted-foreground">{s.label}</p>
-            <p className="mt-1 text-2xl font-extrabold">{s.value}</p>
-            <p className={`mt-1 text-xs font-semibold ${s.positive ? "text-emerald-600" : "text-red-600"}`}>{s.change}</p>
+            <p className="mt-1 font-display text-2xl font-semibold tracking-[-0.02em]">{s.value}</p>
+            <p className={`mt-1 text-xs font-semibold ${s.positive ? "text-primary" : "text-destructive"}`}>{s.change}</p>
           </motion.div>
         ))}
       </motion.div>
 
       <div className="grid gap-6 lg:grid-cols-3">
         {["Candidate growth", "Employer growth", "Jobs published"].map((label, i) => (
-          <div key={label} className="rounded-2xl border border-border bg-card p-6">
+          <div key={label} className="rounded-lg border border-border bg-card p-6">
             <div className="flex items-center justify-between">
               <p className="font-bold">{label}</p>
-              <p className="text-xl font-extrabold">{[12842, 426, 1284][i].toLocaleString()}</p>
+              <p className="font-display text-xl font-semibold tracking-[-0.02em]">{[12842, 426, 1284][i].toLocaleString()}</p>
             </div>
             <svg viewBox="0 0 200 60" className="mt-4 h-16 w-full">
               <polyline
@@ -81,8 +81,8 @@ export function AdminDashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-6">
-          <h2 className="text-lg font-bold">Match and application funnel</h2>
+        <div className="rounded-lg border border-border bg-card p-6">
+          <h2 className="text-lg">Match and application funnel</h2>
           <p className="mt-1 text-sm text-muted-foreground">Candidate consent sits between match creation and employer visibility.</p>
           <div className="mt-5 space-y-4">
             {funnel.map((f) => (
@@ -100,11 +100,11 @@ export function AdminDashboard() {
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-2xl border border-border bg-card p-6">
-            <h2 className="text-lg font-bold">Needs attention</h2>
+          <div className="rounded-lg border border-border bg-card p-6">
+            <h2 className="text-lg">Needs attention</h2>
             <div className="mt-4 space-y-3">
               {alerts.map((a) => (
-                <div key={a.title} className="flex items-start gap-3 border-b border-border pb-3 last:border-0">
+                <div key={a.title} className="flex items-start gap-3 border-b border-hairline pb-3 last:border-0">
                   <Badge
                     variant={a.level === "Critical" ? "destructive" : a.level === "Error" ? "destructive" : "warning"}
                   >
@@ -122,9 +122,9 @@ export function AdminDashboard() {
             </Button>
           </div>
 
-          <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
-            <p className="text-xs font-bold tracking-wide text-emerald-400 uppercase">Consent integrity</p>
-            <p className="mt-2 text-3xl font-extrabold">0 breaches</p>
+          <div className="rounded-lg bg-secondary p-6 text-secondary-foreground">
+            <p className="text-xs font-bold tracking-wide text-mint uppercase">Consent integrity</p>
+            <p className="mt-2 font-display text-3xl font-semibold tracking-[-0.02em]">0 breaches</p>
             <p className="mt-1 text-sm text-white/60">
               No employer accessed a candidate profile without consent in the last 90 days. 8,291 transitions audited.
             </p>

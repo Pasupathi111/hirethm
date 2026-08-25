@@ -29,7 +29,7 @@ export function CandidateSidebarContent({ onNavigate }: { onNavigate?: () => voi
                   onClick={onNavigate}
                   className={({ isActive }) =>
                     cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors",
+                      "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-semibold transition-colors duration-200",
                       isActive
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "text-muted-foreground hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground"
@@ -45,8 +45,8 @@ export function CandidateSidebarContent({ onNavigate }: { onNavigate?: () => voi
         ))}
       </nav>
       <div className="p-4">
-        <div className="rounded-2xl bg-secondary p-4 text-secondary-foreground">
-          <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase text-emerald-400">
+        <div className="rounded-lg bg-secondary p-4 text-secondary-foreground">
+          <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase text-mint">
             <Sparkles className="size-3.5" /> Free Plan
           </p>
           <p className="mt-2 text-xs text-white/70">3 of 5 profile views used this month</p>

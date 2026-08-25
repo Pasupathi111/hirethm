@@ -16,7 +16,7 @@ export function Recommended() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Recommended for you</h1>
+        <h1 className="text-3xl">Recommended for you</h1>
         <p className="mt-1 text-muted-foreground">Ranked by Mutual Readiness against your profile and preferences.</p>
       </div>
 
@@ -30,13 +30,13 @@ export function Recommended() {
           <motion.div
             key={job.id}
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="flex flex-wrap items-center gap-5 rounded-2xl border border-border bg-card p-6"
+            className="flex flex-wrap items-center gap-5 rounded-lg border border-border bg-card p-6"
           >
             <Avatar className="size-12 shrink-0">
               <AvatarFallback className={`${job.companyColor} text-white`}>{job.companyInitials}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
-              <h2 className="font-bold">{job.title}</h2>
+              <h2>{job.title}</h2>
               <p className="text-sm text-muted-foreground">
                 {job.company} · {job.workMode} · ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
               </p>

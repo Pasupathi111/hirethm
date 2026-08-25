@@ -10,7 +10,7 @@ const columns: AdminColumn<AuditLogEntry>[] = [
   { header: "Action", render: (l) => <span className="font-mono text-xs font-semibold">{l.action}</span> },
   { header: "Resource", render: (l) => `${l.resource} · ${l.resourceId}` },
   { header: "Previous state", render: (l) => <span className="text-muted-foreground">{l.previousState}</span> },
-  { header: "New state", render: (l) => <span className="font-semibold text-emerald-600">{l.newState}</span> },
+  { header: "New state", render: (l) => <span className="font-semibold text-primary">{l.newState}</span> },
 ]
 
 export function AdminAuditLogs() {

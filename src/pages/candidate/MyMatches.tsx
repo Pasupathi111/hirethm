@@ -33,7 +33,7 @@ export function MyMatches() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">My matches</h1>
+        <h1 className="text-3xl">My matches</h1>
         <p className="mt-1 text-muted-foreground">
           HireThm notified you before any employer saw your profile. Your decision controls what happens next.
         </p>
@@ -59,7 +59,7 @@ export function MyMatches() {
           <motion.div
             key={match.id}
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="rounded-2xl border border-border bg-card p-6"
+            className="rounded-lg border border-border bg-card p-6"
           >
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="flex items-center gap-2">
@@ -75,7 +75,7 @@ export function MyMatches() {
                     <AvatarFallback className={`${match.companyColor} text-white`}>{match.companyInitials}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="text-xl font-bold">{match.title}</h2>
+                    <h2 className="text-xl">{match.title}</h2>
                     <p className="text-muted-foreground">{match.company}</p>
                   </div>
                 </div>

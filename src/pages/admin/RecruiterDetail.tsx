@@ -33,15 +33,15 @@ export function AdminRecruiterDetail() {
       />
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="rounded-lg border border-border bg-card p-5">
           <p className="text-sm text-muted-foreground">Status</p>
           <p className="mt-1"><StatusBadge status={recruiter.status} className="text-base" /></p>
         </div>
         <MetricTile label="Active jobs" value={recruiter.activeJobs} />
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-bold">Jobs at {recruiter.employer}</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Jobs at {recruiter.employer}</h2>
         {employerJobs.length > 0 ? (
           <Table className="mt-4">
             <TableHeader>
@@ -70,8 +70,8 @@ export function AdminRecruiterDetail() {
         )}
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-bold">Recent activity</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Recent activity</h2>
         {activity.length > 0 ? (
           <ul className="mt-4 space-y-4">
             {activity.map((log) => (

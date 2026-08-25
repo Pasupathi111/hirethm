@@ -18,13 +18,13 @@ export function StatCard({
   hintClassName?: string
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+    <div className="rounded-lg border border-border bg-card p-5">
       {Icon && (
-        <div className={cn("mb-3 flex size-9 items-center justify-center rounded-lg bg-muted", iconClassName)}>
+        <div className={cn("mb-3 flex size-9 items-center justify-center rounded-md bg-muted", iconClassName)}>
           <Icon className="size-4.5" />
         </div>
       )}
-      <p className="text-3xl font-extrabold">{value}</p>
+      <p className="font-display text-3xl font-semibold tracking-[-0.02em]">{value}</p>
       <p className="mt-1 text-sm font-semibold">{label}</p>
       {hint && <p className={cn("mt-0.5 text-xs text-muted-foreground", hintClassName)}>{hint}</p>}
     </div>

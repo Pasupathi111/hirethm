@@ -41,7 +41,7 @@ function EditableSection({
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between border-b border-border py-3 text-sm last:border-0">
+    <div className="flex items-center justify-between border-b border-hairline py-3 text-sm last:border-0">
       <span className="text-muted-foreground">{label}</span>
       <span className="font-semibold">{value}</span>
     </div>
@@ -54,7 +54,7 @@ export function Profile() {
   return (
     <div className="space-y-6">
       <motion.div
-        className="rounded-2xl border border-border bg-card p-6"
+        className="rounded-lg border border-border bg-card p-6"
         variants={withReducedMotion(reduced, fadeInUp)}
         initial="hidden"
         animate="show"
@@ -64,14 +64,14 @@ export function Profile() {
             <AvatarFallback className="text-2xl">{candidateProfile.initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h1 className="text-2xl font-extrabold">{candidateProfile.name}</h1>
+            <h1 className="text-2xl">{candidateProfile.name}</h1>
             <p className="text-muted-foreground">
               {candidateProfile.title} · {candidateProfile.location}
             </p>
           </div>
           <div className="w-full sm:w-56">
             <div className="mb-1 flex items-center justify-between">
-              <span className="text-2xl font-extrabold">{candidateProfile.completeness}%</span>
+              <span className="text-2xl font-display font-semibold tracking-[-0.02em]">{candidateProfile.completeness}%</span>
               <span className="text-sm text-muted-foreground">complete</span>
             </div>
             <Progress value={candidateProfile.completeness} />
@@ -100,7 +100,7 @@ export function Profile() {
       >
         <div className="space-y-3">
           {candidateProfile.experience.map((exp) => (
-            <div key={exp.role} className="flex items-center justify-between border-b border-border pb-3 text-sm last:border-0 last:pb-0">
+            <div key={exp.role} className="flex items-center justify-between border-b border-hairline pb-3 text-sm last:border-0 last:pb-0">
               <div>
                 <p className="font-semibold">
                   {exp.role} · {exp.company}

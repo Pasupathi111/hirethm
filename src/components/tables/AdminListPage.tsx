@@ -62,7 +62,7 @@ export function AdminListPage<T extends { id: string }>({
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
+          <h1 className="text-3xl">{title}</h1>
           <p className="mt-1 text-muted-foreground">{subtitle}</p>
         </div>
         <div className="flex gap-2">
@@ -92,7 +92,7 @@ export function AdminListPage<T extends { id: string }>({
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors ${
+              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors duration-200 ${
                 tab === t ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
               }`}
             >
@@ -109,7 +109,7 @@ export function AdminListPage<T extends { id: string }>({
           ))}
         </div>
       ) : (
-        <div className="rounded-2xl border border-border bg-card">
+        <div className="rounded-lg border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow>

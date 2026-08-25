@@ -14,12 +14,12 @@ export function AdminPlatformSettings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Platform settings</h1>
+        <h1 className="text-3xl">Platform settings</h1>
         <p className="mt-1 text-muted-foreground">Operational configuration for the HireThm marketplace.</p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-bold">Consent and visibility</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Consent and visibility</h2>
         <div className="mt-2">
           <SettingRow
             label="Candidate-first notification"
@@ -61,8 +61,8 @@ export function AdminPlatformSettings() {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card p-6">
-        <h2 className="font-bold">Matching</h2>
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Matching</h2>
         <div className="mt-2">
           <SettingRow
             label="Minimum readiness to notify"

@@ -15,8 +15,8 @@ const areas: { area: string; access: ("Full" | "Read" | "None")[] }[] = [
 ]
 
 const tone: Record<string, string> = {
-  Full: "text-emerald-600 font-bold",
-  Read: "text-blue-600 font-semibold",
+  Full: "text-primary font-bold",
+  Read: "text-info font-semibold",
   None: "text-muted-foreground",
 }
 
@@ -24,13 +24,13 @@ export function AdminRolesPermissions() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Roles and permissions</h1>
+        <h1 className="text-3xl">Roles and permissions</h1>
         <p className="mt-1 text-muted-foreground">
           Role permission is only one half of access. Tenant scope, resource state and consent rules also apply.
         </p>
       </div>
 
-      <div className="rounded-2xl border border-border bg-card">
+      <div className="rounded-lg border border-border bg-card">
         <Table className="min-w-[720px]">
           <TableHeader>
             <TableRow>

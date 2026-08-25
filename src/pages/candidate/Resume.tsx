@@ -28,14 +28,14 @@ export function Resume() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-extrabold tracking-tight">Resume</h1>
+        <h1 className="text-3xl">Resume</h1>
         <p className="mt-1 text-muted-foreground">
           HireThm reads your CV and shows you exactly what it extracted. Nothing is changed without your approval.
         </p>
       </div>
 
       <div
-        className="flex flex-col items-center justify-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card py-16 text-center"
+        className="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border bg-card py-16 text-center"
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
           e.preventDefault()
@@ -46,7 +46,7 @@ export function Resume() {
           }
         }}
       >
-        <div className="flex size-14 items-center justify-center rounded-2xl bg-accent">
+        <div className="flex size-14 items-center justify-center rounded-lg bg-accent">
           <Upload className="size-6 text-accent-foreground" />
         </div>
         <p className="text-lg font-bold">Upload your resume</p>
@@ -71,9 +71,9 @@ export function Resume() {
       </div>
 
       {fileName && (
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center justify-between rounded-lg border border-border bg-card p-5">
           <div className="flex items-center gap-3">
-            <div className="flex size-10 items-center justify-center rounded-xl bg-muted">
+            <div className="flex size-10 items-center justify-center rounded-md bg-muted">
               <FileText className="size-5" />
             </div>
             <div>
@@ -93,7 +93,7 @@ export function Resume() {
             <ReadinessRing value={score} label="ATS Ready" />
             <div className="flex-1 space-y-2">
               {checklist.map((item) => (
-                <p key={item.label} className={item.ok ? "flex items-start gap-2 text-sm text-emerald-600" : "flex items-start gap-2 text-sm text-amber-600"}>
+                <p key={item.label} className={item.ok ? "flex items-start gap-2 text-sm text-primary" : "flex items-start gap-2 text-sm text-warning"}>
                   <span className="mt-0.5">{item.ok ? "✓" : "!"}</span>
                   <span className="text-foreground">{item.label}</span>
                 </p>
