@@ -86,6 +86,7 @@ const form = ref({
   type: 'full_time' as 'full_time' | 'part_time' | 'contract' | 'internship',
   experienceLevel: 'mid' as 'junior' | 'mid' | 'senior' | 'lead',
   remoteStatus: undefined as 'remote' | 'hybrid' | 'onsite' | undefined,
+  skills: [] as string[],
 })
 
 // Step 2: Application form (client-only for now)
@@ -292,6 +293,7 @@ const formSchema = z.object({
   type: z.enum(['full_time', 'part_time', 'contract', 'internship']),
   experienceLevel: z.enum(['junior', 'mid', 'senior', 'lead']),
   remoteStatus: z.enum(['remote', 'hybrid', 'onsite']).optional(),
+  skills: z.array(z.string().trim().min(1).max(100)).max(50),
 })
 
 const draftQuestionSchema = z.object({
@@ -408,6 +410,7 @@ function resetState() {
     type: 'full_time',
     experienceLevel: 'mid',
     remoteStatus: undefined,
+    skills: [],
   }
   applicationForm.value = {
     phoneRequirement: 'optional',
@@ -667,6 +670,7 @@ async function handleSubmit(mode: 'publish' | 'draft' = publishChoice.value) {
       type: normalizedForm.type,
       experienceLevel: normalizedForm.experienceLevel,
       remoteStatus: normalizedForm.remoteStatus,
+      skills: normalizedForm.skills,
       phoneRequirement: applicationForm.value.phoneRequirement,
       requireResume: applicationForm.value.requireResume,
       requireCoverLetter: applicationForm.value.requireCoverLetter,
@@ -929,6 +933,15 @@ const typeOptions = [
                   class="w-full rounded-lg border px-4 py-3 text-sm text-surface-900 dark:text-surface-100 bg-white dark:bg-surface-900 placeholder:text-surface-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors border-surface-300 dark:border-surface-700"
                 />
                 <p class="mt-1.5 text-xs text-surface-500">A clear description improves AI scoring and attracts better candidates.</p>
+              </div>
+
+              <!-- Skills -->
+              <div>
+                <label for="skills" class="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5">
+                  Required skills
+                </label>
+                <SkillsInput id="skills" v-model="form.skills" />
+                <p class="mt-1.5 text-xs text-surface-500">Used to match and rank candidates — the more specific, the better the match scores.</p>
               </div>
             </section>
 
