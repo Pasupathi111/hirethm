@@ -1,5 +1,6 @@
 import { motion } from "framer-motion"
 import { CalendarCheck2, ListChecks, Sparkles, UserCircle2 } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { StatCard } from "@/components/cards/StatCard"
@@ -9,15 +10,36 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { candidateProfile, jobs, matches } from "@/data/mockData"
+import { api } from "@/lib/api"
 import { useMyCandidate } from "@/lib/candidateSession"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
+import type { ApiRecommendedJob, ApiRemoteStatus } from "@/types"
+
+const remoteStatusLabel: Record<ApiRemoteStatus, string> = {
+  remote: "Remote",
+  hybrid: "Hybrid",
+  onsite: "On-site",
+}
+
+function salaryRange(min?: number | null, max?: number | null) {
+  if (!min && !max) return null
+  if (min && max) return `$${(min / 1000).toFixed(0)}K – $${(max / 1000).toFixed(0)}K`
+  return `$${((min ?? max)! / 1000).toFixed(0)}K`
+}
 
 export function Dashboard() {
   const reduced = useReducedMotion()
   const { candidate, loading, error, refetch } = useMyCandidate()
   const newMatches = matches.filter((m) => m.status === "New")
   const featured = matches[0]
-  const recommended = jobs.slice(0, 4)
+  const [recommended, setRecommended] = useState<ApiRecommendedJob[]>([])
+
+  useEffect(() => {
+    api
+      .get<{ data: ApiRecommendedJob[] }>("/api/me/recommended")
+      .then((res) => setRecommended(res.data.slice(0, 4)))
+      .catch(() => setRecommended([]))
+  }, [])
 
   if (loading) {
     return (
@@ -166,25 +188,35 @@ export function Dashboard() {
             initial="hidden"
             animate="show"
           >
-            {recommended.map((job) => (
-              <motion.div key={job.id} variants={withReducedMotion(reduced, fadeInUp)}>
-                <Link
-                  to={`/app/jobs/${job.id}`}
-                  className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-[var(--shadow-card)]"
-                >
-                  <div>
-                    <p className="font-bold">{job.title}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {job.company} · {job.workMode} · ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
-                    </p>
-                  </div>
-                  <div className="relative flex size-12 shrink-0 items-center justify-center rounded-full border-4 border-primary/20">
-                    <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary" />
-                    <span className="text-xs font-display font-semibold tracking-[-0.02em]">{88 - recommended.indexOf(job) * 4}%</span>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
+            {recommended.map(({ job, score }) => {
+              const range = salaryRange(job.salaryMin, job.salaryMax)
+              return (
+                <motion.div key={job.id} variants={withReducedMotion(reduced, fadeInUp)}>
+                  <Link
+                    to={`/app/jobs/${job.id}`}
+                    className="flex items-center justify-between gap-4 rounded-lg border border-border bg-card p-4 transition-shadow hover:shadow-[var(--shadow-card)]"
+                  >
+                    <div>
+                      <p className="font-bold">{job.title}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {job.organizationName ?? "Employer"}
+                        {job.remoteStatus ? ` · ${remoteStatusLabel[job.remoteStatus]}` : ""}
+                        {range ? ` · ${range}` : ""}
+                      </p>
+                    </div>
+                    <div className="relative flex size-12 shrink-0 items-center justify-center rounded-full border-4 border-primary/20">
+                      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-primary border-r-primary" />
+                      <span className="text-xs font-display font-semibold tracking-[-0.02em]">{score}%</span>
+                    </div>
+                  </Link>
+                </motion.div>
+              )
+            })}
+            {recommended.length === 0 && (
+              <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+                No recommendations yet — complete your profile to get matched.
+              </p>
+            )}
           </motion.div>
         </div>
 
