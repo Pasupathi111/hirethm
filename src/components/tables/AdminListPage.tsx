@@ -1,3 +1,4 @@
+import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
@@ -13,7 +14,11 @@ export interface AdminColumn<T> {
   header: string
   render: (row: T) => React.ReactNode
   className?: string
+  /** Enables click-to-sort on this column's header. */
+  sortValue?: (row: T) => string | number
 }
+
+const PAGE_SIZE = 10
 
 export function AdminListPage<T extends { id: string }>({
   title,
@@ -26,6 +31,7 @@ export function AdminListPage<T extends { id: string }>({
   searchPlaceholder,
   loading: externalLoading,
   headerActions,
+  onDeleteSelected,
 }: {
   title: string
   subtitle: string
@@ -39,6 +45,8 @@ export function AdminListPage<T extends { id: string }>({
   loading?: boolean
   /** Extra buttons rendered before the built-in Export CSV / Bulk actions buttons. */
   headerActions?: React.ReactNode
+  /** When provided, replaces the "Bulk actions" stub with a real "Delete selected" action. */
+  onDeleteSelected?: (ids: string[]) => Promise<void> | void
 }) {
   const navigate = useNavigate()
   const [tab, setTab] = useState(tabs?.[0] ?? "All")
@@ -46,12 +54,19 @@ export function AdminListPage<T extends { id: string }>({
   const [selected, setSelected] = useState<string[]>([])
   const [fakeLoading, setFakeLoading] = useState(externalLoading === undefined)
   const loading = externalLoading ?? fakeLoading
+  const [sort, setSort] = useState<{ header: string; direction: "asc" | "desc" } | null>(null)
+  const [page, setPage] = useState(1)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     if (externalLoading !== undefined) return
     const timer = setTimeout(() => setFakeLoading(false), 450)
     return () => clearTimeout(timer)
   }, [externalLoading])
+
+  useEffect(() => {
+    setPage(1)
+  }, [tab, query, rows])
 
   const filtered = useMemo(() => {
     let result = rows
@@ -64,7 +79,44 @@ export function AdminListPage<T extends { id: string }>({
     return result
   }, [rows, tab, tabs, getTab, query])
 
-  const allSelected = filtered.length > 0 && selected.length === filtered.length
+  const sorted = useMemo(() => {
+    if (!sort) return filtered
+    const column = columns.find((c) => c.header === sort.header)
+    if (!column?.sortValue) return filtered
+    const copy = [...filtered]
+    copy.sort((a, b) => {
+      const av = column.sortValue!(a)
+      const bv = column.sortValue!(b)
+      const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv))
+      return sort.direction === "asc" ? cmp : -cmp
+    })
+    return copy
+  }, [filtered, sort, columns])
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const paginated = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+
+  const allSelected = paginated.length > 0 && paginated.every((r) => selected.includes(r.id))
+
+  const toggleSort = (header: string) => {
+    setSort((prev) => {
+      if (prev?.header !== header) return { header, direction: "asc" }
+      if (prev.direction === "asc") return { header, direction: "desc" }
+      return null
+    })
+  }
+
+  const handleDeleteSelected = async () => {
+    if (!onDeleteSelected || selected.length === 0) return
+    setIsDeleting(true)
+    try {
+      await onDeleteSelected(selected)
+      setSelected([])
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -78,13 +130,19 @@ export function AdminListPage<T extends { id: string }>({
           <Button variant="outline" onClick={() => toast.success("CSV export started", { description: "You'll get a download link shortly." })}>
             Export CSV
           </Button>
-          <Button
-            variant="dark"
-            disabled={selected.length === 0}
-            onClick={() => toast(`${selected.length} rows selected`, { description: "Choose a bulk action to apply." })}
-          >
-            Bulk actions
-          </Button>
+          {onDeleteSelected ? (
+            <Button variant="destructive" disabled={selected.length === 0 || isDeleting} onClick={handleDeleteSelected}>
+              {isDeleting ? "Deleting..." : `Delete selected${selected.length ? ` (${selected.length})` : ""}`}
+            </Button>
+          ) : (
+            <Button
+              variant="dark"
+              disabled={selected.length === 0}
+              onClick={() => toast(`${selected.length} rows selected`, { description: "Choose a bulk action to apply." })}
+            >
+              Bulk actions
+            </Button>
+          )}
         </div>
       </div>
 
@@ -129,18 +187,40 @@ export function AdminListPage<T extends { id: string }>({
                 <TableHead className="w-10">
                   <Checkbox
                     checked={allSelected}
-                    onCheckedChange={(v) => setSelected(v ? filtered.map((r) => r.id) : [])}
+                    onCheckedChange={(v) =>
+                      setSelected((prev) => {
+                        const pageIds = paginated.map((r) => r.id)
+                        if (v) return Array.from(new Set([...prev, ...pageIds]))
+                        return prev.filter((id) => !pageIds.includes(id))
+                      })
+                    }
                   />
                 </TableHead>
                 {columns.map((col) => (
-                  <TableHead key={col.header} className={col.className}>
-                    {col.header}
+                  <TableHead
+                    key={col.header}
+                    className={`${col.className ?? ""} ${col.sortValue ? "cursor-pointer select-none" : ""}`}
+                    onClick={() => col.sortValue && toggleSort(col.header)}
+                  >
+                    <span className="inline-flex items-center gap-1">
+                      {col.header}
+                      {col.sortValue &&
+                        (sort?.header === col.header ? (
+                          sort.direction === "asc" ? (
+                            <ArrowUp className="size-3" />
+                          ) : (
+                            <ArrowDown className="size-3" />
+                          )
+                        ) : (
+                          <ArrowUpDown className="size-3 opacity-40" />
+                        ))}
+                    </span>
                   </TableHead>
                 ))}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((row) => (
+              {paginated.map((row) => (
                 <TableRow
                   key={row.id}
                   className={rowHref ? "cursor-pointer" : undefined}
@@ -164,9 +244,28 @@ export function AdminListPage<T extends { id: string }>({
             </TableBody>
           </Table>
 
-          {filtered.length === 0 && (
+          {sorted.length === 0 && (
             <div className="p-4">
               <EmptyState title="No results match your search." description="Try a different search term or clear your filters." />
+            </div>
+          )}
+
+          {sorted.length > 0 && (
+            <div className="flex items-center justify-between gap-4 border-t border-border px-4 py-3">
+              <p className="text-xs text-muted-foreground">
+                Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, sorted.length)} of {sorted.length}
+              </p>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage((p) => p - 1)}>
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <span className="text-xs text-muted-foreground">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <Button variant="outline" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage((p) => p + 1)}>
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>

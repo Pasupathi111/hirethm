@@ -2,33 +2,19 @@ import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-import { SectionCard } from "@/components/cards/SectionCard"
+import { CandidateForm, useCandidateFormState } from "@/components/forms/CandidateForm"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ApiError, api } from "@/lib/api"
-import type { ApiCandidate, ApiGender } from "@/types"
-
-const genderOptions: { value: ApiGender; label: string }[] = [
-  { value: "male", label: "Male" },
-  { value: "female", label: "Female" },
-  { value: "other", label: "Other" },
-  { value: "prefer_not_to_say", label: "Prefer not to say" },
-]
+import type { ApiCandidate } from "@/types"
 
 export function AdminCandidateNew() {
   const navigate = useNavigate()
-  const [firstName, setFirstName] = useState("")
-  const [lastName, setLastName] = useState("")
-  const [email, setEmail] = useState("")
-  const [phone, setPhone] = useState("")
-  const [gender, setGender] = useState<ApiGender | "">("")
-  const [dateOfBirth, setDateOfBirth] = useState("")
+  const state = useCandidateFormState()
   const [error, setError] = useState("")
   const [isSaving, setIsSaving] = useState(false)
 
+  const { firstName, lastName, email, phone, gender, dateOfBirth, quickNotes } = state.values
   const canSubmit = firstName.trim() && lastName.trim() && email.trim()
 
   const handleSubmit = async () => {
@@ -42,6 +28,7 @@ export function AdminCandidateNew() {
         phone: phone.trim() || undefined,
         gender: gender || undefined,
         dateOfBirth: dateOfBirth || undefined,
+        quickNotes: quickNotes.trim() || undefined,
       })
       toast.success("Candidate added", { description: `${candidate.firstName} ${candidate.lastName} was added.` })
       navigate("/admin/candidates")
@@ -69,45 +56,7 @@ export function AdminCandidateNew() {
 
       {error && <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">{error}</p>}
 
-      <SectionCard title="Basic information" animate={false}>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-2">
-            <Label htmlFor="firstName">First Name *</Label>
-            <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder="Jane" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name *</Label>
-            <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder="Doe" required />
-          </div>
-          <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="email">Email *</Label>
-            <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane.doe@example.com" required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="phone">Phone</Label>
-            <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+1 (555) 123-4567" />
-          </div>
-          <div className="space-y-2">
-            <Label>Gender</Label>
-            <Select value={gender} onValueChange={(v) => setGender(v as ApiGender)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Not specified" />
-              </SelectTrigger>
-              <SelectContent>
-                {genderOptions.map((o) => (
-                  <SelectItem key={o.value} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="dob">Date of Birth</Label>
-            <Input id="dob" type="date" value={dateOfBirth} onChange={(e) => setDateOfBirth(e.target.value)} />
-          </div>
-        </div>
-      </SectionCard>
+      <CandidateForm state={state} />
     </div>
   )
 }

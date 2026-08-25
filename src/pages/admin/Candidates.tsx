@@ -1,8 +1,10 @@
 import { Plus } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 import { AdminListPage, type AdminColumn } from "@/components/tables/AdminListPage"
+import { ErrorState } from "@/components/feedback/ErrorState"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { type PaginatedResponse, api } from "@/lib/api"
@@ -11,6 +13,7 @@ import type { ApiCandidate } from "@/types"
 const columns: AdminColumn<ApiCandidate>[] = [
   {
     header: "Candidate",
+    sortValue: (c) => c.displayName || `${c.firstName} ${c.lastName}`,
     render: (c) => (
       <div className="flex items-center gap-3">
         <Avatar className="size-9">
@@ -29,8 +32,8 @@ const columns: AdminColumn<ApiCandidate>[] = [
     ),
   },
   { header: "Phone", render: (c) => c.phone ?? "—" },
-  { header: "Applications", render: (c) => c.applicationCount },
-  { header: "Added", render: (c) => new Date(c.createdAt).toLocaleDateString() },
+  { header: "Applications", sortValue: (c) => c.applicationCount, render: (c) => c.applicationCount },
+  { header: "Added", sortValue: (c) => c.createdAt, render: (c) => new Date(c.createdAt).toLocaleDateString() },
 ]
 
 export function AdminCandidates() {
@@ -39,7 +42,9 @@ export function AdminCandidates() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true)
+    setError("")
     api
       .get<PaginatedResponse<ApiCandidate>>("/api/candidates?limit=100")
       .then((res) => setCandidates(res.data))
@@ -47,7 +52,20 @@ export function AdminCandidates() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (error) return <p className="text-sm text-destructive">{error}</p>
+  useEffect(load, [load])
+
+  const handleDeleteSelected = async (ids: string[]) => {
+    const results = await Promise.allSettled(ids.map((id) => api.del(`/api/candidates/${id}`)))
+    const failed = results.filter((r) => r.status === "rejected").length
+    if (failed > 0) {
+      toast.error(`Failed to delete ${failed} of ${ids.length} candidate(s)`)
+    } else {
+      toast.success(`Deleted ${ids.length} candidate${ids.length === 1 ? "" : "s"}`)
+    }
+    load()
+  }
+
+  if (error) return <ErrorState description={error} onRetry={load} />
 
   return (
     <div className="space-y-4">
@@ -64,6 +82,7 @@ export function AdminCandidates() {
         rowHref={(c) => `/admin/candidates/${c.id}`}
         searchPlaceholder="Search candidates..."
         loading={loading}
+        onDeleteSelected={handleDeleteSelected}
       />
     </div>
   )

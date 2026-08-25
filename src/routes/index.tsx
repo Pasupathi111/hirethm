@@ -31,6 +31,7 @@ import { AdminAIManagement } from "@/pages/admin/AIManagement"
 import { AdminApplications } from "@/pages/admin/Applications"
 import { AdminAuditLogs } from "@/pages/admin/AuditLogs"
 import { AdminCandidateDetail } from "@/pages/admin/CandidateDetail"
+import { AdminCandidateEdit } from "@/pages/admin/CandidateEdit"
 import { AdminCandidateNew } from "@/pages/admin/CandidateNew"
 import { AdminCandidates } from "@/pages/admin/Candidates"
 import { AdminDashboard } from "@/pages/admin/Dashboard"
@@ -44,6 +45,7 @@ import { AdminInterviewTemplates } from "@/pages/admin/InterviewTemplates"
 import { AdminInterviews } from "@/pages/admin/Interviews"
 import { AdminJobApplicationForm } from "@/pages/admin/JobApplicationForm"
 import { AdminJobDetail } from "@/pages/admin/JobDetail"
+import { AdminJobEdit } from "@/pages/admin/JobEdit"
 import { AdminJobNew } from "@/pages/admin/JobNew"
 import { AdminJobPreview } from "@/pages/admin/JobPreview"
 import { AdminJobs } from "@/pages/admin/Jobs"
@@ -121,6 +123,7 @@ export const router = createBrowserRouter([
       { path: "candidates", element: <AdminCandidates /> },
       { path: "candidates/new", element: <AdminCandidateNew /> },
       { path: "candidates/:id", element: <AdminCandidateDetail /> },
+      { path: "candidates/:id/edit", element: <AdminCandidateEdit /> },
       { path: "employers", element: <AdminEmployers /> },
       { path: "employers/:id", element: <AdminEmployerDetail /> },
       { path: "recruiters", element: <AdminRecruiters /> },
@@ -130,6 +133,7 @@ export const router = createBrowserRouter([
       { path: "jobs", element: <AdminJobs /> },
       { path: "jobs/new", element: <AdminJobNew /> },
       { path: "jobs/:id", element: <AdminJobDetail /> },
+      { path: "jobs/:id/edit", element: <AdminJobEdit /> },
       { path: "jobs/:id/preview", element: <AdminJobPreview /> },
       { path: "jobs/:id/application-form", element: <AdminJobApplicationForm /> },
       { path: "applications", element: <AdminApplications /> },

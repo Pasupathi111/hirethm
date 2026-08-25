@@ -1,16 +1,38 @@
 import { Eye } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Link, Navigate, useParams } from "react-router-dom"
 
+import { Skeleton } from "@/components/feedback/Skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { jobs } from "@/data/mockData"
+import { api } from "@/lib/api"
+import type { ApiJob } from "@/types"
 
 export function AdminJobPreview() {
   const { id } = useParams()
-  const job = jobs.find((j) => j.id === id)
+  const [job, setJob] = useState<ApiJob | null>(null)
+  const [notFound, setNotFound] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  if (!job) return <Navigate to="/admin/jobs" replace />
+  useEffect(() => {
+    if (!id) return
+    api
+      .get<ApiJob>(`/api/jobs/${id}`)
+      .then(setJob)
+      .catch(() => setNotFound(true))
+      .finally(() => setLoading(false))
+  }, [id])
+
+  if (notFound) return <Navigate to="/admin/jobs" replace />
+  if (loading || !job) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
@@ -26,56 +48,32 @@ export function AdminJobPreview() {
       <div className="mx-auto max-w-4xl rounded-lg border border-border bg-card p-6 sm:p-8">
         <div className="flex items-start gap-4">
           <Avatar className="size-16">
-            <AvatarFallback className={`${job.companyColor} text-lg text-white`}>{job.companyInitials}</AvatarFallback>
+            <AvatarFallback className="bg-secondary text-lg text-secondary-foreground">
+              {job.title.slice(0, 2).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
           <div>
             <h1 className="text-3xl">{job.title}</h1>
             <p className="mt-1 text-muted-foreground">
-              {job.company} · {job.workMode} · Posted {job.postedAt}
+              {job.location ?? "Location not set"} · Posted {new Date(job.createdAt).toLocaleDateString()}
             </p>
           </div>
         </div>
 
         <div className="mt-5 flex flex-wrap gap-2">
-          <Badge>{job.employmentType}</Badge>
-          <Badge>{job.experience}</Badge>
+          <Badge>{job.type.replace("_", " ")}</Badge>
+          {job.remoteStatus && <Badge className="capitalize">{job.remoteStatus}</Badge>}
+          {job.experienceLevel && <Badge className="capitalize">{job.experienceLevel}</Badge>}
         </div>
-        <p className="mt-3 text-xl font-display font-semibold tracking-[-0.02em] text-primary">
-          ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
-        </p>
+        {job.salaryMin != null && job.salaryMax != null && (
+          <p className="mt-3 text-xl font-display font-semibold tracking-[-0.02em] text-primary">
+            ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
+          </p>
+        )}
 
         <section className="mt-8">
           <h2 className="text-xl">About the role</h2>
-          <p className="mt-3 text-muted-foreground">{job.about}</p>
-        </section>
-
-        <section className="mt-8">
-          <h2 className="text-xl">Responsibilities</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">
-            {job.responsibilities.map((r) => (
-              <li key={r}>{r}</li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="mt-8">
-          <h2 className="text-xl">Requirements</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">
-            {job.requirements.map((r) => (
-              <li key={r}>{r}</li>
-            ))}
-          </ul>
-        </section>
-
-        <section className="mt-8">
-          <h2 className="text-xl">Skills</h2>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {job.skills.map((s) => (
-              <Badge key={s} variant="outline">
-                {s}
-              </Badge>
-            ))}
-          </div>
+          <p className="mt-3 whitespace-pre-line text-muted-foreground">{job.description || "No description added yet."}</p>
         </section>
 
         <Button className="mt-8 w-full" size="lg" disabled>

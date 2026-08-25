@@ -1,8 +1,10 @@
 import { Plus } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { toast } from "sonner"
 
 import { AdminListPage, type AdminColumn } from "@/components/tables/AdminListPage"
+import { ErrorState } from "@/components/feedback/ErrorState"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { type PaginatedResponse, api } from "@/lib/api"
@@ -18,6 +20,7 @@ const statusLabel: Record<string, string> = {
 const columns: AdminColumn<ApiJob>[] = [
   {
     header: "Job",
+    sortValue: (j) => j.title,
     render: (j) => (
       <div>
         <p className="font-semibold">{j.title}</p>
@@ -25,12 +28,16 @@ const columns: AdminColumn<ApiJob>[] = [
       </div>
     ),
   },
-  { header: "Type", render: (j) => j.type.replace("_", " ") },
-  { header: "Status", render: (j) => <StatusBadge status={statusLabel[j.status] ?? j.status} /> },
-  { header: "Applications", render: (j) => Object.values(j.pipeline).reduce((sum, n) => sum + n, 0) },
-  { header: "Interviews", render: (j) => j.pipeline.interview },
-  { header: "Hired", render: (j) => j.pipeline.hired },
-  { header: "Created", render: (j) => new Date(j.createdAt).toLocaleDateString() },
+  { header: "Type", sortValue: (j) => j.type, render: (j) => j.type.replace("_", " ") },
+  { header: "Status", sortValue: (j) => j.status, render: (j) => <StatusBadge status={statusLabel[j.status] ?? j.status} /> },
+  {
+    header: "Applications",
+    sortValue: (j) => Object.values(j.pipeline).reduce((sum, n) => sum + n, 0),
+    render: (j) => Object.values(j.pipeline).reduce((sum, n) => sum + n, 0),
+  },
+  { header: "Interviews", sortValue: (j) => j.pipeline.interview, render: (j) => j.pipeline.interview },
+  { header: "Hired", sortValue: (j) => j.pipeline.hired, render: (j) => j.pipeline.hired },
+  { header: "Created", sortValue: (j) => j.createdAt, render: (j) => new Date(j.createdAt).toLocaleDateString() },
 ]
 
 export function AdminJobs() {
@@ -39,7 +46,9 @@ export function AdminJobs() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true)
+    setError("")
     api
       .get<PaginatedResponse<ApiJob>>("/api/jobs?limit=100")
       .then((res) => setJobs(res.data))
@@ -47,7 +56,20 @@ export function AdminJobs() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (error) return <p className="text-sm text-destructive">{error}</p>
+  useEffect(load, [load])
+
+  const handleDeleteSelected = async (ids: string[]) => {
+    const results = await Promise.allSettled(ids.map((id) => api.del(`/api/jobs/${id}`)))
+    const failed = results.filter((r) => r.status === "rejected").length
+    if (failed > 0) {
+      toast.error(`Failed to delete ${failed} of ${ids.length} job(s)`)
+    } else {
+      toast.success(`Deleted ${ids.length} job${ids.length === 1 ? "" : "s"}`)
+    }
+    load()
+  }
+
+  if (error) return <ErrorState description={error} onRetry={load} />
 
   return (
     <div className="space-y-4">
@@ -66,6 +88,7 @@ export function AdminJobs() {
         rowHref={(j) => `/admin/jobs/${j.id}`}
         searchPlaceholder="Search jobs..."
         loading={loading}
+        onDeleteSelected={handleDeleteSelected}
       />
     </div>
   )

@@ -1,8 +1,9 @@
 import { Briefcase, Plus } from "lucide-react"
 import { useEffect, useState } from "react"
-import { Navigate, useParams } from "react-router-dom"
+import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 
+import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog"
 import { EmptyState } from "@/components/feedback/EmptyState"
 import { Skeleton } from "@/components/feedback/Skeleton"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
@@ -25,6 +26,7 @@ interface CandidateDetailResponse extends ApiCandidate {
 
 export function AdminCandidateDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [candidate, setCandidate] = useState<CandidateDetailResponse | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -32,6 +34,8 @@ export function AdminCandidateDetail() {
   const [selectedJobId, setSelectedJobId] = useState("")
   const [isApplying, setIsApplying] = useState(false)
   const [showApplyPicker, setShowApplyPicker] = useState(false)
+  const [showDelete, setShowDelete] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const load = () => {
     if (!id) return
@@ -65,6 +69,20 @@ export function AdminCandidateDetail() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!id) return
+    setIsDeleting(true)
+    try {
+      await api.del(`/api/candidates/${id}`)
+      toast.success("Candidate deleted", { description: "The candidate was moved to quarantine and can be restored later." })
+      navigate("/admin/candidates")
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to delete candidate")
+      setIsDeleting(false)
+      setShowDelete(false)
+    }
+  }
+
   if (notFound) return <Navigate to="/admin/candidates" replace />
   if (loading || !candidate) {
     return (
@@ -87,6 +105,26 @@ export function AdminCandidateDetail() {
         initials={initials}
         name={candidate.displayName || `${candidate.firstName} ${candidate.lastName}`}
         meta={`${candidate.email}${candidate.phone ? ` · ${candidate.phone}` : ""} · Created ${new Date(candidate.createdAt).toLocaleDateString()}`}
+        actions={
+          <>
+            <Button variant="destructive" onClick={() => setShowDelete(true)}>
+              Delete
+            </Button>
+            <Button variant="outline" onClick={() => navigate(`/admin/candidates/${id}/edit`)}>
+              Edit
+            </Button>
+          </>
+        }
+      />
+
+      <ConfirmDialog
+        open={showDelete}
+        onOpenChange={setShowDelete}
+        title="Delete this candidate?"
+        description={`This removes "${candidate.displayName || `${candidate.firstName} ${candidate.lastName}`}" from active lists. The record is retained and can be restored (GDPR-safe soft delete).`}
+        confirmLabel="Delete candidate"
+        loading={isDeleting}
+        onConfirm={handleDelete}
       />
 
       <div className="rounded-lg border border-border bg-card p-6">

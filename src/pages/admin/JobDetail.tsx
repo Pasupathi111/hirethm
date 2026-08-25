@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react"
-import { Navigate, useParams } from "react-router-dom"
+import { Navigate, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 
 import { MetricTile } from "@/components/cards/MetricTile"
+import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/feedback/Skeleton"
-import { api } from "@/lib/api"
+import { ApiError, api } from "@/lib/api"
 import type { ApiJob } from "@/types"
 
 interface JobWithApplications extends ApiJob {
@@ -23,9 +24,12 @@ const statusLabel: Record<string, string> = {
 
 export function AdminJobDetail() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const [job, setJob] = useState<JobWithApplications | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [showDelete, setShowDelete] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -35,6 +39,20 @@ export function AdminJobDetail() {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
   }, [id])
+
+  const handleDelete = async () => {
+    if (!id) return
+    setIsDeleting(true)
+    try {
+      await api.del(`/api/jobs/${id}`)
+      toast.success("Job deleted")
+      navigate("/admin/jobs")
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to delete job")
+      setIsDeleting(false)
+      setShowDelete(false)
+    }
+  }
 
   if (notFound) return <Navigate to="/admin/jobs" replace />
   if (loading || !job) {
@@ -59,10 +77,25 @@ export function AdminJobDetail() {
         name={job.title}
         meta={`${job.location ?? "No location set"} · Created ${new Date(job.createdAt).toLocaleDateString()}`}
         actions={
-          <Button variant="outline" onClick={() => toast("Editing a published job isn't wired up yet")}>
-            Edit
-          </Button>
+          <>
+            <Button variant="destructive" onClick={() => setShowDelete(true)}>
+              Delete
+            </Button>
+            <Button variant="outline" onClick={() => navigate(`/admin/jobs/${id}/edit`)}>
+              Edit
+            </Button>
+          </>
         }
+      />
+
+      <ConfirmDialog
+        open={showDelete}
+        onOpenChange={setShowDelete}
+        title="Delete this job?"
+        description={`This permanently deletes "${job.title}" and all of its applications. This cannot be undone.`}
+        confirmLabel="Delete job"
+        loading={isDeleting}
+        onConfirm={handleDelete}
       />
 
       <div className="grid gap-4 sm:grid-cols-4">
@@ -94,6 +127,18 @@ export function AdminJobDetail() {
           <div>
             <p className="text-muted-foreground">Experience level</p>
             <p className="font-semibold capitalize">{job.experienceLevel ?? "Not specified"}</p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Salary range</p>
+            <p className="font-semibold">
+              {job.salaryMin != null && job.salaryMax != null
+                ? `$${job.salaryMin.toLocaleString()} – $${job.salaryMax.toLocaleString()}`
+                : "Not specified"}
+            </p>
+          </div>
+          <div>
+            <p className="text-muted-foreground">Closing date</p>
+            <p className="font-semibold">{job.validThrough ? new Date(job.validThrough).toLocaleDateString() : "Not specified"}</p>
           </div>
         </div>
       </div>

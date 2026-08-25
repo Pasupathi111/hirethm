@@ -302,6 +302,9 @@ export interface ApiJob {
   status: ApiJobStatus
   experienceLevel: ApiExperienceLevel | null
   remoteStatus: ApiRemoteStatus | null
+  salaryMin?: number | null
+  salaryMax?: number | null
+  validThrough?: string | null
   createdAt: string
   updatedAt: string
   pipeline: ApiJobPipeline
