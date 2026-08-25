@@ -22,9 +22,23 @@ Append-only log of what the autonomous loop shipped. Newest first.
 ## 2026-08-25 (3)
 - **Work item:** GitHub issue #4 — Interview slot confirmation + candidate
   consent history/visibility endpoints
-- **PR:** pending (branch `feature/4-interview-consent-endpoints`)
+- **PR:** https://github.com/Pasupathi111/hirethm/pull/8 (merged to main)
 - **Summary:** Added `POST /api/me/interviews/:id/respond` (candidate
   confirm/decline/tentative on their own interviews) and
   `GET /api/me/matches/:id/history` (consent/visibility timeline built from
   existing persisted data, not a new audit table). Re-added the
   corresponding UI in Interviews.tsx and MyMatches.tsx.
+
+## 2026-08-25 (4)
+- **Work item:** GitHub issue #5 — Milestone 9: Resume parsing
+- **PR:** pending (branch `feature/5-resume-parsing-milestone9`)
+- **Summary:** PDF/DOCX/DOC extraction, section detection, storage, and
+  skill auto-fill already existed — turned out the roadmap checklist was
+  stale. Fixed the two real gaps: display was silently broken (parsedContent
+  interpolated as an object / column not even selected in two GET
+  endpoints), and nothing displayed parsed resumes on the admin/recruiter
+  side. Added `GET /api/documents/:id` for on-demand full content, a
+  Documents section in admin CandidateDetail.tsx, structured
+  email/phone/skills extraction reusing the existing taxonomy matcher, and
+  fixed `GET /api/me/candidate` to actually select `skills` (silently never
+  selected despite being read by Profile.tsx).
