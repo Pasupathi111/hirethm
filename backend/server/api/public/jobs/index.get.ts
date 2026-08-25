@@ -60,6 +60,7 @@ export default defineEventHandler(async (event) => {
         salaryCurrency: true,
         salaryUnit: true,
         remoteStatus: true,
+        skills: true,
         createdAt: true,
       },
       with: {
