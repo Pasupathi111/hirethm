@@ -122,7 +122,7 @@ export function AdminDashboard() {
             </Button>
           </div>
 
-          <div className="rounded-lg bg-secondary p-6 text-secondary-foreground">
+          <div className="rounded-xl bg-secondary p-6 text-secondary-foreground">
             <p className="text-xs font-bold tracking-wide text-mint uppercase">Consent integrity</p>
             <p className="mt-2 font-display text-3xl font-semibold tracking-[-0.02em]">0 breaches</p>
             <p className="mt-1 text-sm text-white/60">

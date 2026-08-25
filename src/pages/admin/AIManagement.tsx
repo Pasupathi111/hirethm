@@ -2,6 +2,7 @@ import { useState } from "react"
 import { toast } from "sonner"
 
 import { SettingRow } from "@/components/forms/SettingRow"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
@@ -48,7 +49,12 @@ export function AdminAIManagement() {
           {models.map((m, i) => (
             <SettingRow
               key={m.name}
-              label={m.name}
+              label={
+                <span className="flex items-center gap-2">
+                  {m.name}
+                  <Badge variant="ai">AI</Badge>
+                </span>
+              }
               description={<span className="font-mono text-xs">{m.model}</span>}
               control={
                 <Switch

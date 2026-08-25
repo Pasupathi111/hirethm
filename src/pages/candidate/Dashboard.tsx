@@ -69,7 +69,7 @@ export function Dashboard() {
         {featured && (
           <motion.div
             variants={withReducedMotion(reduced, fadeInUp)}
-            className="rounded-2xl bg-secondary p-6 text-secondary-foreground"
+            className="rounded-xl bg-secondary p-6 text-secondary-foreground"
           >
             <div className="flex items-center justify-between">
               <Badge variant="dark" className="border border-white/20 bg-white/10 text-mint">

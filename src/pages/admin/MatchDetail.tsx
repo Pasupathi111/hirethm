@@ -3,6 +3,7 @@ import { Link, Navigate, useParams } from "react-router-dom"
 import { ReadinessRing } from "@/components/cards/ReadinessRing"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { adminCandidates, adminMatches, jobs, matches } from "@/data/mockData"
@@ -59,7 +60,10 @@ export function AdminMatchDetail() {
         <div className="rounded-lg border border-border bg-card p-6">
           {detail ? (
             <>
-              <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Why HireThm matched them</p>
+              <div className="flex items-center gap-2">
+                <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Why HireThm matched them</p>
+                <Badge variant="ai">AI-generated</Badge>
+              </div>
               <ul className="mt-2 space-y-1.5">
                 {detail.reasons.map((reason) => (
                   <li key={reason} className="flex items-start gap-2 text-sm">

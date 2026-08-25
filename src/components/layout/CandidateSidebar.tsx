@@ -45,7 +45,7 @@ export function CandidateSidebarContent({ onNavigate }: { onNavigate?: () => voi
         ))}
       </nav>
       <div className="p-4">
-        <div className="rounded-lg bg-secondary p-4 text-secondary-foreground">
+        <div className="rounded-xl bg-secondary p-4 text-secondary-foreground">
           <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase text-mint">
             <Sparkles className="size-3.5" /> Free Plan
           </p>

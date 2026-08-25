@@ -145,7 +145,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
           </div>
 
           {candidateMode ? (
-            <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
+            <div className="rounded-xl bg-secondary p-6 text-secondary-foreground">
               <p className="text-xs font-bold tracking-wide text-mint uppercase">Your match score</p>
               <div className="mt-3 flex items-center gap-3">
                 <ReadinessRing value={readiness} size={64} strokeWidth={6} />
@@ -163,7 +163,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
               </ul>
             </div>
           ) : (
-            <div className="rounded-2xl bg-secondary p-6 text-secondary-foreground">
+            <div className="rounded-xl bg-secondary p-6 text-secondary-foreground">
               <p className="text-xs font-bold tracking-wide text-mint uppercase">See your match score</p>
               <p className="mt-2 text-sm text-white/70">
                 Sign in to see how your skills, experience and goals score against this role.
