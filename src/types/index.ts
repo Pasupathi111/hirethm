@@ -223,3 +223,49 @@ export interface Payment {
   status: "Paid" | "Failed" | "Refunded" | "Pending"
   date: string
 }
+
+export interface InterviewTemplate {
+  id: string
+  name: string
+  type: string
+  questionCount: number
+  duration: string
+  status: "Active" | "Draft" | "Archived"
+  updated: string
+  questions: string[]
+}
+
+export interface SourceTrackingEntry {
+  id: string
+  source: string
+  campaign: string
+  candidates: number
+  applications: number
+  hires: number
+  conversionRate: number
+  updated: string
+}
+
+export interface TimelineEvent {
+  id: string
+  timestamp: string
+  actor: string
+  action: string
+  resource: string
+  category: "Consent" | "Visibility" | "Admin action" | "Auth" | "Billing"
+}
+
+export interface UpdateItem {
+  id: string
+  date: string
+  title: string
+  description: string
+  tag: "Feature" | "Improvement" | "Fix"
+}
+
+export interface ChatMessage {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  timestamp: string
+}

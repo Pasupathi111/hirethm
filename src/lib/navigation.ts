@@ -9,11 +9,15 @@ import {
   CalendarCheck2,
   FileText,
   Gauge,
+  History,
   KeyRound,
   LayoutGrid,
   ListChecks,
   Loader2,
+  MessageCircle,
   Puzzle,
+  Radar,
+  Rss,
   ScrollText,
   Search,
   Settings,
@@ -79,6 +83,8 @@ export const adminNav: NavGroup[] = [
       { label: "Applications", to: "/admin/applications", icon: FileText },
       { label: "Matches", to: "/admin/matches", icon: ListChecks },
       { label: "Interviews", to: "/admin/interviews", icon: CalendarCheck2 },
+      { label: "Interview Templates", to: "/admin/interview-templates", icon: ScrollText },
+      { label: "Source Tracking", to: "/admin/source-tracking", icon: Radar },
     ],
   },
   {
@@ -92,6 +98,7 @@ export const adminNav: NavGroup[] = [
   {
     label: "AI",
     items: [
+      { label: "AI Assistant", to: "/admin/ai-chat", icon: MessageCircle },
       { label: "AI Management", to: "/admin/ai-management", icon: Sparkles },
       { label: "Matching Rules", to: "/admin/matching-rules", icon: Loader2 },
     ],
@@ -100,6 +107,8 @@ export const adminNav: NavGroup[] = [
     label: "Platform",
     items: [
       { label: "Notifications", to: "/admin/notifications", icon: Bell },
+      { label: "Timeline", to: "/admin/timeline", icon: History },
+      { label: "Updates", to: "/admin/updates", icon: Rss },
       { label: "Reports", to: "/admin/reports", icon: ScrollText },
       { label: "Audit Logs", to: "/admin/audit-logs", icon: ShieldCheck },
       { label: "Roles & Permissions", to: "/admin/roles-permissions", icon: KeyRound },

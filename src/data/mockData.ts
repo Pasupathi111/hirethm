@@ -9,14 +9,19 @@ import type {
   Application,
   AuditLogEntry,
   CandidateProfile,
+  ChatMessage,
   ConsentEvent,
   Interview,
+  InterviewTemplate,
   Job,
   Match,
   NotificationItem,
   Payment,
   Plan,
+  SourceTrackingEntry,
   SystemService,
+  TimelineEvent,
+  UpdateItem,
 } from "@/types"
 
 export const companyColors: Record<string, string> = {
@@ -536,3 +541,132 @@ export const systemServices: SystemService[] = [
   { name: "Calendar", status: "Healthy", detail: "ICS generation nominal" },
   { name: "Payment", status: "Down", detail: "PayPal webhook failures" },
 ]
+
+export const interviewTemplates: InterviewTemplate[] = [
+  {
+    id: "tmpl-1",
+    name: "Frontend Technical Screen",
+    type: "Technical Interview",
+    questionCount: 6,
+    duration: "45 min",
+    status: "Active",
+    updated: "18 Aug 2026",
+    questions: [
+      "Walk through a recent React project you led end to end.",
+      "How do you approach state management in a large app?",
+      "Describe a time you improved rendering performance.",
+      "How do you test component behavior?",
+      "How do you handle accessibility in your components?",
+      "What's a technical decision you'd make differently now?",
+    ],
+  },
+  {
+    id: "tmpl-2",
+    name: "Hiring Manager Conversation",
+    type: "Hiring Manager Interview",
+    questionCount: 5,
+    duration: "30 min",
+    status: "Active",
+    updated: "10 Aug 2026",
+    questions: [
+      "What drew you to this role?",
+      "Tell me about a project you're most proud of.",
+      "How do you handle conflicting priorities?",
+      "What does success look like in your first 90 days?",
+      "What questions do you have for us?",
+    ],
+  },
+  {
+    id: "tmpl-3",
+    name: "Portfolio Review",
+    type: "Portfolio Review",
+    questionCount: 4,
+    duration: "40 min",
+    status: "Draft",
+    updated: "02 Aug 2026",
+    questions: [
+      "Walk us through your favorite piece in your portfolio.",
+      "What was the biggest constraint on this project?",
+      "How did you collaborate with design/product?",
+      "What would you change if you revisited it today?",
+    ],
+  },
+  {
+    id: "tmpl-4",
+    name: "Legacy Culture Fit",
+    type: "Culture Interview",
+    questionCount: 5,
+    duration: "30 min",
+    status: "Archived",
+    updated: "14 Feb 2026",
+    questions: [
+      "Describe your ideal working environment.",
+      "How do you give and receive feedback?",
+      "Tell me about a disagreement with a teammate.",
+      "What motivates you day to day?",
+      "How do you stay current in your field?",
+    ],
+  },
+]
+
+export const sourceTrackingEntries: SourceTrackingEntry[] = [
+  { id: "src-1", source: "LinkedIn", campaign: "Always-on organic", candidates: 3120, applications: 842, hires: 24, conversionRate: 27, updated: "24 Aug 2026" },
+  { id: "src-2", source: "Indeed", campaign: "Q3 sponsored listings", candidates: 2480, applications: 610, hires: 15, conversionRate: 25, updated: "24 Aug 2026" },
+  { id: "src-3", source: "Referral", campaign: "Employee referral program", candidates: 640, applications: 301, hires: 41, conversionRate: 47, updated: "23 Aug 2026" },
+  { id: "src-4", source: "Direct", campaign: "hirethm.com/jobs", candidates: 1890, applications: 402, hires: 18, conversionRate: 21, updated: "24 Aug 2026" },
+  { id: "src-5", source: "Google Jobs", campaign: "Organic search", candidates: 970, applications: 188, hires: 6, conversionRate: 19, updated: "22 Aug 2026" },
+  { id: "src-6", source: "AngelList", campaign: "Startup roles push", candidates: 340, applications: 96, hires: 3, conversionRate: 28, updated: "19 Aug 2026" },
+]
+
+export const timelineEvents: TimelineEvent[] = [
+  { id: "tl-1", timestamp: "24 Aug 2026, 09:12", actor: "Alex Johnson", action: "Consent granted to view profile", resource: "ABC Technologies", category: "Consent" },
+  { id: "tl-2", timestamp: "24 Aug 2026, 08:47", actor: "AI Engine", action: "Generated 3 new matches", resource: "Senior React Developer", category: "Admin action" },
+  { id: "tl-3", timestamp: "23 Aug 2026, 17:20", actor: "Nina Petrova", action: "Published job posting", resource: "REQ-4821", category: "Admin action" },
+  { id: "tl-4", timestamp: "23 Aug 2026, 15:03", actor: "Priya Nair", action: "Signed in from new device", resource: "Chrome · Austin, TX", category: "Auth" },
+  { id: "tl-5", timestamp: "23 Aug 2026, 11:40", actor: "System", action: "Invoice paid", resource: "PAY-3303", category: "Billing" },
+  { id: "tl-6", timestamp: "22 Aug 2026, 16:55", actor: "David Reyes", action: "Revoked profile visibility", resource: "Grace Lin", category: "Visibility" },
+  { id: "tl-7", timestamp: "22 Aug 2026, 10:02", actor: "Admin", action: "Suspended recruiter account", resource: "REC-505 · Amy Chen", category: "Admin action" },
+  { id: "tl-8", timestamp: "21 Aug 2026, 14:18", actor: "Daniel Okoye", action: "Consent expired, visibility revoked", resource: "CloudWorks", category: "Consent" },
+]
+
+export const updateItems: UpdateItem[] = [
+  { id: "upd-1", date: "20 Aug 2026", title: "Interview templates", description: "Recruiters can now build and reuse structured interview question sets across jobs.", tag: "Feature" },
+  { id: "upd-2", date: "14 Aug 2026", title: "Faster AI re-analysis", description: "Re-running AI extraction on a job description now completes in under 10 seconds.", tag: "Improvement" },
+  { id: "upd-3", date: "09 Aug 2026", title: "Fixed CSV export truncation", description: "Exports over 5,000 rows no longer drop trailing records.", tag: "Fix" },
+  { id: "upd-4", date: "02 Aug 2026", title: "Source tracking", description: "See where candidates and hires are coming from across every channel.", tag: "Feature" },
+  { id: "upd-5", date: "27 Jul 2026", title: "SSO for Enterprise plans", description: "Enterprise employers can now enforce single sign-on for their teams.", tag: "Feature" },
+  { id: "upd-6", date: "19 Jul 2026", title: "Improved match reasoning copy", description: "Match explanations are now clearer about which criteria drove the score.", tag: "Improvement" },
+]
+
+export const aiChatSeed: ChatMessage[] = [
+  {
+    id: "msg-1",
+    role: "assistant",
+    content: "Hi, I'm the HireThm AI assistant. Ask me about candidates, jobs, matching rules, or platform activity.",
+    timestamp: "09:00 AM",
+  },
+  {
+    id: "msg-2",
+    role: "user",
+    content: "Which open roles have the weakest match pipeline this week?",
+    timestamp: "09:01 AM",
+  },
+  {
+    id: "msg-3",
+    role: "assistant",
+    content:
+      "Data Platform Lead at Nova Systems and Full Stack Engineer at CloudWorks both have fewer than 10 AI matches over 75% readiness. Want me to suggest sourcing channels for either?",
+    timestamp: "09:01 AM",
+  },
+]
+
+const canned = [
+  "Here's what I found — Senior React Developer at ABC Technologies has 38 matches over 75% readiness, the strongest pipeline this week.",
+  "I'd recommend widening the location preference for that role — 60% of near-miss candidates are outside the current radius.",
+  "Consent-first visibility means employers only see candidates who've opted in. Right now 94% of active candidates have visibility enabled.",
+  "I can draft a job description enhancement for that req — want me to queue it for AI re-analysis?",
+]
+
+export function nextAiReply(turn: number) {
+  return canned[turn % canned.length]
+}

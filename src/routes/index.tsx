@@ -1,8 +1,15 @@
 import { createBrowserRouter } from "react-router-dom"
 
+import { AcceptInvitation } from "@/pages/auth/AcceptInvitation"
 import { AdminSignIn } from "@/pages/auth/AdminSignIn"
 import { CreateProfile } from "@/pages/auth/CreateProfile"
+import { ForgotPassword } from "@/pages/auth/ForgotPassword"
+import { ResetPassword } from "@/pages/auth/ResetPassword"
 import { SignIn } from "@/pages/auth/SignIn"
+import { SignUp } from "@/pages/auth/SignUp"
+import { InterviewRespond } from "@/pages/interview/Respond"
+import { CreateOrg } from "@/pages/onboarding/CreateOrg"
+import { JoinOrg } from "@/pages/onboarding/JoinOrg"
 import { Applications } from "@/pages/candidate/Applications"
 import { CareerPreferences } from "@/pages/candidate/CareerPreferences"
 import { Dashboard } from "@/pages/candidate/Dashboard"
@@ -15,11 +22,15 @@ import { Resume } from "@/pages/candidate/Resume"
 import { Settings } from "@/pages/candidate/Settings"
 import { FindJobs } from "@/pages/marketing/FindJobs"
 import { Home } from "@/pages/marketing/Home"
+import { JobApply } from "@/pages/marketing/JobApply"
+import { JobApplyConfirmation } from "@/pages/marketing/JobApplyConfirmation"
 import { JobDetail } from "@/pages/marketing/JobDetail"
+import { AdminAIChat } from "@/pages/admin/AIChat"
 import { AdminAIManagement } from "@/pages/admin/AIManagement"
 import { AdminApplications } from "@/pages/admin/Applications"
 import { AdminAuditLogs } from "@/pages/admin/AuditLogs"
 import { AdminCandidateDetail } from "@/pages/admin/CandidateDetail"
+import { AdminCandidateNew } from "@/pages/admin/CandidateNew"
 import { AdminCandidates } from "@/pages/admin/Candidates"
 import { AdminDashboard } from "@/pages/admin/Dashboard"
 import { AdminEmployerDetail } from "@/pages/admin/EmployerDetail"
@@ -27,8 +38,13 @@ import { AdminEmployers } from "@/pages/admin/Employers"
 import { AdminHiringManagerDetail } from "@/pages/admin/HiringManagerDetail"
 import { AdminHiringManagers } from "@/pages/admin/HiringManagers"
 import { AdminInterviewDetail } from "@/pages/admin/InterviewDetail"
+import { AdminInterviewTemplateDetail } from "@/pages/admin/InterviewTemplateDetail"
+import { AdminInterviewTemplates } from "@/pages/admin/InterviewTemplates"
 import { AdminInterviews } from "@/pages/admin/Interviews"
+import { AdminJobApplicationForm } from "@/pages/admin/JobApplicationForm"
 import { AdminJobDetail } from "@/pages/admin/JobDetail"
+import { AdminJobNew } from "@/pages/admin/JobNew"
+import { AdminJobPreview } from "@/pages/admin/JobPreview"
 import { AdminJobs } from "@/pages/admin/Jobs"
 import { AdminMatchDetail } from "@/pages/admin/MatchDetail"
 import { AdminMatches } from "@/pages/admin/Matches"
@@ -42,7 +58,11 @@ import { AdminRecruiterDetail } from "@/pages/admin/RecruiterDetail"
 import { AdminRecruiters } from "@/pages/admin/Recruiters"
 import { AdminReports } from "@/pages/admin/Reports"
 import { AdminRolesPermissions } from "@/pages/admin/RolesPermissions"
+import { AdminSourceTracking } from "@/pages/admin/SourceTracking"
+import { AdminSourceTrackingDetail } from "@/pages/admin/SourceTrackingDetail"
 import { AdminSystemHealth } from "@/pages/admin/SystemHealth"
+import { AdminTimeline } from "@/pages/admin/Timeline"
+import { AdminUpdates } from "@/pages/admin/Updates"
 import { AdminUsage } from "@/pages/admin/Usage"
 import { AdminLayout } from "@/layouts/AdminLayout"
 import { CandidateLayout } from "@/layouts/CandidateLayout"
@@ -55,9 +75,18 @@ export const router = createBrowserRouter([
       { path: "/", element: <Home /> },
       { path: "/jobs", element: <FindJobs /> },
       { path: "/jobs/:id", element: <JobDetail /> },
+      { path: "/jobs/:id/apply", element: <JobApply /> },
+      { path: "/jobs/:id/confirmation", element: <JobApplyConfirmation /> },
     ],
   },
   { path: "/sign-in", element: <SignIn /> },
+  { path: "/sign-up", element: <SignUp /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/reset-password", element: <ResetPassword /> },
+  { path: "/accept-invitation/:id", element: <AcceptInvitation /> },
+  { path: "/join/:token", element: <JoinOrg /> },
+  { path: "/onboarding/create-org", element: <CreateOrg /> },
+  { path: "/interview/respond/:id", element: <InterviewRespond /> },
   { path: "/admin/login", element: <AdminSignIn /> },
   { path: "/create-profile", element: <CreateProfile /> },
   {
@@ -67,6 +96,8 @@ export const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: "jobs", element: <FindJobs basePath="/app/jobs" /> },
       { path: "jobs/:id", element: <JobDetail basePath="/app/jobs" candidateMode /> },
+      { path: "jobs/:id/apply", element: <JobApply basePath="/app/jobs" /> },
+      { path: "jobs/:id/confirmation", element: <JobApplyConfirmation basePath="/app/jobs" /> },
       { path: "recommended", element: <Recommended /> },
       { path: "matches", element: <MyMatches /> },
       { path: "applications", element: <Applications /> },
@@ -84,6 +115,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: "candidates", element: <AdminCandidates /> },
+      { path: "candidates/new", element: <AdminCandidateNew /> },
       { path: "candidates/:id", element: <AdminCandidateDetail /> },
       { path: "employers", element: <AdminEmployers /> },
       { path: "employers/:id", element: <AdminEmployerDetail /> },
@@ -92,19 +124,29 @@ export const router = createBrowserRouter([
       { path: "hiring-managers", element: <AdminHiringManagers /> },
       { path: "hiring-managers/:id", element: <AdminHiringManagerDetail /> },
       { path: "jobs", element: <AdminJobs /> },
+      { path: "jobs/new", element: <AdminJobNew /> },
       { path: "jobs/:id", element: <AdminJobDetail /> },
+      { path: "jobs/:id/preview", element: <AdminJobPreview /> },
+      { path: "jobs/:id/application-form", element: <AdminJobApplicationForm /> },
       { path: "applications", element: <AdminApplications /> },
       { path: "matches", element: <AdminMatches /> },
       { path: "matches/:id", element: <AdminMatchDetail /> },
       { path: "interviews", element: <AdminInterviews /> },
       { path: "interviews/:id", element: <AdminInterviewDetail /> },
+      { path: "interview-templates", element: <AdminInterviewTemplates /> },
+      { path: "interview-templates/:id", element: <AdminInterviewTemplateDetail /> },
+      { path: "source-tracking", element: <AdminSourceTracking /> },
+      { path: "source-tracking/:id", element: <AdminSourceTrackingDetail /> },
       { path: "plans", element: <AdminPlans /> },
       { path: "payments", element: <AdminPayments /> },
       { path: "payments/:id", element: <AdminPaymentDetail /> },
       { path: "usage", element: <AdminUsage /> },
+      { path: "ai-chat", element: <AdminAIChat /> },
       { path: "ai-management", element: <AdminAIManagement /> },
       { path: "matching-rules", element: <AdminMatchingRules /> },
       { path: "notifications", element: <AdminNotifications /> },
+      { path: "timeline", element: <AdminTimeline /> },
+      { path: "updates", element: <AdminUpdates /> },
       { path: "reports", element: <AdminReports /> },
       { path: "audit-logs", element: <AdminAuditLogs /> },
       { path: "roles-permissions", element: <AdminRolesPermissions /> },

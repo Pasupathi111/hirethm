@@ -1,6 +1,6 @@
 import { ArrowLeft } from "lucide-react"
 import { motion } from "framer-motion"
-import { Link, Navigate, useParams } from "react-router-dom"
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom"
 import { toast } from "sonner"
 
 import { ReadinessRing } from "@/components/cards/ReadinessRing"
@@ -13,6 +13,7 @@ import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 export function JobDetail({ basePath = "/jobs", candidateMode = false }: { basePath?: string; candidateMode?: boolean }) {
   const { id } = useParams()
+  const navigate = useNavigate()
   const job = jobs.find((j) => j.id === id)
   const reduced = useReducedMotion()
 
@@ -116,11 +117,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
               ${(job.salaryMin / 1000).toFixed(0)}K – ${(job.salaryMax / 1000).toFixed(0)}K
             </p>
             <p className="text-sm text-muted-foreground">Base range · {job.employmentType}</p>
-            <Button
-              className="mt-4 w-full"
-              size="lg"
-              onClick={() => toast.success("Application submitted", { description: `You applied to ${job.title} at ${job.company}.` })}
-            >
+            <Button className="mt-4 w-full" size="lg" onClick={() => navigate(`${basePath}/${job.id}/apply`)}>
               Apply Now
             </Button>
             <div className="mt-2 flex gap-2">
