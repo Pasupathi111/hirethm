@@ -1,14 +1,16 @@
 import { ArrowRight, Check, UserPlus } from "lucide-react"
 import { motion } from "framer-motion"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { JobCard } from "@/components/cards/JobCard"
+import { PublicJobCard } from "@/components/cards/PublicJobCard"
 import { ReadinessRing } from "@/components/cards/ReadinessRing"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { jobs } from "@/data/mockData"
+import { type PaginatedResponse, api } from "@/lib/api"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
+import type { ApiJob } from "@/types"
 
 const howItWorks = [
   {
@@ -49,10 +51,16 @@ const consentStates = [
   { key: "INTERVIEW_SCHEDULED", label: "Candidate picks the slot", status: "upcoming" },
 ] as const
 
-const featuredJobs = jobs.slice(0, 3)
-
 export function Home() {
   const reduced = useReducedMotion()
+  const [featuredJobs, setFeaturedJobs] = useState<ApiJob[]>([])
+
+  useEffect(() => {
+    api
+      .get<PaginatedResponse<ApiJob>>("/api/public/jobs?limit=3")
+      .then((res) => setFeaturedJobs(res.data))
+      .catch(() => setFeaturedJobs([]))
+  }, [])
 
   return (
     <div>
@@ -238,7 +246,7 @@ export function Home() {
           >
             {featuredJobs.map((job) => (
               <motion.div key={job.id} variants={withReducedMotion(reduced, fadeInUp)}>
-                <JobCard job={job} viewHref={`/jobs/${job.id}`} />
+                <PublicJobCard job={job} viewHref={`/jobs/${job.id}`} />
               </motion.div>
             ))}
           </motion.div>
