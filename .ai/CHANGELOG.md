@@ -12,9 +12,19 @@ Append-only log of what the autonomous loop shipped. Newest first.
 
 ## 2026-08-25 (2)
 - **Work item:** GitHub issue #3 — Migrate JobDetail/JobApply off mock job data
-- **PR:** pending (branch `feature/3-migrate-jobdetail-jobapply`)
+- **PR:** https://github.com/Pasupathi111/hirethm/pull/7 (merged to main)
 - **Summary:** JobDetail/JobApply/JobApplyConfirmation now use the real public
   jobs API instead of the mock array; JobApply submits through the real
   public apply endpoint with full dynamic custom-question rendering. Also
   fixed two other mock-data sites that would have broken as a side effect
   (Home.tsx featured jobs, candidate Dashboard's recommended widget).
+
+## 2026-08-25 (3)
+- **Work item:** GitHub issue #4 — Interview slot confirmation + candidate
+  consent history/visibility endpoints
+- **PR:** pending (branch `feature/4-interview-consent-endpoints`)
+- **Summary:** Added `POST /api/me/interviews/:id/respond` (candidate
+  confirm/decline/tentative on their own interviews) and
+  `GET /api/me/matches/:id/history` (consent/visibility timeline built from
+  existing persisted data, not a new audit table). Re-added the
+  corresponding UI in Interviews.tsx and MyMatches.tsx.
