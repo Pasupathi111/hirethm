@@ -16,6 +16,19 @@ import { ApiError, api } from "@/lib/api"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 import type { ApiMatch, ApiMatchStatus } from "@/types"
 
+interface MatchHistoryEvent {
+  type: string
+  label: string
+  at: string
+  detail?: string
+}
+
+interface MatchHistory {
+  matchId: string
+  visible: boolean
+  timeline: MatchHistoryEvent[]
+}
+
 const tabs: ApiMatchStatus[] = ["new", "waiting", "accepted", "rejected", "in_progress"]
 const statusLabel: Record<ApiMatchStatus, string> = {
   new: "New",
@@ -31,6 +44,27 @@ export function MyMatches() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const reduced = useReducedMotion()
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [history, setHistory] = useState<Record<string, MatchHistory>>({})
+  const [historyLoading, setHistoryLoading] = useState<string | null>(null)
+
+  const toggleHistory = async (matchId: string) => {
+    if (expandedId === matchId) {
+      setExpandedId(null)
+      return
+    }
+    setExpandedId(matchId)
+    if (history[matchId]) return
+    setHistoryLoading(matchId)
+    try {
+      const data = await api.get<MatchHistory>(`/api/me/matches/${matchId}/history`)
+      setHistory((prev) => ({ ...prev, [matchId]: data }))
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to load consent history")
+    } finally {
+      setHistoryLoading(null)
+    }
+  }
 
   const load = useCallback(() => {
     setLoading(true)
@@ -153,6 +187,40 @@ export function MyMatches() {
                       >
                         Full breakdown →
                       </button>
+                    </div>
+                  )}
+
+                  <button
+                    className="mt-4 text-sm font-semibold text-primary"
+                    onClick={() => toggleHistory(match.id)}
+                  >
+                    {expandedId === match.id ? "Hide" : "View"} consent & visibility history →
+                  </button>
+
+                  {expandedId === match.id && (
+                    <div className="mt-3 rounded-lg border border-border bg-muted/40 p-4">
+                      {historyLoading === match.id ? (
+                        <Skeleton className="h-16 w-full" />
+                      ) : history[match.id] ? (
+                        <>
+                          <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">
+                            Visible to employer: {history[match.id].visible ? "Yes" : "Not yet"}
+                          </p>
+                          <ul className="mt-3 space-y-2">
+                            {history[match.id].timeline.map((ev, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm">
+                                <span className="mt-0.5 text-primary">•</span>
+                                <span>
+                                  <span className="font-medium">{ev.label}</span>
+                                  {" — "}
+                                  <span className="text-muted-foreground">{new Date(ev.at).toLocaleString()}</span>
+                                  {ev.detail && <span className="text-muted-foreground"> ({ev.detail})</span>}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      ) : null}
                     </div>
                   )}
                 </div>

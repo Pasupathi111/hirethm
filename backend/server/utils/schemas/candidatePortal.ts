@@ -16,6 +16,11 @@ export const updateMatchStatusSchema = z.object({
   status: z.enum(['accepted', 'rejected']),
 })
 
+/** POST /api/me/interviews/:id/respond body */
+export const respondToInterviewSchema = z.object({
+  response: z.enum(['accepted', 'declined', 'tentative']),
+})
+
 /** PATCH /api/me/notifications/:id body */
 export const updateNotificationSchema = z.object({
   isRead: z.literal(true),

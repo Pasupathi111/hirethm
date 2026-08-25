@@ -369,6 +369,8 @@ export interface ApiInterview {
 
 // ── Candidate self-service (GET /api/me/candidate) ──────────────────────────
 
+export type ApiCandidateInterviewResponse = "pending" | "accepted" | "declined" | "tentative"
+
 export interface MyCandidateInterview {
   id: string
   title: string
@@ -377,6 +379,8 @@ export interface MyCandidateInterview {
   scheduledAt: string
   duration: number
   location: string | null
+  candidateResponse: ApiCandidateInterviewResponse
+  candidateRespondedAt: string | null
 }
 
 export interface MyCandidateApplication {
