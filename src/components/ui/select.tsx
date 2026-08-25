@@ -25,7 +25,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex h-12 w-full items-center justify-between gap-2 rounded-md border border-input bg-card px-4 py-2 text-sm whitespace-nowrap shadow-xs outline-none transition-colors duration-200 data-[placeholder]:text-ink-40 data-[size=sm]:h-10",
+        "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-input bg-card px-3.5 py-2 text-sm whitespace-nowrap shadow-xs outline-none transition-colors duration-200 data-[placeholder]:text-ink-40 data-[size=sm]:h-9",
         "focus-visible:border-primary",
         "disabled:cursor-not-allowed disabled:opacity-50",
         className
