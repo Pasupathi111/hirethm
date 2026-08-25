@@ -1,4 +1,5 @@
 import { Bell, Menu } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
 import { SearchBar } from "@/components/common/SearchBar"
@@ -8,12 +9,20 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
-import { notifications } from "@/data/mockData"
+import { api } from "@/lib/api"
 import { useMyCandidate } from "@/lib/candidateSession"
+import type { ApiNotification } from "@/types"
 
 export function CandidateTopbar() {
-  const unread = notifications.filter((n) => n.unread).length
+  const [unread, setUnread] = useState(0)
   const { candidate } = useMyCandidate()
+
+  useEffect(() => {
+    api
+      .get<{ data: ApiNotification[] }>("/api/me/notifications")
+      .then((res) => setUnread(res.data.filter((n) => !n.isRead).length))
+      .catch(() => setUnread(0))
+  }, [])
   const name = candidate ? candidate.displayName || `${candidate.firstName} ${candidate.lastName}` : "…"
   const initials = candidate ? `${candidate.firstName[0] ?? ""}${candidate.lastName[0] ?? ""}`.toUpperCase() : "…"
 

@@ -1,26 +1,28 @@
 import { motion } from "framer-motion"
-import { Pencil, Plus } from "lucide-react"
+import { Pencil } from "lucide-react"
 
 import { SectionCard } from "@/components/cards/SectionCard"
 import { EditSectionDialog } from "@/components/dialogs/EditSectionDialog"
-import { Callout } from "@/components/feedback/Callout"
 import { ErrorState } from "@/components/feedback/ErrorState"
 import { Skeleton } from "@/components/feedback/Skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { candidateProfile } from "@/data/mockData"
+import { api } from "@/lib/api"
 import { useMyCandidate } from "@/lib/candidateSession"
 import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
+import type { MyCandidate } from "@/types"
 
 function EditableSection({
   title,
   editValue,
+  onSave,
   children,
 }: {
   title: string
   editValue: string
+  onSave?: (value: string) => Promise<void> | void
   children: React.ReactNode
 }) {
   return (
@@ -30,6 +32,7 @@ function EditableSection({
         <EditSectionDialog
           section={title}
           defaultValue={editValue}
+          onSave={onSave}
           trigger={
             <Tooltip>
               <TooltipTrigger asChild>
@@ -75,6 +78,35 @@ export function Profile() {
 
   const name = candidate.displayName || `${candidate.firstName} ${candidate.lastName}`
   const initials = `${candidate.firstName[0] ?? ""}${candidate.lastName[0] ?? ""}`.toUpperCase()
+  const skills = candidate.skills ?? []
+
+  const savePersonalInfo = async (value: string) => {
+    const [firstName, ...rest] = value.split(" ")
+    await api.patch<MyCandidate>("/api/me/candidate", {
+      firstName: firstName || candidate.firstName,
+      lastName: rest.join(" ") || candidate.lastName,
+    })
+    refetch()
+  }
+
+  const savePhone = async (value: string) => {
+    await api.patch<MyCandidate>("/api/me/candidate", { phone: value || null })
+    refetch()
+  }
+
+  const saveNotes = async (value: string) => {
+    await api.patch<MyCandidate>("/api/me/candidate", { quickNotes: value })
+    refetch()
+  }
+
+  const saveSkills = async (value: string) => {
+    const parsed = value
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+    await api.patch<MyCandidate>("/api/me/candidate", { skills: parsed })
+    refetch()
+  }
 
   return (
     <div className="space-y-6">
@@ -98,103 +130,34 @@ export function Profile() {
         </div>
       </motion.div>
 
-      <EditableSection title="Personal Information" editValue={candidate.quickNotes ?? ""}>
+      <EditableSection title="Personal Information" editValue={name} onSave={savePersonalInfo}>
         <Row label="Full name" value={name} />
         <Row label="Email" value={candidate.email} />
         <Row label="Phone" value={candidate.phone ?? "Not provided"} />
         <Row label="Member since" value={new Date(candidate.createdAt).toLocaleDateString()} />
       </EditableSection>
 
-      {candidate.quickNotes && (
-        <EditableSection title="About" editValue={candidate.quickNotes}>
-          <p className="text-sm text-muted-foreground">{candidate.quickNotes}</p>
-        </EditableSection>
-      )}
-
-      <Callout
-        tone="warning"
-        actions={
-          <Button size="sm">
-            <Plus className="size-4" />
-            Add skills
-          </Button>
-        }
-      >
-        The sections below (summary, experience, education, skills) aren't part of your profile data yet — add
-        them to make your applications stand out.
-      </Callout>
-
-      <EditableSection title="Summary" editValue={candidateProfile.summary}>
-        <p className="text-sm text-muted-foreground">{candidateProfile.summary}</p>
+      <EditableSection title="Phone" editValue={candidate.phone ?? ""} onSave={savePhone}>
+        <p className="text-sm text-muted-foreground">{candidate.phone ?? "Not provided"}</p>
       </EditableSection>
 
-      <EditableSection
-        title="Experience"
-        editValue={candidateProfile.experience.map((e) => `${e.role} · ${e.company} · ${e.period}`).join("\n")}
-      >
-        <div className="space-y-3">
-          {candidateProfile.experience.map((exp) => (
-            <div key={exp.role} className="flex items-center justify-between border-b border-hairline pb-3 text-sm last:border-0 last:pb-0">
-              <div>
-                <p className="font-semibold">
-                  {exp.role} · {exp.company}
-                </p>
-              </div>
-              <span className="text-muted-foreground">{exp.period}</span>
-            </div>
-          ))}
-        </div>
+      <EditableSection title="About" editValue={candidate.quickNotes ?? ""} onSave={saveNotes}>
+        <p className="text-sm text-muted-foreground">{candidate.quickNotes || "No notes added yet."}</p>
       </EditableSection>
 
-      <EditableSection
-        title="Education"
-        editValue={candidateProfile.education.map((e) => `${e.school} · ${e.period}`).join("\n")}
-      >
-        <div className="space-y-3">
-          {candidateProfile.education.map((edu) => (
-            <div key={edu.school} className="flex items-center justify-between text-sm">
-              <span className="font-semibold">{edu.school}</span>
-              <span className="text-muted-foreground">{edu.period}</span>
-            </div>
-          ))}
-        </div>
-      </EditableSection>
-
-      <EditableSection title="Skills" editValue={candidateProfile.skills.join(", ")}>
+      <EditableSection title="Skills" editValue={skills.join(", ")} onSave={saveSkills}>
         <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Core</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {candidateProfile.skills.map((skill) => (
-            <Badge key={skill} variant="outline">
-              {skill}
-            </Badge>
-          ))}
-        </div>
-      </EditableSection>
-
-      <EditableSection
-        title="Certifications"
-        editValue={candidateProfile.certifications.map((c) => `${c.name} · ${c.year}`).join("\n")}
-      >
-        {candidateProfile.certifications.map((cert) => (
-          <div key={cert.name} className="flex items-center justify-between text-sm">
-            <span className="font-semibold">{cert.name}</span>
-            <span className="text-muted-foreground">{cert.year}</span>
+        {skills.length > 0 ? (
+          <div className="mt-2 flex flex-wrap gap-2">
+            {skills.map((skill) => (
+              <Badge key={skill} variant="outline">
+                {skill}
+              </Badge>
+            ))}
           </div>
-        ))}
-      </EditableSection>
-
-      <EditableSection
-        title="Languages"
-        editValue={candidateProfile.languages.map((l) => `${l.name} · ${l.level}`).join("\n")}
-      >
-        <div className="space-y-3">
-          {candidateProfile.languages.map((lang) => (
-            <div key={lang.name} className="flex items-center justify-between text-sm">
-              <span className="font-semibold">{lang.name}</span>
-              <span className="text-muted-foreground">{lang.level}</span>
-            </div>
-          ))}
-        </div>
+        ) : (
+          <p className="mt-2 text-sm text-muted-foreground">No skills added yet. Use the edit button to add some.</p>
+        )}
       </EditableSection>
     </div>
   )

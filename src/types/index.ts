@@ -406,8 +406,91 @@ export interface MyCandidate {
   gender: ApiGender | null
   dateOfBirth: string | null
   quickNotes: string | null
+  skills?: string[]
   createdAt: string
   updatedAt: string
   applications: MyCandidateApplication[]
   organization: { id: string; name: string } | null
+}
+
+// ── Candidate self-service: recommended jobs, matches, notifications, preferences, documents ──
+
+export interface ApiRecommendedJobSummary {
+  id: string
+  title: string
+  location: string | null
+  type: ApiJobType
+  remoteStatus: ApiRemoteStatus | null
+  salaryMin?: number | null
+  salaryMax?: number | null
+  organizationName?: string | null
+}
+
+export interface ApiRecommendedJob {
+  job: ApiRecommendedJobSummary
+  score: number
+  criteria: ReadinessCriterion[]
+  reasons: string[]
+  gap?: string
+}
+
+export type ApiMatchStatus = "new" | "waiting" | "accepted" | "rejected" | "in_progress"
+
+export interface ApiMatch {
+  id: string
+  jobId: string
+  job: ApiRecommendedJobSummary
+  score: number
+  criteria: ReadinessCriterion[]
+  reasons: string[]
+  gap?: string
+  status: ApiMatchStatus
+  matchedAt: string
+  updatedAt: string
+}
+
+export interface ApiMeInterview {
+  id: string
+  jobId: string
+  jobTitle: string
+  company: string
+  type: ApiInterviewType
+  status: ApiInterviewStatus
+  scheduledAt: string
+  duration: number
+  location: string | null
+}
+
+export interface ApiNotification {
+  id: string
+  category: string
+  title: string
+  description: string
+  actionLabel: string
+  actionHref?: string
+  isRead: boolean
+  createdAt: string
+}
+
+export type ApiWorkMode = "remote" | "hybrid" | "onsite" | "any"
+
+export interface ApiPreferences {
+  desiredTitles: string[]
+  locations: string[]
+  workMode: ApiWorkMode
+  minSalary: number | null
+  maxSalary: number | null
+  employmentTypes: string[]
+  notifyMatches: boolean
+  notifyApplications: boolean
+  notifyInterviews: boolean
+}
+
+export interface ApiDocument {
+  id: string
+  originalFilename: string
+  mimeType: string
+  sizeBytes: number
+  createdAt: string
+  parsedContent?: string | null
 }
