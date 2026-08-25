@@ -1,5 +1,6 @@
 import { eq, desc } from 'drizzle-orm'
 import { document } from '../../../database/schema'
+import { normalizeParsedContent } from '../../../utils/resume-parser'
 
 /**
  * GET /api/me/documents
@@ -17,9 +18,10 @@ export default defineEventHandler(async (event) => {
       originalFilename: true,
       mimeType: true,
       sizeBytes: true,
+      parsedContent: true,
       createdAt: true,
     },
   })
 
-  return { data }
+  return { data: data.map(d => ({ ...d, parsedContent: normalizeParsedContent(d.parsedContent) })) }
 })

@@ -24,6 +24,7 @@ export default defineEventHandler(async (event) => {
       gender: true,
       dateOfBirth: true,
       quickNotes: true,
+      skills: true,
       createdAt: true,
       updatedAt: true,
     },
