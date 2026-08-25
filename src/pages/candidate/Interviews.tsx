@@ -1,14 +1,17 @@
 import { motion } from "framer-motion"
 import { useMemo, useState } from "react"
+import { toast } from "sonner"
 
 import { EmptyState } from "@/components/feedback/EmptyState"
 import { ErrorState } from "@/components/feedback/ErrorState"
 import { Skeleton } from "@/components/feedback/Skeleton"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ApiError, api } from "@/lib/api"
 import { useMyCandidate } from "@/lib/candidateSession"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
-import type { ApiInterviewStatus } from "@/types"
+import type { ApiCandidateInterviewResponse, ApiInterviewStatus } from "@/types"
 
 const tabs: ApiInterviewStatus[] = ["scheduled", "completed", "cancelled", "no_show"]
 const statusLabel: Record<ApiInterviewStatus, string> = {
@@ -16,6 +19,13 @@ const statusLabel: Record<ApiInterviewStatus, string> = {
   completed: "Completed",
   cancelled: "Cancelled",
   no_show: "No-show",
+}
+
+const responseLabel: Record<ApiCandidateInterviewResponse, string> = {
+  pending: "Awaiting your response",
+  accepted: "You confirmed this slot",
+  declined: "You declined this slot",
+  tentative: "You marked this tentative",
 }
 
 interface FlatInterview {
@@ -26,12 +36,14 @@ interface FlatInterview {
   scheduledAt: string
   duration: number
   location: string | null
+  candidateResponse: ApiCandidateInterviewResponse
 }
 
 export function Interviews() {
   const [tab, setTab] = useState<ApiInterviewStatus>("scheduled")
   const reduced = useReducedMotion()
   const { candidate, loading, error, refetch } = useMyCandidate()
+  const [respondingId, setRespondingId] = useState<string | null>(null)
 
   const interviews = useMemo<FlatInterview[]>(() => {
     if (!candidate) return []
@@ -44,9 +56,23 @@ export function Interviews() {
         scheduledAt: iv.scheduledAt,
         duration: iv.duration,
         location: iv.location,
+        candidateResponse: iv.candidateResponse,
       }))
     )
   }, [candidate])
+
+  async function respond(interviewId: string, response: ApiCandidateInterviewResponse) {
+    setRespondingId(interviewId)
+    try {
+      await api.post(`/api/me/interviews/${interviewId}/respond`, { response })
+      toast.success(response === "declined" ? "Response recorded" : "Slot confirmed")
+      refetch()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to record your response")
+    } finally {
+      setRespondingId(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -109,7 +135,30 @@ export function Interviews() {
                   {date.toLocaleString()} · {interview.duration} min
                   {interview.location ? ` · ${interview.location}` : ""}
                 </p>
+                {interview.status === "scheduled" && (
+                  <p className="mt-1 text-xs text-muted-foreground">{responseLabel[interview.candidateResponse]}</p>
+                )}
               </div>
+              {interview.status === "scheduled" && (
+                <div className="flex shrink-0 gap-2">
+                  <Button
+                    size="sm"
+                    variant={interview.candidateResponse === "accepted" ? "default" : "outline"}
+                    disabled={respondingId === interview.id}
+                    onClick={() => respond(interview.id, "accepted")}
+                  >
+                    Confirm slot
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    disabled={respondingId === interview.id}
+                    onClick={() => respond(interview.id, "declined")}
+                  >
+                    Request change
+                  </Button>
+                </div>
+              )}
             </motion.div>
           )
         })}

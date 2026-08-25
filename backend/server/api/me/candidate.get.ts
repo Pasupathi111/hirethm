@@ -35,7 +35,17 @@ export default defineEventHandler(async (event) => {
             columns: { id: true, title: true, location: true, type: true, remoteStatus: true, status: true },
           },
           interviews: {
-            columns: { id: true, title: true, type: true, status: true, scheduledAt: true, duration: true, location: true },
+            columns: {
+              id: true,
+              title: true,
+              type: true,
+              status: true,
+              scheduledAt: true,
+              duration: true,
+              location: true,
+              candidateResponse: true,
+              candidateRespondedAt: true,
+            },
             orderBy: (interviewTable, { desc }) => [desc(interviewTable.scheduledAt)],
           },
         },
