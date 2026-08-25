@@ -1,28 +1,18 @@
-import { eq, isNull } from 'drizzle-orm'
-import { organization } from '../../database/schema'
+import { eq } from 'drizzle-orm'
+import { organization, candidate } from '../../database/schema'
 
 /**
  * Self-service candidate profile lookup.
  *
- * Candidate portal users are `user` accounts with no organization
- * membership, so `requirePermission` (which requires an active org)
- * doesn't apply here — we just need a valid session, then we match
- * the session's email against `candidate` rows across all orgs.
- *
- * Matches by email since there's no direct user->candidate link in
- * the schema; candidate profiles are created by recruiters independently
- * of candidate portal accounts.
+ * Auth + candidate-by-email lookup is shared via `requireCandidateSession`;
+ * this route additionally loads the applications/interviews relation that
+ * the shared helper doesn't need for its other (lighter-weight) callers.
  */
 export default defineEventHandler(async (event) => {
-  const session = await auth.api.getSession({ headers: event.headers })
-
-  if (!session) {
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
-  }
+  const { candidate: candidateSession } = await requireCandidateSession(event)
 
   const result = await db.query.candidate.findFirst({
-    where: (candidateTable, { and, ilike }) =>
-      and(ilike(candidateTable.email, session.user.email), isNull(candidateTable.quarantinedAt)),
+    where: eq(candidate.id, candidateSession.id),
     columns: {
       id: true,
       organizationId: true,
