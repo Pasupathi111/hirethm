@@ -1,12 +1,21 @@
-import { Sparkles } from "lucide-react"
-import { NavLink } from "react-router-dom"
+import { LogOut, Sparkles } from "lucide-react"
+import { NavLink, useNavigate } from "react-router-dom"
 
 import { Logo } from "@/components/layout/Logo"
 import { Button } from "@/components/ui/button"
+import { signOut } from "@/lib/authClient"
 import { candidateNav } from "@/lib/navigation"
 import { cn } from "@/lib/utils"
 
 export function CandidateSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+  const navigate = useNavigate()
+
+  const handleSignOut = async () => {
+    await signOut()
+    onNavigate?.()
+    navigate("/sign-in")
+  }
+
   return (
     <div className="flex h-full flex-col bg-sidebar">
       <div className="px-6 py-6">
@@ -44,7 +53,7 @@ export function CandidateSidebarContent({ onNavigate }: { onNavigate?: () => voi
           </div>
         ))}
       </nav>
-      <div className="p-4">
+      <div className="space-y-3 p-4">
         <div className="rounded-xl bg-secondary p-4 text-secondary-foreground">
           <p className="flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase text-mint">
             <Sparkles className="size-3.5" /> Free Plan
@@ -54,6 +63,9 @@ export function CandidateSidebarContent({ onNavigate }: { onNavigate?: () => voi
             Upgrade
           </Button>
         </div>
+        <Button variant="outline" size="sm" className="w-full" onClick={handleSignOut}>
+          <LogOut className="size-4" /> Sign out
+        </Button>
       </div>
     </div>
   )

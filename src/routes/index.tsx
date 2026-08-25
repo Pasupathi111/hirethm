@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom"
 
 import { RequireAuth } from "@/components/auth/RequireAuth"
+import { RequireCandidateAuth } from "@/components/auth/RequireCandidateAuth"
 import { AcceptInvitation } from "@/pages/auth/AcceptInvitation"
 import { AdminSignIn } from "@/pages/auth/AdminSignIn"
 import { CreateProfile } from "@/pages/auth/CreateProfile"
@@ -94,22 +95,27 @@ export const router = createBrowserRouter([
   { path: "/create-profile", element: <CreateProfile /> },
   {
     path: "/app",
-    element: <CandidateLayout />,
+    element: <RequireCandidateAuth />,
     children: [
-      { index: true, element: <Dashboard /> },
-      { path: "jobs", element: <FindJobs basePath="/app/jobs" /> },
-      { path: "jobs/:id", element: <JobDetail basePath="/app/jobs" candidateMode /> },
-      { path: "jobs/:id/apply", element: <JobApply basePath="/app/jobs" /> },
-      { path: "jobs/:id/confirmation", element: <JobApplyConfirmation basePath="/app/jobs" /> },
-      { path: "recommended", element: <Recommended /> },
-      { path: "matches", element: <MyMatches /> },
-      { path: "applications", element: <Applications /> },
-      { path: "interviews", element: <Interviews /> },
-      { path: "profile", element: <Profile /> },
-      { path: "resume", element: <Resume /> },
-      { path: "preferences", element: <CareerPreferences /> },
-      { path: "notifications", element: <Notifications /> },
-      { path: "settings", element: <Settings /> },
+      {
+        element: <CandidateLayout />,
+        children: [
+          { index: true, element: <Dashboard /> },
+          { path: "jobs", element: <FindJobs basePath="/app/jobs" /> },
+          { path: "jobs/:id", element: <JobDetail basePath="/app/jobs" candidateMode /> },
+          { path: "jobs/:id/apply", element: <JobApply basePath="/app/jobs" /> },
+          { path: "jobs/:id/confirmation", element: <JobApplyConfirmation basePath="/app/jobs" /> },
+          { path: "recommended", element: <Recommended /> },
+          { path: "matches", element: <MyMatches /> },
+          { path: "applications", element: <Applications /> },
+          { path: "interviews", element: <Interviews /> },
+          { path: "profile", element: <Profile /> },
+          { path: "resume", element: <Resume /> },
+          { path: "preferences", element: <CareerPreferences /> },
+          { path: "notifications", element: <Notifications /> },
+          { path: "settings", element: <Settings /> },
+        ],
+      },
     ],
   },
   {

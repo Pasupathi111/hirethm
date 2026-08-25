@@ -28,8 +28,25 @@ export function SignIn() {
       setError(signInError.message ?? "Invalid email or password.")
       return
     }
-    // Hard navigation — ensures RequireAuth reads a fresh session, not a stale client cache.
-    window.location.href = "/admin"
+
+    // Figure out where this account actually belongs: org members go to the
+    // admin ATS, candidates go to their portal. Hard navigation throughout —
+    // ensures the destination route reads a fresh session, not a stale cache.
+    const sessionRes = await fetch("/api/auth/get-session", { credentials: "include" })
+    const session = sessionRes.ok ? await sessionRes.json() : null
+
+    if (session?.session?.activeOrganizationId) {
+      window.location.href = "/admin"
+      return
+    }
+
+    const candidateRes = await fetch("/api/me/candidate", { credentials: "include" })
+    if (candidateRes.ok) {
+      window.location.href = "/app"
+      return
+    }
+
+    window.location.href = "/onboarding/create-org"
   }
 
   return (

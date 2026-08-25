@@ -8,10 +8,14 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
-import { candidateProfile, notifications } from "@/data/mockData"
+import { notifications } from "@/data/mockData"
+import { useMyCandidate } from "@/lib/candidateSession"
 
 export function CandidateTopbar() {
   const unread = notifications.filter((n) => n.unread).length
+  const { candidate } = useMyCandidate()
+  const name = candidate ? candidate.displayName || `${candidate.firstName} ${candidate.lastName}` : "…"
+  const initials = candidate ? `${candidate.firstName[0] ?? ""}${candidate.lastName[0] ?? ""}`.toUpperCase() : "…"
 
   return (
     <header className="sticky top-0 z-30 flex items-center gap-3 border-b border-border bg-background/95 px-4 py-3 backdrop-blur sm:px-6">
@@ -49,11 +53,11 @@ export function CandidateTopbar() {
         </Link>
         <Link to="/app/profile" className="flex items-center gap-2.5">
           <Avatar>
-            <AvatarFallback>{candidateProfile.initials}</AvatarFallback>
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="hidden text-left leading-tight sm:block">
-            <p className="text-sm font-semibold">{candidateProfile.name}</p>
-            <p className="text-xs text-muted-foreground">{candidateProfile.title}</p>
+            <p className="text-sm font-semibold">{name}</p>
+            <p className="text-xs text-muted-foreground">{candidate?.email ?? ""}</p>
           </div>
         </Link>
       </div>

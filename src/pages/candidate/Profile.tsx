@@ -4,12 +4,14 @@ import { Pencil, Plus } from "lucide-react"
 import { SectionCard } from "@/components/cards/SectionCard"
 import { EditSectionDialog } from "@/components/dialogs/EditSectionDialog"
 import { Callout } from "@/components/feedback/Callout"
+import { ErrorState } from "@/components/feedback/ErrorState"
+import { Skeleton } from "@/components/feedback/Skeleton"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { candidateProfile } from "@/data/mockData"
+import { useMyCandidate } from "@/lib/candidateSession"
 import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 function EditableSection({
@@ -57,6 +59,22 @@ function Row({ label, value }: { label: string; value: string }) {
 
 export function Profile() {
   const reduced = useReducedMotion()
+  const { candidate, loading, error, refetch } = useMyCandidate()
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    )
+  }
+
+  if (error) return <ErrorState description={error} onRetry={refetch} />
+  if (!candidate) return null
+
+  const name = candidate.displayName || `${candidate.firstName} ${candidate.lastName}`
+  const initials = `${candidate.firstName[0] ?? ""}${candidate.lastName[0] ?? ""}`.toUpperCase()
 
   return (
     <div className="space-y-6">
@@ -68,23 +86,30 @@ export function Profile() {
       >
         <div className="flex flex-wrap items-center gap-6">
           <Avatar className="size-20">
-            <AvatarFallback className="text-2xl">{candidateProfile.initials}</AvatarFallback>
+            <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h1 className="text-2xl">{candidateProfile.name}</h1>
+            <h1 className="text-2xl">{name}</h1>
             <p className="text-muted-foreground">
-              {candidateProfile.title} · {candidateProfile.location}
+              {candidate.email}
+              {candidate.organization ? ` · Applied to ${candidate.organization.name}` : ""}
             </p>
-          </div>
-          <div className="w-full sm:w-56">
-            <div className="mb-1 flex items-center justify-between">
-              <span className="text-2xl font-display font-semibold tracking-[-0.02em]">{candidateProfile.completeness}%</span>
-              <span className="text-sm text-muted-foreground">complete</span>
-            </div>
-            <Progress value={candidateProfile.completeness} />
           </div>
         </div>
       </motion.div>
+
+      <EditableSection title="Personal Information" editValue={candidate.quickNotes ?? ""}>
+        <Row label="Full name" value={name} />
+        <Row label="Email" value={candidate.email} />
+        <Row label="Phone" value={candidate.phone ?? "Not provided"} />
+        <Row label="Member since" value={new Date(candidate.createdAt).toLocaleDateString()} />
+      </EditableSection>
+
+      {candidate.quickNotes && (
+        <EditableSection title="About" editValue={candidate.quickNotes}>
+          <p className="text-sm text-muted-foreground">{candidate.quickNotes}</p>
+        </EditableSection>
+      )}
 
       <Callout
         tone="warning"
@@ -95,15 +120,9 @@ export function Profile() {
           </Button>
         }
       >
-        Add 2 more skills to improve your matches. Candidates with 12+ skills receive 40% more matches.
+        The sections below (summary, experience, education, skills) aren't part of your profile data yet — add
+        them to make your applications stand out.
       </Callout>
-
-      <EditableSection title="Personal Information" editValue={candidateProfile.summary}>
-        <Row label="Full name" value={candidateProfile.name} />
-        <Row label="Email" value={candidateProfile.email} />
-        <Row label="Phone" value={candidateProfile.phone} />
-        <Row label="Location" value={candidateProfile.location} />
-      </EditableSection>
 
       <EditableSection title="Summary" editValue={candidateProfile.summary}>
         <p className="text-sm text-muted-foreground">{candidateProfile.summary}</p>

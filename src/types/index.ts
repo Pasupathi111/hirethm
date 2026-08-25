@@ -365,3 +365,49 @@ export interface ApiInterview {
   jobId: string
   jobTitle: string
 }
+
+// ── Candidate self-service (GET /api/me/candidate) ──────────────────────────
+
+export interface MyCandidateInterview {
+  id: string
+  title: string
+  type: ApiInterviewType
+  status: ApiInterviewStatus
+  scheduledAt: string
+  duration: number
+  location: string | null
+}
+
+export interface MyCandidateApplication {
+  id: string
+  status: ApiApplicationStatus
+  score: number | null
+  notes: string | null
+  createdAt: string
+  updatedAt: string
+  job: {
+    id: string
+    title: string
+    location: string | null
+    type: ApiJobType
+    remoteStatus: ApiRemoteStatus | null
+    status: ApiJobStatus
+  }
+  interviews: MyCandidateInterview[]
+}
+
+export interface MyCandidate {
+  id: string
+  firstName: string
+  lastName: string
+  displayName: string | null
+  email: string
+  phone: string | null
+  gender: ApiGender | null
+  dateOfBirth: string | null
+  quickNotes: string | null
+  createdAt: string
+  updatedAt: string
+  applications: MyCandidateApplication[]
+  organization: { id: string; name: string } | null
+}

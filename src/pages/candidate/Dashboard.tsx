@@ -3,30 +3,56 @@ import { CalendarCheck2, ListChecks, Sparkles, UserCircle2 } from "lucide-react"
 import { Link } from "react-router-dom"
 
 import { StatCard } from "@/components/cards/StatCard"
+import { ErrorState } from "@/components/feedback/ErrorState"
+import { Skeleton } from "@/components/feedback/Skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { applications, candidateProfile, interviews, jobs, matches } from "@/data/mockData"
+import { candidateProfile, jobs, matches } from "@/data/mockData"
+import { useMyCandidate } from "@/lib/candidateSession"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 export function Dashboard() {
   const reduced = useReducedMotion()
+  const { candidate, loading, error, refetch } = useMyCandidate()
   const newMatches = matches.filter((m) => m.status === "New")
   const featured = matches[0]
   const recommended = jobs.slice(0, 4)
-  const nextInterview = interviews.find((i) => i.status === "Upcoming")
+
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    )
+  }
+
+  if (error) return <ErrorState description={error} onRetry={refetch} />
+  if (!candidate) return null
+
+  const firstName = candidate.firstName
+  const activeApplications = candidate.applications.filter((a) => a.status !== "rejected" && a.status !== "hired")
+  const nextInterview = candidate.applications
+    .flatMap((a) => a.interviews.map((iv) => ({ ...iv, jobTitle: a.job.title })))
+    .filter((iv) => iv.status === "scheduled")
+    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0]
+  const recentApplications = [...candidate.applications]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 4)
 
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl">Good morning, Alex</h1>
+          <h1 className="text-3xl">Welcome back, {firstName}</h1>
           <p className="mt-1 text-muted-foreground">
-            Your HireThm profile is {candidateProfile.completeness}% complete. Two skills away from a stronger match rate.
+            {candidate.applications.length} application{candidate.applications.length === 1 ? "" : "s"} on file
+            {candidate.organization ? ` with ${candidate.organization.name}` : ""}.
           </p>
         </div>
         <Button asChild>
-          <Link to="/app/profile">Complete Profile</Link>
+          <Link to="/app/profile">View Profile</Link>
         </Button>
       </div>
 
@@ -48,14 +74,19 @@ export function Dashboard() {
           <StatCard icon={Sparkles} value={newMatches.length} label="New AI matches" hint="Awaiting your decision" />
         </motion.div>
         <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
-          <StatCard icon={ListChecks} value={applications.length} label="Active applications" hint="1 shortlisted" />
+          <StatCard
+            icon={ListChecks}
+            value={activeApplications.length}
+            label="Active applications"
+            hint={`${candidate.applications.length} total`}
+          />
         </motion.div>
         <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
           <StatCard
             icon={CalendarCheck2}
-            value={nextInterview?.date ?? "—"}
+            value={nextInterview ? new Date(nextInterview.scheduledAt).toLocaleDateString() : "—"}
             label="Upcoming interview"
-            hint={nextInterview ? `${nextInterview.type} · ${nextInterview.company}` : "None scheduled"}
+            hint={nextInterview ? `${nextInterview.type} · ${nextInterview.jobTitle}` : "None scheduled"}
           />
         </motion.div>
       </motion.div>
@@ -158,14 +189,15 @@ export function Dashboard() {
         </div>
 
         <div className="rounded-lg border border-border bg-card p-6">
-          <h3>Recent activity</h3>
+          <h3>Recent applications</h3>
           <ul className="mt-4 space-y-4">
-            {applications.slice(0, 4).map((app) => (
+            {recentApplications.map((app) => (
               <li key={app.id} className="text-sm">
-                <p className="font-semibold">{app.title}</p>
-                <p className="text-muted-foreground">{app.company}</p>
+                <p className="font-semibold">{app.job.title}</p>
+                <p className="text-muted-foreground capitalize">{app.status} · {new Date(app.createdAt).toLocaleDateString()}</p>
               </li>
             ))}
+            {recentApplications.length === 0 && <li className="text-sm text-muted-foreground">No applications yet.</li>}
           </ul>
         </div>
       </div>
