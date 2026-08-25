@@ -1,11 +1,11 @@
-import { Bell, Menu, Search } from "lucide-react"
+import { Bell, Menu } from "lucide-react"
 import { Link } from "react-router-dom"
 
+import { SearchBar } from "@/components/common/SearchBar"
 import { CandidateSidebarContent } from "@/components/layout/CandidateSidebar"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import { candidateProfile, notifications } from "@/data/mockData"
@@ -29,12 +29,8 @@ export function CandidateTopbar() {
         </SheetContent>
       </Sheet>
 
-      <div className="relative hidden max-w-sm flex-1 sm:block">
-        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input placeholder="Search jobs, companies..." className="pl-9" />
-      </div>
-
       <div className="ml-auto flex items-center gap-3">
+        <SearchBar placeholder="Search jobs, companies..." containerClassName="hidden max-w-sm sm:block" />
         <Button asChild size="sm" className="hidden sm:inline-flex">
           <Link to="/app/profile">Complete Profile</Link>
         </Button>

@@ -1,10 +1,10 @@
-import { SlidersHorizontal, Search } from "lucide-react"
+import { SlidersHorizontal } from "lucide-react"
 import { useMemo, useState } from "react"
 
 import { JobCard } from "@/components/cards/JobCard"
+import { SearchBar } from "@/components/common/SearchBar"
 import { EmptyState } from "@/components/feedback/EmptyState"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { jobs } from "@/data/mockData"
@@ -192,19 +192,10 @@ export function FindJobs({ basePath = "/jobs" }: { basePath?: string }) {
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 className="text-4xl">Open roles on HireThm</h1>
 
-      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search jobs, skills, companies..."
-            className="h-12 pl-11"
-          />
-        </div>
+      <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="lg" className="lg:hidden">
+            <Button variant="outline" className="lg:hidden">
               <SlidersHorizontal className="size-4" />
               Filters
               {activeFilterCount > 0 && (
@@ -223,7 +214,13 @@ export function FindJobs({ basePath = "/jobs" }: { basePath?: string }) {
             </div>
           </SheetContent>
         </Sheet>
-        <Button size="lg">Search</Button>
+
+        <SearchBar
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search jobs, skills, companies..."
+          containerClassName="ml-auto w-full sm:max-w-sm"
+        />
       </div>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[260px_1fr]">

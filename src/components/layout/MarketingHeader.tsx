@@ -1,4 +1,4 @@
-import { Menu } from "lucide-react"
+import { Menu, UserPlus } from "lucide-react"
 import { Link, useLocation } from "react-router-dom"
 
 import { Logo } from "@/components/layout/Logo"
@@ -51,7 +51,10 @@ export function MarketingHeader() {
             <Link to="/sign-in">Sign In</Link>
           </Button>
           <Button asChild>
-            <Link to="/create-profile">Create Profile</Link>
+            <Link to="/create-profile">
+              <UserPlus className="size-4" />
+              Create Profile
+            </Link>
           </Button>
         </div>
 

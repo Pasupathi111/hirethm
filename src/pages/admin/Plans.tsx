@@ -1,8 +1,9 @@
-import { Check } from "lucide-react"
+import { Check, Pencil } from "lucide-react"
 import { motion } from "framer-motion"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { plans } from "@/data/mockData"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
@@ -24,7 +25,22 @@ export function AdminPlans() {
       >
         {plans.map((plan) => (
           <motion.div key={plan.id} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-lg border border-border bg-card p-6">
-            <p className="font-bold">{plan.name}</p>
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-bold">{plan.name}</p>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    aria-label={`Edit ${plan.name} plan`}
+                    onClick={() => toast(`Editing ${plan.name} plan`, { description: "Pricing and feature changes apply platform-wide." })}
+                  >
+                    <Pencil className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Edit plan</TooltipContent>
+              </Tooltip>
+            </div>
             <p className="font-display mt-2 text-3xl font-semibold tracking-[-0.02em]">
               {plan.price}
               <span className="text-base font-medium text-muted-foreground">{plan.billingPeriod}</span>
@@ -37,13 +53,6 @@ export function AdminPlans() {
                 </li>
               ))}
             </ul>
-            <Button
-              variant="outline"
-              className="mt-5 w-full"
-              onClick={() => toast(`Editing ${plan.name} plan`, { description: "Pricing and feature changes apply platform-wide." })}
-            >
-              Edit plan
-            </Button>
           </motion.div>
         ))}
       </motion.div>

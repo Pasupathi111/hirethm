@@ -1,4 +1,4 @@
-import { Check, Upload } from "lucide-react"
+import { Check, UserPlus, Upload } from "lucide-react"
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
@@ -97,6 +97,7 @@ export function CreateProfile() {
                 match.
               </label>
               <Button type="submit" size="lg" className="w-full">
+                <UserPlus className="size-4" />
                 Create Account
               </Button>
             </form>

@@ -1,4 +1,4 @@
-import { ArrowRight, Check } from "lucide-react"
+import { ArrowRight, Check, UserPlus } from "lucide-react"
 import { motion } from "framer-motion"
 import { Link } from "react-router-dom"
 
@@ -75,7 +75,10 @@ export function Home() {
                 <Link to="/jobs">Find Jobs</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/create-profile">Create Profile</Link>
+                <Link to="/create-profile">
+                  <UserPlus className="size-4" />
+                  Create Profile
+                </Link>
               </Button>
             </div>
           </motion.div>
@@ -253,7 +256,10 @@ export function Home() {
               <p className="mt-3 text-white/60">Free for candidates. Your data, your decisions, always.</p>
             </div>
             <Button asChild size="lg">
-              <Link to="/create-profile">Create your profile</Link>
+              <Link to="/create-profile">
+                <UserPlus className="size-4" />
+                Create your profile
+              </Link>
             </Button>
           </div>
         </div>

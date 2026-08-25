@@ -1,4 +1,5 @@
 import { motion } from "framer-motion"
+import { Pencil, Plus } from "lucide-react"
 
 import { SectionCard } from "@/components/cards/SectionCard"
 import { EditSectionDialog } from "@/components/dialogs/EditSectionDialog"
@@ -7,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { candidateProfile } from "@/data/mockData"
 import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
@@ -27,9 +29,14 @@ function EditableSection({
           section={title}
           defaultValue={editValue}
           trigger={
-            <Button variant="outline" size="sm">
-              Edit
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon" aria-label={`Edit ${title}`}>
+                  <Pencil className="size-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Edit {title}</TooltipContent>
+            </Tooltip>
           }
         />
       }
@@ -79,7 +86,15 @@ export function Profile() {
         </div>
       </motion.div>
 
-      <Callout tone="warning" actions={<Button size="sm">Add skills</Button>}>
+      <Callout
+        tone="warning"
+        actions={
+          <Button size="sm">
+            <Plus className="size-4" />
+            Add skills
+          </Button>
+        }
+      >
         Add 2 more skills to improve your matches. Candidates with 12+ skills receive 40% more matches.
       </Callout>
 

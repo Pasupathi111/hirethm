@@ -1,3 +1,4 @@
+import { Trash2 } from "lucide-react"
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
@@ -170,6 +171,7 @@ export function Settings() {
                   className="border-destructive text-destructive hover:bg-destructive/10"
                   onClick={() => toast.error("Account deletion requires email confirmation")}
                 >
+                  <Trash2 className="size-4" />
                   Delete account
                 </Button>
               </div>

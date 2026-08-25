@@ -2,11 +2,11 @@ import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
+import { SearchBar } from "@/components/common/SearchBar"
 import { EmptyState } from "@/components/feedback/EmptyState"
 import { SkeletonListRow } from "@/components/feedback/Skeleton"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export interface AdminColumn<T> {
@@ -79,28 +79,32 @@ export function AdminListPage<T extends { id: string }>({
         </div>
       </div>
 
-      <Input
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder={searchPlaceholder ?? `Search ${title.toLowerCase()}...`}
-        className="max-w-sm"
-      />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {tabs ? (
+          <div className="flex flex-wrap gap-2">
+            {tabs.map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors duration-200 ${
+                  tab === t ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div />
+        )}
 
-      {tabs && (
-        <div className="flex flex-wrap gap-2">
-          {tabs.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTab(t)}
-              className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-colors duration-200 ${
-                tab === t ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/70"
-              }`}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      )}
+        <SearchBar
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={searchPlaceholder ?? `Search ${title.toLowerCase()}...`}
+          containerClassName="ml-auto w-full max-w-sm"
+        />
+      </div>
 
       {loading ? (
         <div className="space-y-3">

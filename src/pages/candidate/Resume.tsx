@@ -1,4 +1,4 @@
-import { FileText, Sparkles, Upload } from "lucide-react"
+import { FileText, Sparkles, Trash2, Upload } from "lucide-react"
 import { useRef, useState } from "react"
 import { toast } from "sonner"
 
@@ -52,7 +52,10 @@ export function Resume() {
         <p className="text-lg font-bold">Upload your resume</p>
         <p className="text-sm text-muted-foreground">PDF, DOC, DOCX · up to 10 MB</p>
         <div className="mt-2 flex gap-3">
-          <Button onClick={() => inputRef.current?.click()}>Browse files</Button>
+          <Button onClick={() => inputRef.current?.click()}>
+            <Upload className="size-4" />
+            Browse files
+          </Button>
           <Button variant="outline">Drag & drop</Button>
         </div>
         <input
@@ -82,6 +85,7 @@ export function Resume() {
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={() => setFileName(null)}>
+            <Trash2 className="size-4" />
             Remove
           </Button>
         </div>
