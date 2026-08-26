@@ -3,13 +3,11 @@ import type {
   AdminCandidate,
   AdminEmployer,
   AdminHiringManager,
-  AdminMatch,
   AdminRecruiter,
   Application,
   CandidateProfile,
   ChatMessage,
   Job,
-  Match,
   Plan,
   SourceTrackingEntry,
   SystemService,
@@ -217,92 +215,6 @@ export const candidateProfile: CandidateProfile = {
   ],
 }
 
-export const matches: Match[] = [
-  {
-    id: "match-1",
-    jobId: "job-2",
-    title: "Senior Product Engineer",
-    company: "ABC Technologies",
-    companyInitials: "AB",
-    companyColor: "bg-slate-800",
-    status: "New",
-    matchedAt: "22 Aug 2026",
-    readiness: 91,
-    criteria: [
-      { label: "Skills Match", value: 95 },
-      { label: "Experience Match", value: 90 },
-      { label: "Career Goals", value: 88 },
-      { label: "Location Preference", value: 100 },
-      { label: "Salary Fit", value: 92 },
-      { label: "Availability", value: 85 },
-      { label: "Culture & Role Fit", value: 87 },
-      { label: "Potential & Growth", value: 90 },
-    ],
-    reasons: [
-      "Strong skills alignment across React, TypeScript and Node.js",
-      "Experience alignment at 5+ years in product teams",
-      "Career goals alignment with platform engineering",
-      "Location preference: fully remote",
-      "Salary expectation within the posted range",
-    ],
-    gap: "Kubernetes experience preferred",
-  },
-  {
-    id: "match-2",
-    jobId: "job-3",
-    title: "React Team Lead",
-    company: "Verta Labs",
-    companyInitials: "VL",
-    companyColor: "bg-green-800",
-    status: "New",
-    matchedAt: "21 Aug 2026",
-    readiness: 85,
-    criteria: [
-      { label: "Skills Match", value: 92 },
-      { label: "Experience Match", value: 88 },
-      { label: "Career Goals", value: 84 },
-      { label: "Location Preference", value: 100 },
-      { label: "Salary Fit", value: 80 },
-      { label: "Availability", value: 82 },
-      { label: "Culture & Role Fit", value: 86 },
-      { label: "Potential & Growth", value: 88 },
-    ],
-    reasons: [
-      "React and TypeScript depth matches the role",
-      "Mentoring experience noted from your CV",
-      "Remote-first, matching your preference",
-    ],
-    gap: "No formal people-management history",
-  },
-  {
-    id: "match-3",
-    jobId: "job-5",
-    title: "Frontend Architect",
-    company: "TechFlow",
-    companyInitials: "TF",
-    companyColor: "bg-emerald-700",
-    status: "Accepted",
-    matchedAt: "18 Aug 2026",
-    readiness: 79,
-    criteria: [
-      { label: "Skills Match", value: 90 },
-      { label: "Experience Match", value: 70 },
-      { label: "Career Goals", value: 78 },
-      { label: "Location Preference", value: 100 },
-      { label: "Salary Fit", value: 95 },
-      { label: "Availability", value: 70 },
-      { label: "Culture & Role Fit", value: 75 },
-      { label: "Potential & Growth", value: 82 },
-    ],
-    reasons: [
-      "Design system ownership matches the role scope",
-      "Salary range above your expectation",
-      "Remote role",
-    ],
-    gap: "8+ years requested, you are at 6",
-  },
-]
-
 export const applications: Application[] = [
   {
     id: "app-1",
@@ -392,14 +304,6 @@ export const adminApplications: AdminApplication[] = [
   { id: "APP-41211", candidate: "Daniel Okoye", job: "Full Stack Engineer", employer: "CloudWorks", status: "Applied", applied: "12 Aug 2026" },
   { id: "APP-41212", candidate: "Grace Lin", job: "React Team Lead", employer: "Verta Labs", status: "Interview", applied: "05 Aug 2026" },
   { id: "APP-41213", candidate: "Sofia Almeida", job: "Frontend Architect", employer: "TechFlow", status: "Rejected", applied: "28 Jul 2026" },
-]
-
-export const adminMatches: AdminMatch[] = [
-  { id: "MTH-8291", candidate: "Alex Johnson", job: "Senior Product Engineer", employer: "ABC Technologies", readiness: 91, status: "New", created: "22 Aug 2026" },
-  { id: "MTH-8290", candidate: "Alex Johnson", job: "React Team Lead", employer: "Verta Labs", readiness: 85, status: "New", created: "21 Aug 2026" },
-  { id: "MTH-8289", candidate: "Priya Nair", job: "Frontend Architect", employer: "TechFlow", readiness: 79, status: "Accepted", created: "18 Aug 2026" },
-  { id: "MTH-8288", candidate: "Marcus Webb", job: "Data Platform Lead", employer: "Nova Systems", readiness: 62, status: "Waiting for Decision", created: "17 Aug 2026" },
-  { id: "MTH-8287", candidate: "Grace Lin", job: "Full Stack Engineer", employer: "CloudWorks", readiness: 58, status: "Rejected", created: "15 Aug 2026" },
 ]
 
 export const plans: Plan[] = [
