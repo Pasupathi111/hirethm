@@ -388,6 +388,21 @@ export interface MyCandidateApplication {
   interviews: MyCandidateInterview[]
 }
 
+export interface CandidateCompletenessItem {
+  key: string
+  label: string
+  met: boolean
+  weight: number
+  hint: string
+}
+
+export interface CandidateCompleteness {
+  score: number
+  isComplete: boolean
+  items: CandidateCompletenessItem[]
+  hints: string[]
+}
+
 export interface MyCandidate {
   id: string
   firstName: string
@@ -403,6 +418,7 @@ export interface MyCandidate {
   updatedAt: string
   applications: MyCandidateApplication[]
   organization: { id: string; name: string } | null
+  completeness: CandidateCompleteness
 }
 
 // ── Candidate self-service: recommended jobs, matches, notifications, preferences, documents ──

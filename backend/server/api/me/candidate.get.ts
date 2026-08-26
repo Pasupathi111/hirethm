@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
-import { organization, candidate } from '../../database/schema'
+import { organization, candidate, document, candidatePreference } from '../../database/schema'
+import { computeCandidateCompleteness } from '../../utils/candidateCompleteness'
 
 /**
  * Self-service candidate profile lookup.
@@ -59,9 +60,29 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'No candidate profile found for this account' })
   }
 
-  const org = await db.query.organization.findFirst({
-    where: eq(organization.id, result.organizationId),
-    columns: { id: true, name: true },
+  const [org, documents, preference] = await Promise.all([
+    db.query.organization.findFirst({
+      where: eq(organization.id, result.organizationId),
+      columns: { id: true, name: true },
+    }),
+    db.query.document.findMany({
+      where: eq(document.candidateId, result.id),
+      columns: { type: true, parsedContent: true },
+    }),
+    db.query.candidatePreference.findFirst({
+      where: eq(candidatePreference.candidateId, result.id),
+      columns: { desiredTitles: true, locations: true, minSalary: true, maxSalary: true, employmentTypes: true },
+    }),
+  ])
+
+  const resumeDocs = documents.filter(d => d.type === 'resume')
+  const completeness = computeCandidateCompleteness({
+    phone: result.phone,
+    skills: result.skills,
+    quickNotes: result.quickNotes,
+    hasResumeDocument: resumeDocs.length > 0,
+    hasParsedResume: resumeDocs.some(d => d.parsedContent != null),
+    preference: preference ?? null,
   })
 
   const { organizationId, ...candidateFields } = result
@@ -69,5 +90,6 @@ export default defineEventHandler(async (event) => {
   return {
     ...candidateFields,
     organization: org ?? null,
+    completeness,
   }
 })

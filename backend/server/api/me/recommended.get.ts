@@ -11,6 +11,17 @@ import { computeMatch, DEFAULT_MATCH_PREFERENCE, type MatchPreferenceInput } fro
 export default defineEventHandler(async (event) => {
   const { candidate } = await requireCandidateSession(event)
 
+  // BRD business rule: matching can only occur once the candidate's resume/
+  // profile has been analyzed. With zero skills there's no real signal to
+  // score against, so recommending anything would be noise, not a match.
+  if (candidate.skills.length === 0) {
+    return {
+      data: [],
+      profileIncomplete: true,
+      message: 'Add your skills or upload a resume to start getting matched with roles.',
+    }
+  }
+
   const [openJobs, savedPreference] = await Promise.all([
     db.query.job.findMany({
       where: eq(job.status, 'open'),
