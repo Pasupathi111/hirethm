@@ -64,6 +64,7 @@ export default defineEventHandler(async (event) => {
           organizationId: orgSettings.organizationId,
           minReadinessScore: orgSettings.minReadinessScore,
           matchNotificationChannel: orgSettings.matchNotificationChannel,
+          matchWeights: orgSettings.matchWeights,
         }).from(orgSettings).where(inArray(orgSettings.organizationId, orgIds)),
         db.select({ id: organization.id, name: organization.name })
           .from(organization).where(inArray(organization.id, orgIds)),
@@ -72,9 +73,27 @@ export default defineEventHandler(async (event) => {
   const settingsByOrg = new Map(settingsRows.map(r => [r.organizationId, r]))
   const orgNameById = new Map(orgRows.map(r => [r.id, r.name]))
 
-  const candidates = candidate.skills.length === 0 ? [] : analyzedJobs
+  // Candidate consent gate: 'manual' and 'hidden' mean the candidate has opted
+  // out of being sourced, so no NEW candidate_match rows are created for them.
+  // Rows they already have are still returned below — opting out stops future
+  // sourcing, it does not retroactively delete matches they were notified of
+  // and may still want to act on.
+  const sourcingAllowed = (savedPreference?.sourcingVisibility ?? 'open') === 'open'
+
+  const candidates = (candidate.skills.length === 0 || !sourcingAllowed) ? [] : analyzedJobs
     .filter(j => !existingJobIds.has(j.id))
-    .map(j => ({ j, match: computeMatch(j, { skills: candidate.skills }, preference) }))
+    // Criterion weighting is the job organization's setting (issue #69), same
+    // as the threshold below — the employer whose role produced the match
+    // decides how their criteria are balanced.
+    .map(j => ({
+      j,
+      match: computeMatch(
+        j,
+        { skills: candidate.skills },
+        preference,
+        settingsByOrg.get(j.organizationId)?.matchWeights ?? null,
+      ),
+    }))
     // Threshold gating (part C): a match below the org's configured minimum is
     // never created and therefore never notifies.
     .filter(({ j, match }) => {

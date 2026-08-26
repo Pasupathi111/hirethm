@@ -1,6 +1,6 @@
 import { GripVertical, Plus, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
-import { Navigate, useParams } from "react-router-dom"
+import { Navigate, useParams, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
 import { SectionCard } from "@/components/cards/SectionCard"
@@ -34,6 +34,7 @@ interface JobQuestion {
 }
 
 export function AdminJobApplicationForm() {
+  const navigate = useNavigate()
   const { id } = useParams()
   const [job, setJob] = useState<ApiJob | null>(null)
   const [questions, setQuestions] = useState<JobQuestion[]>([])
@@ -112,7 +113,9 @@ export function AdminJobApplicationForm() {
         name="Application form"
         meta={job.title}
         actions={
-          <Button variant="dark" onClick={() => toast.success("All changes are saved automatically")}>
+          // Every edit on this screen already persists immediately, so "Done"
+          // has nothing to save — it just returns to the job.
+          <Button variant="dark" onClick={() => navigate(`/admin/jobs/${job.id}`)}>
             Done
           </Button>
         }

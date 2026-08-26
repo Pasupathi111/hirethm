@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { orgSettings } from '../../database/schema'
+import { DEFAULT_MATCH_WEIGHTS } from '../../utils/matching'
 
 export default defineEventHandler(async (event) => {
   const session = await requirePermission(event, { organization: ['read'] })
@@ -16,6 +17,7 @@ export default defineEventHandler(async (event) => {
       retentionActivatedAt: true,
       matchNotificationChannel: true,
       minReadinessScore: true,
+      matchWeights: true,
       consentExpiryEnabled: true,
       consentExpiryDays: true,
       privacyPolicyUrl: true,
@@ -34,6 +36,9 @@ export default defineEventHandler(async (event) => {
     retentionActivatedAt: settings?.retentionActivatedAt ?? null,
     matchNotificationChannel: settings?.matchNotificationChannel ?? 'in_app',
     minReadinessScore: settings?.minReadinessScore ?? 70,
+    // NULL means "never customized" — hand back the engine's defaults so the
+    // Matching Rules screen shows the weights actually in force, not blanks.
+    matchWeights: settings?.matchWeights ?? DEFAULT_MATCH_WEIGHTS,
     consentExpiryEnabled: settings?.consentExpiryEnabled ?? false,
     consentExpiryDays: settings?.consentExpiryDays ?? 90,
     privacyPolicyUrl: settings?.privacyPolicyUrl ?? null,

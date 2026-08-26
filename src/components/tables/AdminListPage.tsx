@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { isValidElement, useEffect, useMemo, useState, type ReactNode } from "react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
@@ -16,9 +16,64 @@ export interface AdminColumn<T> {
   className?: string
   /** Enables click-to-sort on this column's header. */
   sortValue?: (row: T) => string | number
+  /**
+   * Overrides what this column contributes to a CSV export. Only needed when
+   * the rendered cell has no meaningful text (an icon-only cell), or when the
+   * export should carry more precision than the display — a raw ISO date where
+   * the table shows "3 days ago", for instance.
+   */
+  exportValue?: (row: T) => string | number | null | undefined
 }
 
 const PAGE_SIZE = 10
+
+/**
+ * Flatten a rendered cell to plain text for CSV export.
+ *
+ * Columns render arbitrary JSX (badges, links, icon + label pairs), so the
+ * export walks the element tree and keeps the text nodes. This means export
+ * needs no per-column configuration and cannot silently drift from what the
+ * table shows. A column whose cell carries no text at all can still opt in
+ * explicitly via `exportValue`.
+ */
+function nodeToText(node: ReactNode): string {
+  if (node === null || node === undefined || typeof node === "boolean") return ""
+  if (typeof node === "string" || typeof node === "number") return String(node)
+  if (Array.isArray(node)) return node.map(nodeToText).join(" ")
+  if (isValidElement<{ children?: ReactNode }>(node)) return nodeToText(node.props.children)
+  return ""
+}
+
+/** RFC 4180 quoting: double the quotes, wrap anything containing a delimiter. */
+function csvCell(value: string): string {
+  const normalized = value.replace(/\s+/g, " ").trim()
+  return /[",\n]/.test(normalized) ? `"${normalized.replace(/"/g, '""')}"` : normalized
+}
+
+function toCsv<T>(columns: AdminColumn<T>[], rows: T[]): string {
+  const header = columns.map((c) => csvCell(c.header)).join(",")
+  const body = rows.map((row) =>
+    columns
+      .map((c) => csvCell(c.exportValue ? String(c.exportValue(row) ?? "") : nodeToText(c.render(row))))
+      .join(","),
+  )
+  return [header, ...body].join("\r\n")
+}
+
+/** Trigger a browser download of `content` without round-tripping through a server. */
+function downloadCsv(filename: string, content: string) {
+  // The BOM makes Excel read the file as UTF-8 instead of the local codepage,
+  // which otherwise mangles any non-ASCII name in the export.
+  const blob = new Blob(["﻿" + content], { type: "text/csv;charset=utf-8;" })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement("a")
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
 
 export function AdminListPage<T extends { id: string }>({
   title,
@@ -29,7 +84,7 @@ export function AdminListPage<T extends { id: string }>({
   rows,
   rowHref,
   searchPlaceholder,
-  loading: externalLoading,
+  loading,
   headerActions,
   onDeleteSelected,
 }: {
@@ -41,28 +96,20 @@ export function AdminListPage<T extends { id: string }>({
   rows: T[]
   rowHref?: (row: T) => string
   searchPlaceholder?: string
-  /** Pass to drive the loading skeleton from real async data instead of the built-in fake delay. */
-  loading?: boolean
-  /** Extra buttons rendered before the built-in Export CSV / Bulk actions buttons. */
+  /** Drives the loading skeleton from the caller's real fetch state. */
+  loading: boolean
+  /** Extra buttons rendered before the built-in Export CSV button. */
   headerActions?: React.ReactNode
-  /** When provided, replaces the "Bulk actions" stub with a real "Delete selected" action. */
+  /** When provided, adds a real "Delete selected" action for the checked rows. */
   onDeleteSelected?: (ids: string[]) => Promise<void> | void
 }) {
   const navigate = useNavigate()
   const [tab, setTab] = useState(tabs?.[0] ?? "All")
   const [query, setQuery] = useState("")
   const [selected, setSelected] = useState<string[]>([])
-  const [fakeLoading, setFakeLoading] = useState(externalLoading === undefined)
-  const loading = externalLoading ?? fakeLoading
   const [sort, setSort] = useState<{ header: string; direction: "asc" | "desc" } | null>(null)
   const [page, setPage] = useState(1)
   const [isDeleting, setIsDeleting] = useState(false)
-
-  useEffect(() => {
-    if (externalLoading !== undefined) return
-    const timer = setTimeout(() => setFakeLoading(false), 450)
-    return () => clearTimeout(timer)
-  }, [externalLoading])
 
   useEffect(() => {
     setPage(1)
@@ -107,6 +154,26 @@ export function AdminListPage<T extends { id: string }>({
     })
   }
 
+  /**
+   * Export what the user is actually looking at: the current tab + search +
+   * sort, or just the checked rows if any are checked. Pagination is
+   * deliberately ignored — exporting only page 1 of a filtered set is the
+   * kind of silent truncation that makes an export untrustworthy.
+   */
+  const handleExportCsv = () => {
+    const scope = selected.length > 0 ? sorted.filter((r) => selected.includes(r.id)) : sorted
+    if (scope.length === 0) {
+      toast("Nothing to export", { description: "No rows match the current filters." })
+      return
+    }
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+    const stamp = new Date().toISOString().slice(0, 10)
+    downloadCsv(`${slug}-${stamp}.csv`, toCsv(columns, scope))
+    toast.success(`Exported ${scope.length} row${scope.length === 1 ? "" : "s"}`, {
+      description: selected.length > 0 ? "Selected rows only." : "All rows matching the current filters.",
+    })
+  }
+
   const handleDeleteSelected = async () => {
     if (!onDeleteSelected || selected.length === 0) return
     setIsDeleting(true)
@@ -127,20 +194,12 @@ export function AdminListPage<T extends { id: string }>({
         </div>
         <div className="flex gap-2">
           {headerActions}
-          <Button variant="outline" onClick={() => toast.success("CSV export started", { description: "You'll get a download link shortly." })}>
-            Export CSV
+          <Button variant="outline" onClick={handleExportCsv} disabled={loading}>
+            {selected.length > 0 ? `Export CSV (${selected.length})` : "Export CSV"}
           </Button>
-          {onDeleteSelected ? (
+          {onDeleteSelected && (
             <Button variant="destructive" disabled={selected.length === 0 || isDeleting} onClick={handleDeleteSelected}>
               {isDeleting ? "Deleting..." : `Delete selected${selected.length ? ` (${selected.length})` : ""}`}
-            </Button>
-          ) : (
-            <Button
-              variant="dark"
-              disabled={selected.length === 0}
-              onClick={() => toast(`${selected.length} rows selected`, { description: "Choose a bulk action to apply." })}
-            >
-              Bulk actions
             </Button>
           )}
         </div>

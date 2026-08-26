@@ -42,6 +42,14 @@ export const candidateNotificationCategoryEnum = pgEnum('candidate_notification_
   'matches', 'applications', 'interviews', 'profile', 'system',
 ])
 export const candidateWorkModeEnum = pgEnum('candidate_work_mode', ['remote', 'hybrid', 'onsite', 'any'])
+/**
+ * How far a candidate consents to being surfaced by the matching engine.
+ *  - open   — score against roles and notify them first (the BRD default)
+ *  - manual — no candidate_match rows are generated; they find roles themselves
+ *  - hidden — no matching and no recommendations at all
+ * Enforced server-side in /api/me/matches and /api/me/recommended.
+ */
+export const candidateSourcingVisibilityEnum = pgEnum('candidate_sourcing_visibility', ['open', 'manual', 'hidden'])
 export const candidateMatchStatusEnum = pgEnum('candidate_match_status', [
   'new', 'waiting', 'accepted', 'rejected', 'in_progress',
 ])
@@ -230,6 +238,8 @@ export const candidatePreference = pgTable('candidate_preference', {
   desiredTitles: text('desired_titles').array().notNull().default(sql`'{}'::text[]`),
   locations: text('locations').array().notNull().default(sql`'{}'::text[]`),
   workMode: candidateWorkModeEnum('work_mode').notNull().default('any'),
+  /** Candidate's consent level for AI sourcing. See the enum for semantics. */
+  sourcingVisibility: candidateSourcingVisibilityEnum('sourcing_visibility').notNull().default('open'),
   minSalary: integer('min_salary'),
   maxSalary: integer('max_salary'),
   employmentTypes: text('employment_types').array().notNull().default(sql`'{}'::text[]`),
@@ -402,6 +412,13 @@ export const orgSettings = pgTable('org_settings', {
   matchNotificationChannel: matchNotificationChannelEnum('match_notification_channel').notNull().default('in_app'),
   /** Matches scoring below this never notify the candidate, and are not created. */
   minReadinessScore: integer('min_readiness_score').notNull().default(70),
+  /**
+   * Per-criterion weighting for the Mutual Readiness Score (issue #69).
+   * Keys are the BRD §3.3 criterion labels; values are 0–100. NULL means
+   * "use `DEFAULT_MATCH_WEIGHTS`" — see `server/utils/matching.ts`, which
+   * normalizes by total weight so the numbers need not sum to 100.
+   */
+  matchWeights: jsonb('match_weights').$type<Record<string, number>>(),
   // ── Consent expiry (issue #27) ──
   /** When true, candidates inactive beyond consentExpiryDays lose recruiter visibility. */
   consentExpiryEnabled: boolean('consent_expiry_enabled').notNull().default(false),

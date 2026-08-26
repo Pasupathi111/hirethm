@@ -1,5 +1,5 @@
-import { eq, desc } from 'drizzle-orm'
-import { job, candidatePreference } from '../../database/schema'
+import { eq, desc, inArray } from 'drizzle-orm'
+import { job, candidatePreference, orgSettings } from '../../database/schema'
 import { computeMatch, DEFAULT_MATCH_PREFERENCE, type MatchPreferenceInput } from '../../utils/matching'
 
 /**
@@ -28,6 +28,7 @@ export default defineEventHandler(async (event) => {
       orderBy: [desc(job.createdAt)],
       columns: {
         id: true,
+        organizationId: true,
         title: true,
         slug: true,
         description: true,
@@ -50,6 +51,18 @@ export default defineEventHandler(async (event) => {
     }),
   ])
 
+  // 'hidden' means "pause all matching and sourcing", which includes the
+  // recommendations feed. 'manual' only suppresses match *generation* (see
+  // /api/me/matches) — browsing recommendations is candidate-initiated, so it
+  // stays available to someone who just prefers to apply on their own terms.
+  if (savedPreference?.sourcingVisibility === 'hidden') {
+    return {
+      data: [],
+      sourcingPaused: true,
+      message: 'Recommendations are paused because your profile visibility is set to Hidden. Change it in Settings to start getting matched again.',
+    }
+  }
+
   const preference: MatchPreferenceInput = savedPreference
     ? {
         workMode: savedPreference.workMode,
@@ -64,11 +77,23 @@ export default defineEventHandler(async (event) => {
   // participate in matching either.
   const analyzedJobs = openJobs.filter(j => !!j.description?.trim() || j.skills.length > 0)
 
-  const scored = analyzedJobs.map(({ organization: org, skills, ...j }) => {
+  // Criterion weighting belongs to the job's own organization (issue #69),
+  // matching how the readiness threshold is resolved in /api/me/matches.
+  const orgIds = Array.from(new Set(analyzedJobs.map(j => j.organizationId)))
+  const weightRows = orgIds.length === 0
+    ? []
+    : await db
+        .select({ organizationId: orgSettings.organizationId, matchWeights: orgSettings.matchWeights })
+        .from(orgSettings)
+        .where(inArray(orgSettings.organizationId, orgIds))
+  const weightsByOrg = new Map(weightRows.map(r => [r.organizationId, r.matchWeights]))
+
+  const scored = analyzedJobs.map(({ organization: org, skills, organizationId, ...j }) => {
     const match = computeMatch(
       { skills, remoteStatus: j.remoteStatus, location: j.location, salaryMin: j.salaryMin, salaryMax: j.salaryMax },
       { skills: candidate.skills },
       preference,
+      weightsByOrg.get(organizationId) ?? null,
     )
 
     return {

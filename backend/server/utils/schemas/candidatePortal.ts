@@ -31,6 +31,7 @@ export const updatePreferencesSchema = z.object({
   desiredTitles: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
   locations: z.array(z.string().trim().min(1).max(200)).max(20).default([]),
   workMode: z.enum(workModeValues).default('any'),
+  sourcingVisibility: z.enum(['open', 'manual', 'hidden']).default('open'),
   minSalary: z.coerce.number().int().min(0).nullable().optional(),
   maxSalary: z.coerce.number().int().min(0).nullable().optional(),
   employmentTypes: z.array(z.enum(['full_time', 'part_time', 'contract', 'internship'])).max(10).default([]),

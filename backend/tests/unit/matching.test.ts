@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { computeMatch, DEFAULT_MATCH_PREFERENCE } from '../../server/utils/matching'
+import {
+  computeMatch,
+  DEFAULT_MATCH_PREFERENCE,
+  DEFAULT_MATCH_WEIGHTS,
+  MATCH_CRITERIA_LABELS,
+  resolveWeights,
+} from '../../server/utils/matching'
 
 describe('computeMatch', () => {
   it('scores full skills overlap as 100% and includes a skills-alignment reason', () => {
@@ -136,13 +142,92 @@ describe('computeMatch', () => {
     expect(result.gap).toBeUndefined()
   })
 
-  it('computes the overall score as the rounded average of all 8 criteria', () => {
+  it('computes the overall score as the weighted mean under the default weights', () => {
     const result = computeMatch(
       { skills: ['React'], remoteStatus: null, location: null, salaryMin: null, salaryMax: null },
       { skills: ['React'] },
       DEFAULT_MATCH_PREFERENCE,
     )
-    const expected = Math.round(result.criteria.reduce((sum, c) => sum + c.value, 0) / result.criteria.length)
-    expect(result.score).toBe(expected)
+    const weighted = result.criteria.reduce(
+      (sum, c) => sum + c.value * DEFAULT_MATCH_WEIGHTS[c.label as keyof typeof DEFAULT_MATCH_WEIGHTS],
+      0,
+    )
+    const totalWeight = Object.values(DEFAULT_MATCH_WEIGHTS).reduce((a, b) => a + b, 0)
+    expect(result.score).toBe(Math.round(weighted / totalWeight))
+  })
+})
+
+describe('criterion weighting (issue #69)', () => {
+  const job = { skills: ['React'], remoteStatus: null, location: null, salaryMin: null, salaryMax: null }
+  const perfectSkills = { skills: ['React'] }
+  const noSkills = { skills: [] }
+
+  /**
+   * `resolveWeights` intentionally substitutes the default weight for any
+   * criterion the caller omits (so a stored config predating a new criterion
+   * still weights it sensibly). Tests that want a criterion excluded must
+   * therefore pass an explicit 0 rather than leaving the key out.
+   */
+  const only = (overrides: Record<string, number>) =>
+    Object.fromEntries(MATCH_CRITERIA_LABELS.map(l => [l, overrides[l] ?? 0]))
+
+  it('exposes exactly the eight BRD criteria, in scoring order', () => {
+    const result = computeMatch(job, perfectSkills, DEFAULT_MATCH_PREFERENCE)
+    expect(result.criteria.map(c => c.label)).toEqual([...MATCH_CRITERIA_LABELS])
+  })
+
+  it('gives every criterion a default weight', () => {
+    for (const label of MATCH_CRITERIA_LABELS) {
+      expect(DEFAULT_MATCH_WEIGHTS[label]).toBeGreaterThan(0)
+    }
+  })
+
+  it('lets a single criterion dominate the score when it carries all the weight', () => {
+    const skillsOnly = computeMatch(job, perfectSkills, DEFAULT_MATCH_PREFERENCE, only({ 'Skills Match': 100 }))
+    const skills = skillsOnly.criteria.find(c => c.label === 'Skills Match')!
+    expect(skillsOnly.score).toBe(skills.value)
+  })
+
+  it('produces a lower score than the default weighting when the weighted criterion is weak', () => {
+    const weighted = computeMatch(job, noSkills, DEFAULT_MATCH_PREFERENCE, only({ 'Skills Match': 100 }))
+    const balanced = computeMatch(job, noSkills, DEFAULT_MATCH_PREFERENCE)
+    expect(weighted.score).toBeLessThan(balanced.score)
+  })
+
+  it('normalizes by total weight, so weights need not sum to 100', () => {
+    const asHundred = computeMatch(job, perfectSkills, DEFAULT_MATCH_PREFERENCE, only({ 'Skills Match': 50, 'Salary Fit': 50 }))
+    const asTwo = computeMatch(job, perfectSkills, DEFAULT_MATCH_PREFERENCE, only({ 'Skills Match': 1, 'Salary Fit': 1 }))
+    expect(asTwo.score).toBe(asHundred.score)
+  })
+
+  it('falls back to a flat mean rather than scoring zero when every weight is zero', () => {
+    const allZero = computeMatch(
+      job,
+      perfectSkills,
+      DEFAULT_MATCH_PREFERENCE,
+      Object.fromEntries(MATCH_CRITERIA_LABELS.map(l => [l, 0])),
+    )
+    const flat = Math.round(
+      allZero.criteria.reduce((sum, c) => sum + c.value, 0) / allZero.criteria.length,
+    )
+    expect(allZero.score).toBe(flat)
+  })
+
+  it('keeps default weights for criteria the caller omits', () => {
+    const resolved = resolveWeights({ 'Skills Match': 42 })
+    expect(resolved['Skills Match']).toBe(42)
+    expect(resolved['Salary Fit']).toBe(DEFAULT_MATCH_WEIGHTS['Salary Fit'])
+  })
+
+  it('ignores negative and non-finite weights instead of corrupting the score', () => {
+    const resolved = resolveWeights({ 'Skills Match': -10, 'Salary Fit': Number.NaN } as Record<string, number>)
+    expect(resolved['Skills Match']).toBe(DEFAULT_MATCH_WEIGHTS['Skills Match'])
+    expect(resolved['Salary Fit']).toBe(DEFAULT_MATCH_WEIGHTS['Salary Fit'])
+  })
+
+  it('treats null weights as "use the defaults"', () => {
+    const explicit = computeMatch(job, perfectSkills, DEFAULT_MATCH_PREFERENCE, DEFAULT_MATCH_WEIGHTS)
+    const implicit = computeMatch(job, perfectSkills, DEFAULT_MATCH_PREFERENCE, null)
+    expect(implicit.score).toBe(explicit.score)
   })
 })

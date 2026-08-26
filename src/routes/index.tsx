@@ -58,14 +58,12 @@ import { AdminJobs } from "@/pages/admin/Jobs"
 import { AdminMatchDetail } from "@/pages/admin/MatchDetail"
 import { AdminMatches } from "@/pages/admin/Matches"
 import { AdminMatchingRules } from "@/pages/admin/MatchingRules"
-import { AdminNotifications } from "@/pages/admin/Notifications"
 import { AdminPaymentDetail } from "@/pages/admin/PaymentDetail"
 import { AdminPayments } from "@/pages/admin/Payments"
 import { AdminPlans } from "@/pages/admin/Plans"
 import { AdminPlatformSettings } from "@/pages/admin/PlatformSettings"
 import { AdminRecruiterDetail } from "@/pages/admin/RecruiterDetail"
 import { AdminRecruiters } from "@/pages/admin/Recruiters"
-import { AdminReports } from "@/pages/admin/Reports"
 import { AdminRolesPermissions } from "@/pages/admin/RolesPermissions"
 import { AdminSourceTracking } from "@/pages/admin/SourceTracking"
 import { AdminSourceTrackingDetail } from "@/pages/admin/SourceTrackingDetail"
@@ -157,14 +155,11 @@ export const router = createBrowserRouter([
       { path: "ai-chat", element: <AdminAIChat /> },
       { path: "ai-management", element: <AdminAIManagement /> },
       { path: "matching-rules", element: <AdminMatchingRules /> },
-      { path: "notifications", element: <AdminNotifications /> },
       { path: "timeline", element: <AdminTimeline /> },
       { path: "updates", element: <AdminUpdates /> },
-      { path: "reports", element: <AdminReports /> },
       { path: "audit-logs", element: <AdminAuditLogs /> },
       { path: "roles-permissions", element: <AdminRolesPermissions /> },
       { path: "platform-settings", element: <AdminPlatformSettings /> },
-          { path: "system-health", element: <AdminSystemHealth /> },
 
           // ── Cross-tenant platform-admin console (issue #43) ──────────────
           // These surface data across ALL organizations, so they require the
@@ -185,6 +180,7 @@ export const router = createBrowserRouter([
               { path: "payments", element: <AdminPayments /> },
               { path: "payments/:id", element: <AdminPaymentDetail /> },
               { path: "usage", element: <AdminUsage /> },
+              { path: "system-health", element: <AdminSystemHealth /> },
             ],
           },
         ],

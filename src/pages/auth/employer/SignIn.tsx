@@ -1,7 +1,7 @@
 import { motion } from "framer-motion"
 import { Briefcase, ShieldCheck, Users } from "lucide-react"
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useSearchParams } from "react-router-dom"
 
 import { Logo } from "@/components/layout/Logo"
 import { Button } from "@/components/ui/button"
@@ -17,6 +17,16 @@ const points = [
 ]
 
 export function EmployerSignIn() {
+  const [searchParams] = useSearchParams()
+  /**
+   * Where to land after a successful sign-in. Set by flows that need the user
+   * authenticated before they can continue — the invitation-accept page is the
+   * one that uses it today. Only same-origin relative paths are honoured, so a
+   * crafted `?next=https://evil.example` cannot turn this into an open redirect.
+   */
+  const nextParam = searchParams.get("next")
+  const nextPath = nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//") ? nextParam : null
+
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -39,7 +49,8 @@ export function EmployerSignIn() {
     const session = sessionRes.ok ? await sessionRes.json() : null
 
     // Hard navigation — ensures the destination route reads a fresh session, not a stale cache.
-    window.location.href = session?.session?.activeOrganizationId ? "/admin" : "/onboarding/create-org"
+    window.location.href =
+      nextPath ?? (session?.session?.activeOrganizationId ? "/admin" : "/onboarding/create-org")
   }
 
   return (

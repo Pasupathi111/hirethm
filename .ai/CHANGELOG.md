@@ -2,6 +2,61 @@
 
 Append-only log of what the autonomous loop shipped. Newest first.
 
+## 2026-08-26 (2)
+- **Work item:** "make it all dynamic, remove fake data" — second sweep, beyond
+  the admin console covered by the first pass.
+- **PR:** https://github.com/Pasupathi111/hirethm/pull/72 (same branch)
+- **Summary:** Found the fakes an import-grep misses — controls whose handler
+  was only a `toast`. **Export CSV** (on all 11 admin list screens) now builds
+  a real RFC-4180 CSV from the rows on screen, respecting the active
+  tab/search/sort and exporting the checked rows when any are checked; it was
+  a toast claiming a download link was coming. The **bulk-actions** stub and a
+  450ms **simulated loading skeleton** (dead — all 11 callers already pass real
+  `loading`) are gone. **`AcceptInvitation.tsx` was entirely fake** and is the
+  most serious find: it hardcoded "ABC Technologies … as a Recruiter", asked
+  for a password it never set, and on submit toasted and redirected to the
+  *candidate* portal without accepting anything. It now reads the real
+  invitation via `organization.getInvitation`, accepts through
+  `acceptInvitation`, sets the joined org active, and lands in the employer
+  console; employer sign-in gained a same-origin-only `?next=` so the
+  sign-in→accept round-trip works. Candidate **profile visibility** was a radio
+  group living in React state; it is now `candidate_preference
+  .sourcing_visibility` (migration 0042) and is **enforced server-side** —
+  `manual` and `hidden` stop new `candidate_match` rows being generated,
+  `hidden` also pauses recommendations. **Export my data** is now a real GDPR
+  Art. 15 download (`GET /api/me/export`) instead of "we'll email a link";
+  it deliberately excludes recruiter-authored notes, which stay behind the
+  controller-mediated recruiter export. Removed with no real feature behind
+  them: two-factor "Enable" (no `twoFactor` plugin is configured), "Manage data
+  sharing", "Save Job", and a "Full breakdown" link that described what was
+  already on screen. The marketing and candidate sign-in hero cards are now
+  labelled **Example** and quote only criteria the engine can actually
+  differentiate; the homepage consent diagram dropped its fake done/current/
+  upcoming progress and the SHORTLISTED step the product cannot enter (#61).
+
+## 2026-08-26
+- **Work item:** BRD gap audit + remaining mock-data conversion (GitHub issues
+  #36, #68, #69, #70; follow-up comment on #35). Also filed #56–#70 from a
+  clause-by-clause comparison of `bussines_doc/hirethm_brd.txt` against the
+  codebase.
+- **PR:** https://github.com/Pasupathi111/hirethm/pull/72
+- **Summary:** Removed the last fabricated data from the admin console.
+  System Health now reads a new `GET /api/platform/health` that probes the
+  database, object storage, AI configuration, analysis-run history, email
+  provider, calendar integrations and payment records at request time — no
+  invented "queue backlog" (there is no queue) and no fake email delivery rate
+  (there is no delivery log). Updates reads `GET /api/platform/updates`,
+  parsing the deployed build's own CHANGELOG.md. AI Management reads the real
+  `ai_config` rows plus `ai-analysis/stats` instead of four invented model
+  names. Matching Rules now persists per-org criterion weights
+  (`org_settings.match_weights`, migration 0041) and `computeMatch()` actually
+  applies them — previously the sliders changed nothing. Roles & Permissions
+  renders the real matrix from `shared/permissions.ts` rather than a fictional
+  six-role table. Notifications and Reports were deleted rather than faked:
+  the former duplicated real controls already on Platform Settings, the latter
+  listed four reports that do not exist. `src/data/mockData.ts` and its
+  fifteen dead types are gone.
+
 ## 2026-08-25
 - **Work item:** GitHub issue #2 — Let recruiters set job.skills in job create/edit UI
 - **PR:** https://github.com/Pasupathi111/hirethm/pull/6 (merged to main)

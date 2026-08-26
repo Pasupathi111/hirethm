@@ -29,6 +29,82 @@ As of 2026-08-25, all candidate-portal routes are wired to real backend data (pr
 
 **Frontend pattern**: `src/lib/api.ts` (`api.get/post/patch/put/upload`) + either the shared `useMyCandidate()` context (`src/lib/candidateSession.tsx`) or a per-page `useState`+`useEffect` fetch (see `src/pages/candidate/Recommended.tsx` for the simplest example). New candidate pages should follow one of these two patterns, not invent a third.
 
+## Admin console data sources (as of 2026-08-26)
+
+Every admin screen now reads real data. The last fabricated ones were converted
+or removed; `src/data/mockData.ts` no longer exists. Non-obvious wiring:
+
+- `/admin/system-health` → `GET /api/platform/health` (platform-admin only).
+  Probes are taken at request time. There is deliberately **no queue-depth
+  metric** — AI analysis runs inline in the request, there is no queue — and
+  **no email delivery rate** — nothing logs sends, so Email reports which
+  provider is configured instead. Services that aren't set up return
+  `not_configured`, which is rendered differently from `down`.
+- `/admin/updates` → `GET /api/platform/updates`, parsed from the deployed
+  build's `backend/CHANGELOG.md` via `server/utils/changelog.ts`. That util is
+  shared with the older `/api/updates/changelog` (the vendored Reqcore admin
+  panel); `stripRefs` is opt-in so that consumer's output is unchanged.
+- `/admin/roles-permissions` → `GET /api/platform/permissions`, generated from
+  `backend/shared/permissions.ts` itself. Keep `ownerAtsGrants` /
+  `adminAtsGrants` / `memberAtsGrants` as the single source — the endpoint and
+  `ac.newRole()` both read them, so the screen cannot drift from enforcement.
+  Note those constants are annotated `: AtsGrants`, **not** `as const`:
+  `newRole()` needs mutable arrays of literal actions and rejects readonly
+  tuples.
+- `/admin/matching-rules` → `org_settings.match_weights` (jsonb, migration
+  0041). `computeMatch()` takes the weights as its 4th argument and computes a
+  weighted mean normalized by total weight, so weights need not sum to 100.
+  Resolved per **job organization**, matching how `minReadinessScore` is
+  resolved — the employer whose role produced the match owns the policy.
+- `/admin/notifications` and `/admin/reports` were **deleted**, not wired. The
+  real notification policy already lives on `/admin/platform-settings` (#27,
+  #19); no report generation exists at all (#70). Don't recreate either page
+  without a real backing feature.
+
+## Candidate consent & data rights (as of 2026-08-26)
+
+- **`candidate_preference.sourcing_visibility`** (`open` | `manual` | `hidden`,
+  migration 0042) is the candidate's consent level for AI sourcing, and it is
+  **enforced server-side, not just displayed**:
+  - `manual` and `hidden` → `/api/me/matches` creates no new `candidate_match`
+    rows. Rows the candidate already has are still returned; opting out stops
+    future sourcing, it does not retract matches they were already notified of.
+  - `hidden` → `/api/me/recommended` additionally returns
+    `{ data: [], sourcingPaused: true, message }`, which the Recommended page
+    renders as a distinct "paused" empty state rather than "no results".
+  Any new endpoint that surfaces a candidate to an employer must check this.
+- **`GET /api/me/export`** is the candidate's own GDPR Art. 15 download.
+  It deliberately **omits recruiter-authored data** (comments, custom
+  properties, `quickNotes`) — those stay behind `GET /api/candidates/:id/export`
+  so the employer, as controller, mediates their disclosure. Don't "helpfully"
+  add them here.
+- `CareerPreferences.tsx` PUTs the whole preferences object, so it round-trips
+  `sourcingVisibility` untouched. Any new screen writing preferences must load
+  first and PUT the full object, or it will silently reset the consent level.
+
+## Things that are deliberately absent
+
+Do not re-add these; each was removed because nothing real backed it:
+
+- **Two-factor auth** — better-auth's `twoFactor` plugin is not configured in
+  `server/utils/auth.ts`, so a 2FA card is decoration.
+- **Saved jobs**, **"manage data sharing"** — no schema, no endpoints.
+- **`/admin/notifications`**, **`/admin/reports`** — see the note above.
+- The `AdminListPage` **"Bulk actions"** stub and its 450ms fake loading delay.
+  Pass a real `onDeleteSelected` for bulk work; `loading` is now required.
+
+`AdminListPage`'s **Export CSV is real** and client-side: it flattens each
+column's rendered JSX to text via `nodeToText`, so a new column exports
+automatically. Override with `exportValue` only for icon-only cells or when the
+export needs more precision than the display.
+
+`AcceptInvitation.tsx` uses better-auth's `organization.getInvitation`, which
+**requires a session whose email matches the invitation** — that is why the
+page cannot show the inviting org's name before sign-in, and it should stay
+that way (it stops an invitation ID leaking org names). Note the invitation
+email in `auth.ts` currently links to the **Vue** app's
+`/auth/accept-invitation/:id`, not this React route.
+
 ## Known gaps (as of 2026-08-25)
 
 - **`job.skills` has no recruiter-facing input yet** — the column and matching logic exist, but nothing in the recruiter job-create/edit UI (Vue, `backend/app/components/ApplicationBuilder.vue` et al.) lets a recruiter populate it, so every match currently scores a neutral ~76%. This is the highest-value next step for making match scores actually differentiate between jobs.

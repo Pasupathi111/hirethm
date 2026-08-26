@@ -181,12 +181,6 @@ export function MyMatches() {
                       <Button variant="outline" onClick={() => decide(match.id, "rejected")}>
                         Decline
                       </Button>
-                      <button
-                        className="text-sm font-semibold text-primary"
-                        onClick={() => toast("Full breakdown", { description: "All criteria are listed on the right." })}
-                      >
-                        Full breakdown →
-                      </button>
                     </div>
                   )}
 
