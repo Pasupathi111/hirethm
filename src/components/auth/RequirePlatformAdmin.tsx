@@ -1,9 +1,8 @@
 import { Loader2 } from "lucide-react"
-import { useEffect, useState } from "react"
 import { Navigate, Outlet } from "react-router-dom"
 
 import { useSession } from "@/lib/authClient"
-import { api } from "@/lib/api"
+import { usePlatformAdmin } from "@/lib/usePlatformAdmin"
 
 /**
  * Guards the HireThm-internal cross-tenant platform-admin console.
@@ -12,29 +11,27 @@ import { api } from "@/lib/api"
  * platform admin is HireThm staff, not necessarily a member of any client
  * organization, so this only requires a valid session plus the
  * `isPlatformAdmin` flag from GET /api/platform/me.
+ *
+ * This is defence-in-depth, not the security boundary: every
+ * /api/platform/* endpoint independently calls requirePlatformAdmin()
+ * server-side, so bypassing this guard still yields no data.
  */
 export function RequirePlatformAdmin() {
-  const { data: session, isPending } = useSession()
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState<boolean | null>(null)
+  const { data: session } = useSession()
+  const { isPlatformAdmin, isPending } = usePlatformAdmin()
 
-  useEffect(() => {
-    if (!session) return
-    api
-      .get<{ isPlatformAdmin: boolean }>("/api/platform/me")
-      .then((res) => setIsPlatformAdmin(res.isPlatformAdmin))
-      .catch(() => setIsPlatformAdmin(false))
-  }, [session])
-
-  if (isPending || (session && isPlatformAdmin === null)) {
+  if (isPending) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
+      <div className="flex min-h-[50vh] items-center justify-center">
         <Loader2 className="size-6 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   if (!session) return <Navigate to="/admin/login" replace />
-  if (!isPlatformAdmin) return <Navigate to="/" replace />
+  // Authenticated, just not HireThm staff — send them back to their own org
+  // dashboard rather than the public marketing site.
+  if (!isPlatformAdmin) return <Navigate to="/admin" replace />
 
   return <Outlet />
 }

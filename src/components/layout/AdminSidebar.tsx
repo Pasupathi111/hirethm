@@ -4,10 +4,21 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { signOut } from "@/lib/authClient"
 import { adminNav } from "@/lib/navigation"
+import { usePlatformAdmin } from "@/lib/usePlatformAdmin"
 import { cn } from "@/lib/utils"
 
 export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate()
+  const { isPlatformAdmin } = usePlatformAdmin()
+
+  // Hide cross-tenant destinations from org users (issue #43). Groups that end
+  // up empty are dropped entirely so no stray section headers are left behind.
+  const visibleNav = adminNav
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => isPlatformAdmin || !item.platformAdminOnly),
+    }))
+    .filter((group) => group.items.length > 0)
 
   const handleSignOut = async () => {
     await signOut()
@@ -27,7 +38,7 @@ export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void })
         </Badge>
       </div>
       <nav className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
-        {adminNav.map((group, i) => (
+        {visibleNav.map((group, i) => (
           <div key={i} className={cn(i > 0 && "border-t border-white/10 pt-4")}>
             {group.label && (
               <p className="mb-2 px-3 text-xs font-bold tracking-wide text-slate-label uppercase">

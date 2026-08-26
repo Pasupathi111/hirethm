@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom"
 
 import { RequireAuth } from "@/components/auth/RequireAuth"
 import { RequireCandidateAuth } from "@/components/auth/RequireCandidateAuth"
+import { RequirePlatformAdmin } from "@/components/auth/RequirePlatformAdmin"
 import { AcceptInvitation } from "@/pages/auth/AcceptInvitation"
 import { AdminSignIn } from "@/pages/auth/AdminSignIn"
 import { CandidateSignIn } from "@/pages/auth/candidate/SignIn"
@@ -138,12 +139,6 @@ export const router = createBrowserRouter([
       { path: "candidates/new", element: <AdminCandidateNew /> },
       { path: "candidates/:id", element: <AdminCandidateDetail /> },
       { path: "candidates/:id/edit", element: <AdminCandidateEdit /> },
-      { path: "employers", element: <AdminEmployers /> },
-      { path: "employers/:id", element: <AdminEmployerDetail /> },
-      { path: "recruiters", element: <AdminRecruiters /> },
-      { path: "recruiters/:id", element: <AdminRecruiterDetail /> },
-      { path: "hiring-managers", element: <AdminHiringManagers /> },
-      { path: "hiring-managers/:id", element: <AdminHiringManagerDetail /> },
       { path: "jobs", element: <AdminJobs /> },
       { path: "jobs/new", element: <AdminJobNew /> },
       { path: "jobs/:id", element: <AdminJobDetail /> },
@@ -159,10 +154,6 @@ export const router = createBrowserRouter([
       { path: "interview-templates/:id", element: <AdminInterviewTemplateDetail /> },
       { path: "source-tracking", element: <AdminSourceTracking /> },
       { path: "source-tracking/:id", element: <AdminSourceTrackingDetail /> },
-      { path: "plans", element: <AdminPlans /> },
-      { path: "payments", element: <AdminPayments /> },
-      { path: "payments/:id", element: <AdminPaymentDetail /> },
-      { path: "usage", element: <AdminUsage /> },
       { path: "ai-chat", element: <AdminAIChat /> },
       { path: "ai-management", element: <AdminAIManagement /> },
       { path: "matching-rules", element: <AdminMatchingRules /> },
@@ -174,6 +165,28 @@ export const router = createBrowserRouter([
       { path: "roles-permissions", element: <AdminRolesPermissions /> },
       { path: "platform-settings", element: <AdminPlatformSettings /> },
           { path: "system-health", element: <AdminSystemHealth /> },
+
+          // ── Cross-tenant platform-admin console (issue #43) ──────────────
+          // These surface data across ALL organizations, so they require the
+          // HireThm-internal isPlatformAdmin flag — not just org membership.
+          // The backend already enforces this via requirePlatformAdmin(); this
+          // guard makes the client agree instead of showing a recruiter pages
+          // that will only ever 403.
+          {
+            element: <RequirePlatformAdmin />,
+            children: [
+              { path: "employers", element: <AdminEmployers /> },
+              { path: "employers/:id", element: <AdminEmployerDetail /> },
+              { path: "recruiters", element: <AdminRecruiters /> },
+              { path: "recruiters/:id", element: <AdminRecruiterDetail /> },
+              { path: "hiring-managers", element: <AdminHiringManagers /> },
+              { path: "hiring-managers/:id", element: <AdminHiringManagerDetail /> },
+              { path: "plans", element: <AdminPlans /> },
+              { path: "payments", element: <AdminPayments /> },
+              { path: "payments/:id", element: <AdminPaymentDetail /> },
+              { path: "usage", element: <AdminUsage /> },
+            ],
+          },
         ],
       },
     ],

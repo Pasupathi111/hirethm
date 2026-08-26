@@ -42,8 +42,12 @@ export default defineConfig({
     },
   ],
 
-  /* Start the Nuxt dev server before running tests (skipped in CI — we build there) */
-  ...(process.env.CI
+  /* Start the Nuxt dev server before running tests.
+   * Skipped in CI (we build there) and skipped when PLAYWRIGHT_BASE_URL points
+   * at an already-running stack — e.g. the Docker deployment — since spawning a
+   * second server is pointless and the inline `VAR=value cmd` prefix below is
+   * not valid on Windows shells. */
+  ...(process.env.CI || process.env.PLAYWRIGHT_BASE_URL
     ? {}
     : {
         webServer: {
