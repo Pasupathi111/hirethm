@@ -90,7 +90,7 @@ export const router = createBrowserRouter([
   { path: "/accept-invitation/:id", element: <AcceptInvitation /> },
   { path: "/join/:token", element: <JoinOrg /> },
   { path: "/onboarding/create-org", element: <CreateOrg /> },
-  { path: "/interview/respond/:id", element: <InterviewRespond /> },
+  { path: "/interview/respond", element: <InterviewRespond /> },
   { path: "/admin/login", element: <AdminSignIn /> },
   { path: "/create-profile", element: <CreateProfile /> },
   {
