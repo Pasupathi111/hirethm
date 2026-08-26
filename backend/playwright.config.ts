@@ -7,10 +7,17 @@ import { defineConfig, devices } from '@playwright/test'
  * - Creating a job (authenticated recruiter flow)
  * - Candidate applying to a job (public flow)
  *
+ * Specs named `*.live-ai.spec.ts` are excluded here because they call a real
+ * (billed) AI provider — see playwright.live-ai.config.ts.
+ *
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
   testDir: './e2e',
+  /* `*.live-ai.spec.ts` makes real, billed calls to the configured AI provider,
+   * so it is deliberately kept out of the default run (and therefore out of CI).
+   * Run it explicitly with `npm run test:e2e:live-ai`. */
+  testIgnore: ['**/*.live-ai.spec.ts'],
   fullyParallel: false, // sequential — tests share state (auth → create job → apply)
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
