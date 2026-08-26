@@ -62,19 +62,6 @@ export interface Application {
   stage: ApplicationStage
 }
 
-export interface Interview {
-  id: string
-  jobId: string
-  title: string
-  company: string
-  type: string
-  date: string
-  time: string
-  location: string
-  status: "Upcoming" | "Completed" | "Cancelled"
-  slotConfirmed: boolean
-}
-
 export interface NotificationItem {
   id: string
   category: "Matches" | "Applications" | "Interviews" | "Profile" | "System"
@@ -183,16 +170,6 @@ export interface AdminMatch {
   created: string
 }
 
-export interface AdminInterview {
-  id: string
-  candidate: string
-  job: string
-  employer: string
-  type: string
-  date: string
-  status: "Upcoming" | "Completed" | "Cancelled"
-}
-
 export interface Plan {
   id: string
   name: string
@@ -200,17 +177,6 @@ export interface Plan {
   billingPeriod: string
   employers: number
   features: string[]
-}
-
-export interface InterviewTemplate {
-  id: string
-  name: string
-  type: string
-  questionCount: number
-  duration: string
-  status: "Active" | "Draft" | "Archived"
-  updated: string
-  questions: string[]
 }
 
 export interface SourceTrackingEntry {
@@ -345,6 +311,48 @@ export interface ApiInterview {
   candidateFirstName: string
   candidateLastName: string
   candidateEmail: string
+  jobId: string
+  jobTitle: string
+}
+
+export type ApiInterviewTemplateStatus = "active" | "draft" | "archived"
+
+export interface ApiInterviewTemplate {
+  id: string
+  organizationId: string
+  name: string
+  type: ApiInterviewType
+  duration: number
+  questions: string[]
+  status: ApiInterviewTemplateStatus
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiInterviewDetail {
+  id: string
+  title: string
+  type: ApiInterviewType
+  status: ApiInterviewStatus
+  scheduledAt: string
+  duration: number
+  location: string | null
+  notes: string | null
+  interviewers: string[] | null
+  invitationSentAt: string | null
+  candidateResponse: ApiCandidateInterviewResponse
+  candidateRespondedAt: string | null
+  googleCalendarEventId: string | null
+  googleCalendarEventLink: string | null
+  createdById: string
+  createdAt: string
+  updatedAt: string
+  applicationId: string
+  candidateId: string
+  candidateFirstName: string
+  candidateLastName: string
+  candidateEmail: string
+  candidatePhone: string | null
   jobId: string
   jobTitle: string
 }

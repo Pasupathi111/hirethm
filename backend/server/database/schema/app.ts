@@ -562,6 +562,27 @@ export const interview = pgTable('interview', {
   index('interview_created_by_id_idx').on(t.createdById),
 ]))
 
+export const interviewTemplateStatusEnum = pgEnum('interview_template_status', ['active', 'draft', 'archived'])
+
+/**
+ * Reusable question sets recruiters can pick from when scheduling an
+ * interview (e.g. "Frontend Technical Screen"). Not linked to any specific
+ * application/job — purely a starting-point checklist for the interviewer.
+ */
+export const interviewTemplate = pgTable('interview_template', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  type: interviewTypeEnum('type').notNull().default('video'),
+  duration: integer('duration').notNull().default(60),
+  questions: jsonb('questions').$type<string[]>().notNull().default(sql`'[]'::jsonb`),
+  status: interviewTemplateStatusEnum('status').notNull().default('draft'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (t) => ([
+  index('interview_template_organization_id_idx').on(t.organizationId),
+]))
+
 // ─────────────────────────────────────────────
 // Email Templates
 // ─────────────────────────────────────────────
