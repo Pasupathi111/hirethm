@@ -42,6 +42,14 @@ export const candidateNotificationCategoryEnum = pgEnum('candidate_notification_
   'matches', 'applications', 'interviews', 'profile', 'system',
 ])
 export const candidateWorkModeEnum = pgEnum('candidate_work_mode', ['remote', 'hybrid', 'onsite', 'any'])
+/**
+ * How far a candidate consents to being surfaced by the matching engine.
+ *  - open   — score against roles and notify them first (the BRD default)
+ *  - manual — no candidate_match rows are generated; they find roles themselves
+ *  - hidden — no matching and no recommendations at all
+ * Enforced server-side in /api/me/matches and /api/me/recommended.
+ */
+export const candidateSourcingVisibilityEnum = pgEnum('candidate_sourcing_visibility', ['open', 'manual', 'hidden'])
 export const candidateMatchStatusEnum = pgEnum('candidate_match_status', [
   'new', 'waiting', 'accepted', 'rejected', 'in_progress',
 ])
@@ -230,6 +238,8 @@ export const candidatePreference = pgTable('candidate_preference', {
   desiredTitles: text('desired_titles').array().notNull().default(sql`'{}'::text[]`),
   locations: text('locations').array().notNull().default(sql`'{}'::text[]`),
   workMode: candidateWorkModeEnum('work_mode').notNull().default('any'),
+  /** Candidate's consent level for AI sourcing. See the enum for semantics. */
+  sourcingVisibility: candidateSourcingVisibilityEnum('sourcing_visibility').notNull().default('open'),
   minSalary: integer('min_salary'),
   maxSalary: integer('max_salary'),
   employmentTypes: text('employment_types').array().notNull().default(sql`'{}'::text[]`),

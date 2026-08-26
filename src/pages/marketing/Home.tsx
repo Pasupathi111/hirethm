@@ -42,13 +42,19 @@ const consentPoints = [
   "Every consent and visibility change is recorded in an audit trail.",
 ]
 
+/**
+ * The consent sequence the platform actually implements, in order. Rendered as
+ * a plain ordered diagram — an earlier version marked steps done/current/
+ * upcoming, which read as a live instance on a page where the visitor has no
+ * state, and included a SHORTLISTED step the product cannot enter yet
+ * (GitHub issue #61). Add that step back when shortlisting ships.
+ */
 const consentStates = [
-  { key: "MATCH_CREATED", label: "AI computes Mutual Readiness", status: "done" },
-  { key: "NOTIFIED", label: "Candidate is told first", status: "done" },
-  { key: "ACCEPTED", label: "Candidate consents", status: "done" },
-  { key: "VISIBLE", label: "Employer can now see the profile", status: "current" },
-  { key: "SHORTLISTED", label: "Employer shortlists", status: "upcoming" },
-  { key: "INTERVIEW_SCHEDULED", label: "Candidate picks the slot", status: "upcoming" },
+  { key: "MATCH_CREATED", label: "AI computes Mutual Readiness" },
+  { key: "NOTIFIED", label: "Candidate is told first" },
+  { key: "ACCEPTED", label: "Candidate consents" },
+  { key: "VISIBLE", label: "Employer can now see the profile" },
+  { key: "INTERVIEW_SCHEDULED", label: "Candidate picks the slot" },
 ] as const
 
 export function Home() {
@@ -99,7 +105,10 @@ export function Home() {
           >
             <div className="flex items-center justify-between">
               <p className="eyebrow">Mutual Readiness</p>
-              <p className="text-xs text-muted-foreground">Match #8291</p>
+              {/* Labelled as an example: this is an illustration of the match
+                  card, not a real match. It was previously dressed up with a
+                  fake match number, which read as live product data. */}
+              <Badge variant="outline">Example</Badge>
             </div>
             <div className="mt-4 flex items-center gap-4">
               <ReadinessRing value={91} label="Ready" size={88} strokeWidth={7} />
@@ -118,8 +127,7 @@ export function Home() {
             <div className="mt-6 space-y-3">
               {[
                 ["Skills match", 95],
-                ["Experience", 90],
-                ["Career goals", 88],
+                ["Location preference", 100],
                 ["Salary fit", 80],
               ].map(([label, value]) => (
                 <div key={label as string}>
@@ -194,23 +202,9 @@ export function Home() {
                   {i < consentStates.length - 1 && (
                     <span className="absolute top-4 left-[7px] h-full w-px bg-white/15" />
                   )}
-                  <span
-                    className={
-                      state.status === "current"
-                        ? "z-10 mt-1 size-3.5 shrink-0 rounded-full bg-white"
-                        : state.status === "done"
-                          ? "z-10 mt-1 size-3.5 shrink-0 rounded-full bg-primary"
-                          : "z-10 mt-1 size-3.5 shrink-0 rounded-full bg-white/20"
-                    }
-                  />
+                  <span className="z-10 mt-1 size-3.5 shrink-0 rounded-full bg-primary" />
                   <div>
-                    <p
-                      className={
-                        state.status === "upcoming"
-                          ? "font-mono text-sm font-bold tracking-tight text-white/40"
-                          : "font-mono text-sm font-bold tracking-tight text-primary"
-                      }
-                    >
+                    <p className="font-mono text-sm font-bold tracking-tight text-primary">
                       {state.key}
                     </p>
                     <p className="text-sm text-white/60">{state.label}</p>

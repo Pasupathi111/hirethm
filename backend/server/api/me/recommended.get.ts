@@ -51,6 +51,18 @@ export default defineEventHandler(async (event) => {
     }),
   ])
 
+  // 'hidden' means "pause all matching and sourcing", which includes the
+  // recommendations feed. 'manual' only suppresses match *generation* (see
+  // /api/me/matches) — browsing recommendations is candidate-initiated, so it
+  // stays available to someone who just prefers to apply on their own terms.
+  if (savedPreference?.sourcingVisibility === 'hidden') {
+    return {
+      data: [],
+      sourcingPaused: true,
+      message: 'Recommendations are paused because your profile visibility is set to Hidden. Change it in Settings to start getting matched again.',
+    }
+  }
+
   const preference: MatchPreferenceInput = savedPreference
     ? {
         workMode: savedPreference.workMode,

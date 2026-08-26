@@ -1,0 +1,2 @@
+CREATE TYPE "public"."candidate_sourcing_visibility" AS ENUM('open', 'manual', 'hidden');--> statement-breakpoint
+ALTER TABLE "candidate_preference" ADD COLUMN "sourcing_visibility" "candidate_sourcing_visibility" DEFAULT 'open' NOT NULL;

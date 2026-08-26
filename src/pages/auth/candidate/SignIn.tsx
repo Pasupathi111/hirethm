@@ -128,7 +128,9 @@ export function CandidateSignIn() {
           >
             <div className="flex items-center justify-between">
               <p className="eyebrow">Mutual Readiness</p>
-              <p className="text-xs text-muted-foreground">Match #8291</p>
+              {/* Labelled: an illustration of the match card, not a real match.
+                  It previously carried a fake match number and read as data. */}
+              <Badge variant="outline">Example</Badge>
             </div>
             <div className="mt-4 flex items-center gap-4">
               <ReadinessRing value={91} label="Ready" size={72} strokeWidth={6} />

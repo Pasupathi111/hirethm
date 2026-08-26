@@ -28,6 +28,9 @@ const defaultPreferences: ApiPreferences = {
   desiredTitles: [],
   locations: [],
   workMode: "any",
+  // Owned by the Settings > Privacy screen; carried through unchanged here so
+  // saving career preferences never silently resets the candidate's consent level.
+  sourcingVisibility: "open",
   minSalary: null,
   maxSalary: null,
   employmentTypes: [],

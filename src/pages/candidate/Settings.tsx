@@ -1,4 +1,4 @@
-import { Trash2 } from "lucide-react"
+import { Download, Trash2 } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 import { toast } from "sonner"
@@ -16,18 +16,19 @@ import { authClient } from "@/lib/authClient"
 import { ApiError, api } from "@/lib/api"
 import { useMyCandidate } from "@/lib/candidateSession"
 import { cn } from "@/lib/utils"
-import type { ApiPreferences } from "@/types"
+import type { ApiPreferences, ApiSourcingVisibility } from "@/types"
 
-const visibilityOptions = [
+const visibilityOptions: { value: ApiSourcingVisibility; title: string; description: string }[] = [
   { value: "open", title: "Open to AI matching", description: "HireThm can score you against roles and notify you first" },
   { value: "manual", title: "Only roles I apply to", description: "No AI matches will be generated" },
-  { value: "hidden", title: "Hidden", description: "Pause all matching and sourcing" },
+  { value: "hidden", title: "Hidden", description: "Pause all matching and recommendations" },
 ]
 
 const defaultPreferences: ApiPreferences = {
   desiredTitles: [],
   locations: [],
   workMode: "any",
+  sourcingVisibility: "open",
   minSalary: null,
   maxSalary: null,
   employmentTypes: [],
@@ -38,7 +39,6 @@ const defaultPreferences: ApiPreferences = {
 
 export function Settings() {
   const { candidate } = useMyCandidate()
-  const [visibility, setVisibility] = useState("open")
 
   const [prefs, setPrefs] = useState<ApiPreferences>(defaultPreferences)
   const [prefsLoading, setPrefsLoading] = useState(true)
@@ -48,7 +48,9 @@ export function Settings() {
   const [newPassword, setNewPassword] = useState("")
   const [changingPassword, setChangingPassword] = useState(false)
 
+  const [prefsSaving, setPrefsSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   const loadPreferences = useCallback(() => {
     setPrefsLoading(true)
@@ -66,12 +68,42 @@ export function Settings() {
     const previous = prefs
     const next = { ...prefs, ...patch }
     setPrefs(next)
+    setPrefsSaving(true)
     try {
       const updated = await api.put<ApiPreferences>("/api/me/preferences", next)
       setPrefs(updated)
     } catch (err) {
       setPrefs(previous)
       toast.error(err instanceof ApiError ? err.message : "Failed to save preference")
+    } finally {
+      setPrefsSaving(false)
+    }
+  }
+
+  /**
+   * Downloads the GDPR Art. 15 export straight from /api/me/export. Fetched
+   * rather than linked so an auth failure surfaces as an error toast instead
+   * of navigating the user to a JSON error page.
+   */
+  const handleExportData = async () => {
+    setExporting(true)
+    try {
+      const res = await fetch("/api/me/export", { credentials: "include" })
+      if (!res.ok) throw new Error(`Export failed (${res.status})`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = `hirethm-my-data-${new Date().toISOString().slice(0, 10)}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      toast.success("Export downloaded")
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not prepare your export")
+    } finally {
+      setExporting(false)
     }
   }
 
@@ -165,17 +197,6 @@ export function Settings() {
                 {changingPassword ? "Updating…" : "Update password"}
               </Button>
             </div>
-            <div className="rounded-lg border border-border bg-card p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-semibold">Two-factor authentication</p>
-                  <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
-                </div>
-                <Button variant="outline" onClick={() => toast("Two-factor setup", { description: "Scan the QR code in your authenticator app." })}>
-                  Enable
-                </Button>
-              </div>
-            </div>
           </div>
         </TabsContent>
 
@@ -216,14 +237,19 @@ export function Settings() {
                 Your profile is never visible to an employer until you accept a match. This setting controls whether
                 you appear in AI sourcing at all.
               </p>
-              <RadioGroup value={visibility} onValueChange={setVisibility} className="mt-4 space-y-3">
+              <RadioGroup
+                value={prefs.sourcingVisibility}
+                onValueChange={(v) => updatePreference({ sourcingVisibility: v as ApiSourcingVisibility })}
+                className="mt-4 space-y-3"
+                disabled={prefsLoading || prefsSaving}
+              >
                 {visibilityOptions.map((opt) => (
                   <label
                     key={opt.value}
                     htmlFor={`visibility-${opt.value}`}
                     className={cn(
                       "flex w-full cursor-pointer items-center justify-between rounded-xl border p-4 text-left transition-colors",
-                      visibility === opt.value ? "border-primary bg-accent" : "border-border hover:bg-muted"
+                      prefs.sourcingVisibility === opt.value ? "border-primary bg-accent" : "border-border hover:bg-muted"
                     )}
                   >
                     <div>
@@ -235,18 +261,17 @@ export function Settings() {
                 ))}
               </RadioGroup>
               <p className="mt-3 text-xs text-muted-foreground">
-                Visibility persistence isn't wired to a backend endpoint yet — this control is currently local to your session.
+                Enforced server-side: "Only roles I apply to" stops new matches being generated, and "Hidden" also pauses
+                your recommendations. Matches you already have stay available either way.
               </p>
             </div>
 
             <div className="rounded-lg border border-border bg-card p-6">
               <h2 className="text-lg">Your data</h2>
               <div className="mt-4 flex flex-wrap gap-3">
-                <Button variant="outline" onClick={() => toast("Preparing export", { description: "We'll email a download link shortly." })}>
-                  Export my data
-                </Button>
-                <Button variant="outline" onClick={() => toast("Data sharing", { description: "Manage which employers can see your history." })}>
-                  Manage data sharing
+                <Button variant="outline" onClick={handleExportData} disabled={exporting}>
+                  <Download className="size-4" />
+                  {exporting ? "Preparing…" : "Export my data"}
                 </Button>
                 <Button
                   variant="outline"

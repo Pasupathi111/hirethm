@@ -5,6 +5,7 @@ const DEFAULT_PREFERENCE = {
   desiredTitles: [] as string[],
   locations: [] as string[],
   workMode: 'any' as const,
+  sourcingVisibility: 'open' as const,
   minSalary: null as number | null,
   maxSalary: null as number | null,
   employmentTypes: [] as string[],

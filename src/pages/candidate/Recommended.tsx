@@ -1,6 +1,7 @@
 import { motion } from "framer-motion"
+import { EyeOff } from "lucide-react"
 import { useCallback, useEffect, useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import { ReadinessRing } from "@/components/cards/ReadinessRing"
 import { EmptyState } from "@/components/feedback/EmptyState"
@@ -25,17 +26,23 @@ function salaryRange(min?: number | null, max?: number | null) {
 }
 
 export function Recommended() {
+  const navigate = useNavigate()
   const reduced = useReducedMotion()
   const [items, setItems] = useState<ApiRecommendedJob[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  /** Set when the candidate's own visibility setting is what's suppressing results. */
+  const [paused, setPaused] = useState<string | null>(null)
 
   const load = useCallback(() => {
     setLoading(true)
     setError("")
     api
-      .get<{ data: ApiRecommendedJob[] }>("/api/me/recommended")
-      .then((res) => setItems(res.data))
+      .get<{ data: ApiRecommendedJob[]; sourcingPaused?: boolean; message?: string }>("/api/me/recommended")
+      .then((res) => {
+        setItems(res.data)
+        setPaused(res.sourcingPaused ? (res.message ?? "Recommendations are paused.") : null)
+      })
       .catch((err) => setError(err instanceof Error ? err.message : "Failed to load recommendations"))
       .finally(() => setLoading(false))
   }, [])
@@ -93,12 +100,20 @@ export function Recommended() {
             )
           })}
 
-          {items.length === 0 && (
-            <EmptyState
-              title="No recommendations yet."
-              description="Complete your profile and preferences so HireThm can find your best-fit roles."
-            />
-          )}
+          {items.length === 0 &&
+            (paused ? (
+              <EmptyState
+                icon={EyeOff}
+                title="Recommendations are paused"
+                description={paused}
+                action={{ label: "Open privacy settings", onClick: () => navigate("/app/settings") }}
+              />
+            ) : (
+              <EmptyState
+                title="No recommendations yet."
+                description="Complete your profile and preferences so HireThm can find your best-fit roles."
+              />
+            ))}
         </motion.div>
       )}
     </div>

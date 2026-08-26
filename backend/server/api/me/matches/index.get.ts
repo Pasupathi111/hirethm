@@ -73,7 +73,14 @@ export default defineEventHandler(async (event) => {
   const settingsByOrg = new Map(settingsRows.map(r => [r.organizationId, r]))
   const orgNameById = new Map(orgRows.map(r => [r.id, r.name]))
 
-  const candidates = candidate.skills.length === 0 ? [] : analyzedJobs
+  // Candidate consent gate: 'manual' and 'hidden' mean the candidate has opted
+  // out of being sourced, so no NEW candidate_match rows are created for them.
+  // Rows they already have are still returned below — opting out stops future
+  // sourcing, it does not retroactively delete matches they were notified of
+  // and may still want to act on.
+  const sourcingAllowed = (savedPreference?.sourcingVisibility ?? 'open') === 'open'
+
+  const candidates = (candidate.skills.length === 0 || !sourcingAllowed) ? [] : analyzedJobs
     .filter(j => !existingJobIds.has(j.id))
     // Criterion weighting is the job organization's setting (issue #69), same
     // as the threshold below — the employer whose role produced the match

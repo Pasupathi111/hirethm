@@ -144,13 +144,9 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
               Apply Now
             </Button>
             <div className="mt-2 flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => toast("Job saved", { description: "Find it later under Applications." })}
-              >
-                Save Job
-              </Button>
+              {/* "Save job" was removed: there is no saved-jobs feature behind it,
+                  and the toast claimed the job would appear under Applications,
+                  which it never did. Share genuinely copies the URL. */}
               <Button
                 variant="outline"
                 className="flex-1"

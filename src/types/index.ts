@@ -371,10 +371,14 @@ export interface ApiNotification {
 
 export type ApiWorkMode = "remote" | "hybrid" | "onsite" | "any"
 
+/** Candidate's consent level for AI sourcing — enforced server-side, not just displayed. */
+export type ApiSourcingVisibility = "open" | "manual" | "hidden"
+
 export interface ApiPreferences {
   desiredTitles: string[]
   locations: string[]
   workMode: ApiWorkMode
+  sourcingVisibility: ApiSourcingVisibility
   minSalary: number | null
   maxSalary: number | null
   employmentTypes: string[]
