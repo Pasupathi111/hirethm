@@ -5,7 +5,7 @@ import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { adminRecruiters, auditLogs, jobs } from "@/data/mockData"
+import { adminRecruiters, jobs } from "@/data/mockData"
 
 export function AdminRecruiterDetail() {
   const { id } = useParams()
@@ -14,7 +14,10 @@ export function AdminRecruiterDetail() {
   if (!recruiter) return <Navigate to="/admin/recruiters" replace />
 
   const employerJobs = jobs.filter((j) => j.company === recruiter.employer)
-  const activity = auditLogs.filter((l) => l.actor === recruiter.email)
+  // TODO(#14): this whole page is still mock-data-only pending the platform-admin
+  // cross-tenant recruiters directory — activity feed will come from the real
+  // activity-log API once that ticket lands.
+  const activity: { id: string; timestamp: string; action: string; resource: string }[] = []
 
   return (
     <div className="space-y-6">

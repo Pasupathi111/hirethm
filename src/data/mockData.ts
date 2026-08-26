@@ -7,7 +7,6 @@ import type {
   AdminMatch,
   AdminRecruiter,
   Application,
-  AuditLogEntry,
   CandidateProfile,
   ChatMessage,
   Interview,
@@ -414,14 +413,6 @@ export const adminEmployers: AdminEmployer[] = [
   { id: "EMP-2005", company: "Verta Labs", domain: "vertalabs.io", recruiters: 6, activeJobs: 11, applications: 410, plan: "Premium", usage: 42, status: "Active", created: "30 Apr 2026" },
 ]
 
-export const auditLogs: AuditLogEntry[] = [
-  { id: "log-1", timestamp: "23 Aug 2026 · 09:41:02", actor: "alex.johnson@email.com", role: "Candidate", action: "MATCH_ACCEPTED", resource: "Match", resourceId: "MTH-8291", previousState: "NOTIFIED", newState: "ACCEPTED", category: "Consent" },
-  { id: "log-2", timestamp: "23 Aug 2026 · 09:41:03", actor: "system", role: "AI Engine", action: "VISIBILITY_GRANTED", resource: "Match", resourceId: "MTH-8291", previousState: "Hidden", newState: "Visible", category: "Visibility" },
-  { id: "log-3", timestamp: "22 Aug 2026 · 18:42:55", actor: "sara@abc-tech.com", role: "Recruiter", action: "SHORTLIST_ADDED", resource: "Application", resourceId: "APP-41209", previousState: "Under Review", newState: "Shortlisted", category: "Admin action" },
-  { id: "log-4", timestamp: "22 Aug 2026 · 08:10:11", actor: "system", role: "AI Engine", action: "MATCH_CREATED", resource: "Match", resourceId: "MTH-8290", previousState: "—", newState: "MATCH_CREATED", category: "Visibility" },
-  { id: "log-5", timestamp: "21 Aug 2026 · 15:02:41", actor: "ops@hirethm.com", role: "Admin", action: "ROLE_UPDATED", resource: "User", resourceId: "USR-3021", previousState: "Support Admin", newState: "Operations Admin", category: "Admin action" },
-  { id: "log-6", timestamp: "21 Aug 2026 · 11:20:04", actor: "priya.nair@email.com", role: "Candidate", action: "LOGIN_SUCCESS", resource: "Session", resourceId: "SES-99213", previousState: "—", newState: "Authenticated", category: "Auth" },
-]
 
 export const adminRecruiters: AdminRecruiter[] = [
   { id: "REC-501", name: "Sara Kim", initials: "SK", email: "sara@abc-tech.com", employer: "ABC Technologies", activeJobs: 6, status: "Active", created: "10 Feb 2026" },

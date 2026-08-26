@@ -136,19 +136,6 @@ export interface AdminEmployer {
   created: string
 }
 
-export interface AuditLogEntry {
-  id: string
-  timestamp: string
-  actor: string
-  role: "Candidate" | "AI Engine" | "Recruiter" | "Admin" | "Employer"
-  action: string
-  resource: string
-  resourceId: string
-  previousState: string
-  newState: string
-  category: "Consent" | "Visibility" | "Admin action" | "Auth" | "Billing"
-}
-
 export interface SystemService {
   name: string
   status: "Healthy" | "Degraded" | "Down"
@@ -523,4 +510,44 @@ export interface ApiDocument {
   sizeBytes: number
   createdAt: string
   parsedContent?: ParsedResume | null
+}
+
+export type ApiActivityAction =
+  | "created"
+  | "updated"
+  | "deleted"
+  | "status_changed"
+  | "comment_added"
+  | "member_invited"
+  | "member_removed"
+  | "member_role_changed"
+  | "scored"
+  | "scheduled"
+
+export type ApiActivityResourceType = "job" | "candidate" | "application" | "interview" | "member"
+
+export interface ApiActivityLogItem {
+  id: string
+  action: ApiActivityAction
+  resourceType: ApiActivityResourceType
+  resourceId: string
+  metadata: Record<string, unknown> | null
+  createdAt: string
+  actorId: string
+  actorName: string | null
+  actorEmail: string | null
+  actorImage: string | null
+  resourceName: string | null
+  resourceUrl: string | null
+  jobId: string | null
+  jobName: string | null
+  isUpcoming?: boolean
+}
+
+export interface ApiActivityTimelineResponse {
+  items: ApiActivityLogItem[]
+  upcoming: ApiActivityLogItem[]
+  hasMore: boolean
+  oldestTimestamp: string | null
+  newestTimestamp: string | null
 }
