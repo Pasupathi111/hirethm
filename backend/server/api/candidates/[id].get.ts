@@ -1,8 +1,9 @@
 import { eq, and, isNull, max } from 'drizzle-orm'
-import { application, candidate, orgSettings } from '../../database/schema'
+import { application, candidate, orgSettings, candidatePreference } from '../../database/schema'
 import { candidateIdParamSchema } from '../../utils/schemas/candidate'
 import { loadPropertyEntriesForEntity } from '../../utils/properties'
 import { computeRetentionState } from '../../utils/retention'
+import { computeCandidateCompleteness } from '../../utils/candidateCompleteness'
 
 export default defineEventHandler(async (event) => {
   const session = await requirePermission(event, { candidate: ['read'] })
@@ -26,6 +27,7 @@ export default defineEventHandler(async (event) => {
       gender: true,
       dateOfBirth: true,
       quickNotes: true,
+      skills: true,
       retentionExemptUntil: true,
       retentionReviewedAt: true,
       quarantinedAt: true,
@@ -62,7 +64,7 @@ export default defineEventHandler(async (event) => {
     entityType: 'candidate',
     entityId: result.id,
   })
-  const [settings, latestProcess] = await Promise.all([
+  const [settings, latestProcess, preference] = await Promise.all([
     db.query.orgSettings.findFirst({
       where: eq(orgSettings.organizationId, orgId),
       columns: {
@@ -79,7 +81,21 @@ export default defineEventHandler(async (event) => {
         eq(application.candidateId, id),
       ))
       .then(rows => rows[0]?.latest ?? null),
+    db.query.candidatePreference.findFirst({
+      where: eq(candidatePreference.candidateId, id),
+      columns: { desiredTitles: true, locations: true, minSalary: true, maxSalary: true, employmentTypes: true },
+    }),
   ])
+
+  const resumeDocs = documents.filter(d => d.type === 'resume')
+  const completeness = computeCandidateCompleteness({
+    phone: result.phone,
+    skills: result.skills,
+    quickNotes: result.quickNotes,
+    hasResumeDocument: resumeDocs.length > 0,
+    hasParsedResume: resumeDocs.some(d => d.parsedContent != null),
+    preference: preference ?? null,
+  })
   const retention = settings?.retentionEnabled
     ? {
         enabled: true as const,
@@ -108,6 +124,7 @@ export default defineEventHandler(async (event) => {
   return {
     ...publicCandidate,
     retention,
+    completeness,
     documents: documents.map(({ parsedContent, ...doc }) => ({
       ...doc,
       parsed: parsedContent != null,

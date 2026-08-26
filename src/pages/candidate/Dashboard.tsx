@@ -9,11 +9,10 @@ import { Skeleton } from "@/components/feedback/Skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { candidateProfile, jobs, matches } from "@/data/mockData"
 import { api } from "@/lib/api"
 import { useMyCandidate } from "@/lib/candidateSession"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
-import type { ApiRecommendedJob, ApiRemoteStatus } from "@/types"
+import type { ApiMatch, ApiRecommendedJob, ApiRemoteStatus } from "@/types"
 
 const remoteStatusLabel: Record<ApiRemoteStatus, string> = {
   remote: "Remote",
@@ -30,16 +29,22 @@ function salaryRange(min?: number | null, max?: number | null) {
 export function Dashboard() {
   const reduced = useReducedMotion()
   const { candidate, loading, error, refetch } = useMyCandidate()
-  const newMatches = matches.filter((m) => m.status === "New")
-  const featured = matches[0]
   const [recommended, setRecommended] = useState<ApiRecommendedJob[]>([])
+  const [matches, setMatches] = useState<ApiMatch[]>([])
 
   useEffect(() => {
     api
       .get<{ data: ApiRecommendedJob[] }>("/api/me/recommended")
       .then((res) => setRecommended(res.data.slice(0, 4)))
       .catch(() => setRecommended([]))
+    api
+      .get<{ data: ApiMatch[] }>("/api/me/matches")
+      .then((res) => setMatches(res.data))
+      .catch(() => setMatches([]))
   }, [])
+
+  const newMatches = matches.filter((m) => m.status === "new")
+  const featured = newMatches[0]
 
   if (loading) {
     return (
@@ -87,9 +92,9 @@ export function Dashboard() {
         <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
           <StatCard
             icon={UserCircle2}
-            value={`${candidateProfile.completeness}%`}
+            value={`${candidate.completeness.score}%`}
             label="Profile completion"
-            hint="Add 2 skills to reach 95%"
+            hint={candidate.completeness.hints[0] ?? "Your profile is complete"}
           />
         </motion.div>
         <motion.div variants={withReducedMotion(reduced, fadeInUp)}>
@@ -130,27 +135,24 @@ export function Dashboard() {
               </Badge>
               <span className="text-xs text-white/50">You are notified first</span>
             </div>
-            <h2 className="mt-4 text-2xl text-white">{featured.title}</h2>
+            <h2 className="mt-4 text-2xl text-white">{featured.job.title}</h2>
             <p className="text-white/60">
-              {featured.company} · {jobs.find((j) => j.id === featured.jobId)?.workMode} ·{" "}
-              {jobs.find((j) => j.id === featured.jobId)?.employmentType}
+              {featured.job.organizationName ?? "Employer"}
+              {featured.job.remoteStatus ? ` · ${remoteStatusLabel[featured.job.remoteStatus]}` : ""}
             </p>
             <div className="mt-5 grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <p className="flex items-center gap-1 font-semibold text-mint">Strong skills alignment</p>
-                <p className="text-white/60">across React, TypeScript</p>
-              </div>
-              <div>
-                <p className="font-semibold text-mint">Experience alignment</p>
-                <p className="text-white/60">at 5+ years in product</p>
-              </div>
+              {featured.reasons.slice(0, 2).map((reason) => (
+                <div key={reason}>
+                  <p className="font-semibold text-mint">{reason}</p>
+                </div>
+              ))}
             </div>
             <div className="mt-6 flex gap-3">
               <Button asChild>
                 <Link to="/app/matches">Review Match</Link>
               </Button>
-              <Button variant="outline" className="border-white/20 bg-transparent text-white hover:bg-white/10">
-                Decline
+              <Button asChild variant="outline" className="border-white/20 bg-transparent text-white hover:bg-white/10">
+                <Link to="/app/matches">Decline</Link>
               </Button>
             </div>
           </motion.div>
@@ -159,14 +161,15 @@ export function Dashboard() {
         <motion.div variants={withReducedMotion(reduced, fadeInUp)} className="rounded-lg border border-border bg-card p-6">
           <div className="flex items-center justify-between">
             <h3>Profile completion</h3>
-            <span className="text-lg font-display font-semibold tracking-[-0.02em]">{candidateProfile.completeness}%</span>
+            <span className="text-lg font-display font-semibold tracking-[-0.02em]">{candidate.completeness.score}%</span>
           </div>
-          <Progress value={candidateProfile.completeness} className="mt-3" />
+          <Progress value={candidate.completeness.score} className="mt-3" />
           <ul className="mt-4 space-y-2 text-sm">
-            <li className="flex items-center gap-2 text-primary">✓ Experience and education</li>
-            <li className="flex items-center gap-2 text-primary">✓ CV analysed</li>
-            <li className="flex items-center gap-2 text-warning">! Add 2 more skills</li>
-            <li className="flex items-center gap-2 text-warning">! Add project details</li>
+            {candidate.completeness.items.map((item) => (
+              <li key={item.key} className={`flex items-center gap-2 ${item.met ? "text-primary" : "text-warning"}`}>
+                {item.met ? "✓" : "!"} {item.met ? item.label : item.hint}
+              </li>
+            ))}
           </ul>
           <Button asChild variant="outline" className="mt-4 w-full">
             <Link to="/app/profile">Improve my profile</Link>

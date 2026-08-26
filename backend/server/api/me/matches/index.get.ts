@@ -40,7 +40,10 @@ export default defineEventHandler(async (event) => {
 
   const existingJobIds = new Set(existingMatches.map((m) => m.jobId))
 
-  const toInsert = openJobs
+  // BRD business rule: matching can only occur once the candidate's resume/
+  // profile has been analyzed. Skip generating NEW matches for a zero-signal
+  // profile (existing matches, if any, are still returned below).
+  const toInsert = candidate.skills.length === 0 ? [] : openJobs
     .map((j) => ({ j, match: computeMatch(j, { skills: candidate.skills }, preference) }))
     .filter(({ j, match }) => !existingJobIds.has(j.id) && match.score >= 70)
     .map(({ j, match }) => ({
