@@ -1,13 +1,19 @@
-import { eq, desc } from 'drizzle-orm'
-import { job, candidatePreference, candidateMatch } from '../../../database/schema'
+import { eq, desc, inArray } from 'drizzle-orm'
+import { job, candidatePreference, candidateMatch, orgSettings, organization } from '../../../database/schema'
 import { computeMatch, DEFAULT_MATCH_PREFERENCE, type MatchPreferenceInput } from '../../../utils/matching'
+import { dispatchMatchNotification } from '../../../utils/matchNotifications'
+import { DEFAULT_MIN_READINESS, meetsReadinessThreshold, normalizeThreshold, type MatchNotificationChannel } from '../../../utils/notificationPolicy'
 
 /**
  * GET /api/me/matches
  *
  * Ensures a `candidateMatch` row exists (status 'new') for every open job
- * scoring >= 70 against the candidate's preferences, then returns all of the
- * candidate's match rows (regardless of current status), newest first.
+ * scoring at or above the *job organization's* configured minimum readiness
+ * score, then returns all of the candidate's match rows (regardless of current
+ * status), newest first.
+ *
+ * Newly created matches dispatch a candidate notification on the channel that
+ * job's organization configured (issue #27, parts A + C).
  */
 export default defineEventHandler(async (event) => {
   const { candidate } = await requireCandidateSession(event)
@@ -18,6 +24,7 @@ export default defineEventHandler(async (event) => {
       columns: {
         id: true, title: true, location: true, type: true, remoteStatus: true,
         salaryMin: true, salaryMax: true, skills: true, description: true,
+        organizationId: true,
       },
     }),
     db.query.candidatePreference.findFirst({
@@ -46,23 +53,69 @@ export default defineEventHandler(async (event) => {
   // description and no skills (existing matches, if any, are still
   // returned below).
   const analyzedJobs = openJobs.filter(j => !!j.description?.trim() || j.skills.length > 0)
-  const toInsert = candidate.skills.length === 0 ? [] : analyzedJobs
-    .map((j) => ({ j, match: computeMatch(j, { skills: candidate.skills }, preference) }))
-    .filter(({ j, match }) => !existingJobIds.has(j.id) && match.score >= 70)
-    .map(({ j, match }) => ({
-      candidateId: candidate.id,
-      jobId: j.id,
-      score: match.score,
-      criteria: match.criteria,
-      reasons: match.reasons,
-      gap: match.gap ?? null,
-      status: 'new' as const,
-    }))
 
-  if (toInsert.length > 0) {
-    await db.insert(candidateMatch).values(toInsert).onConflictDoNothing({
-      target: [candidateMatch.candidateId, candidateMatch.jobId],
+  // Each job's own organization decides its readiness threshold and how its
+  // candidates get notified — so settings are resolved per job, not globally.
+  const orgIds = Array.from(new Set(analyzedJobs.map(j => j.organizationId)))
+  const [settingsRows, orgRows] = orgIds.length === 0
+    ? [[], []]
+    : await Promise.all([
+        db.select({
+          organizationId: orgSettings.organizationId,
+          minReadinessScore: orgSettings.minReadinessScore,
+          matchNotificationChannel: orgSettings.matchNotificationChannel,
+        }).from(orgSettings).where(inArray(orgSettings.organizationId, orgIds)),
+        db.select({ id: organization.id, name: organization.name })
+          .from(organization).where(inArray(organization.id, orgIds)),
+      ])
+
+  const settingsByOrg = new Map(settingsRows.map(r => [r.organizationId, r]))
+  const orgNameById = new Map(orgRows.map(r => [r.id, r.name]))
+
+  const candidates = candidate.skills.length === 0 ? [] : analyzedJobs
+    .filter(j => !existingJobIds.has(j.id))
+    .map(j => ({ j, match: computeMatch(j, { skills: candidate.skills }, preference) }))
+    // Threshold gating (part C): a match below the org's configured minimum is
+    // never created and therefore never notifies.
+    .filter(({ j, match }) => {
+      const threshold = normalizeThreshold(
+        settingsByOrg.get(j.organizationId)?.minReadinessScore ?? DEFAULT_MIN_READINESS,
+      )
+      return meetsReadinessThreshold(match.score, threshold)
     })
+
+  if (candidates.length > 0) {
+    const inserted = await db.insert(candidateMatch).values(
+      candidates.map(({ j, match }) => ({
+        candidateId: candidate.id,
+        jobId: j.id,
+        score: match.score,
+        criteria: match.criteria,
+        reasons: match.reasons,
+        gap: match.gap ?? null,
+        status: 'new' as const,
+      })),
+    ).onConflictDoNothing({
+      target: [candidateMatch.candidateId, candidateMatch.jobId],
+    }).returning({ jobId: candidateMatch.jobId, score: candidateMatch.score })
+
+    // Notify only for rows that were actually inserted — onConflictDoNothing
+    // means a concurrent request may already have created some of them, and
+    // the candidate must not be notified twice for the same match.
+    const baseUrl = env.BETTER_AUTH_URL || 'http://localhost:3000'
+    for (const row of inserted) {
+      const j = candidates.find(c => c.j.id === row.jobId)?.j
+      if (!j) continue
+      await dispatchMatchNotification({
+        channel: (settingsByOrg.get(j.organizationId)?.matchNotificationChannel
+          ?? 'in_app') as MatchNotificationChannel,
+        candidate: { id: candidate.id, firstName: candidate.firstName, email: candidate.email },
+        job: { id: j.id, title: j.title },
+        organizationName: orgNameById.get(j.organizationId) ?? 'An employer',
+        score: row.score,
+        baseUrl,
+      })
+    }
   }
 
   const data = await db.query.candidateMatch.findMany({

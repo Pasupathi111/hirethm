@@ -1,6 +1,7 @@
 import { eq, and, isNull } from 'drizzle-orm'
 import { candidate } from '../../database/schema'
 import { candidateIdParamSchema, updateCandidateSchema } from '../../utils/schemas/candidate'
+import { assertCandidateVisible } from '../../utils/candidateVisibility'
 
 export default defineEventHandler(async (event) => {
   const session = await requirePermission(event, { candidate: ['update'] })
@@ -8,6 +9,10 @@ export default defineEventHandler(async (event) => {
 
   const { id } = await getValidatedRouterParams(event, candidateIdParamSchema.parse)
   const body = await readValidatedBody(event, updateCandidateSchema.parse)
+
+  // Consent expiry (issue #27): closes the write bypass — a recruiter must not
+  // be able to mutate a candidate whose visibility has lapsed.
+  await assertCandidateVisible({ organizationId: orgId, candidateId: id })
 
   // If email is being changed, check uniqueness within the org
   if (body.email) {

@@ -5,6 +5,13 @@
  * full data graph as a downloadable JSON document. The org is the data
  * controller and is responsible for verifying the requester's identity before
  * sharing this — see DATA-RETENTION.md.
+ *
+ * DELIBERATELY EXEMPT from consent-expiry visibility filtering (issue #27).
+ * Consent expiry revokes visibility in *recruiting* workflows; it does not
+ * revoke the data subject's own Art. 15 right of access. Blocking this would
+ * make the org unable to answer a lawful data request for a lapsed candidate.
+ * The export is permission-gated and written to the retention audit trail
+ * below, so the access is always attributable.
  */
 import { eq, and } from 'drizzle-orm'
 import { candidate, comment, propertyValue, activityLog } from '../../../database/schema'

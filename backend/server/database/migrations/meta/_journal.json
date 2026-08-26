@@ -267,6 +267,13 @@
       "when": 1787712047915,
       "tag": "0037_open_wither",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1787721749660,
+      "tag": "0038_slimy_killer_shrike",
+      "breakpoints": true
     }
   ]
 }
