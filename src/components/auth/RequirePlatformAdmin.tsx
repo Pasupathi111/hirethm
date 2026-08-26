@@ -33,7 +33,7 @@ export function RequirePlatformAdmin() {
     )
   }
 
-  if (!session) return <Navigate to="/sign-in" replace />
+  if (!session) return <Navigate to="/admin/login" replace />
   if (!isPlatformAdmin) return <Navigate to="/" replace />
 
   return <Outlet />

@@ -181,7 +181,7 @@ export function JobDetail({ basePath = "/jobs", candidateMode = false }: { baseP
                 Sign in to see how your skills, experience and goals score against this role.
               </p>
               <Button asChild variant="outline" className="mt-4 w-full bg-white text-secondary hover:bg-white/90">
-                <Link to="/sign-in">Sign in</Link>
+                <Link to="/candidate/sign-in">Sign in</Link>
               </Button>
             </div>
           )}

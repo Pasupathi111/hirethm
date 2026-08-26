@@ -14,7 +14,7 @@ export function RequireAuth() {
     )
   }
 
-  if (!session) return <Navigate to="/sign-in" replace />
+  if (!session) return <Navigate to="/employer/sign-in" replace />
 
   if (!session.session.activeOrganizationId) {
     return <Navigate to="/onboarding/create-org" replace />

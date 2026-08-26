@@ -130,7 +130,7 @@ export function JoinOrg() {
               <h1 className="text-lg font-semibold">Invalid invite link</h1>
               <p className="mt-1 text-sm text-muted-foreground">{error}</p>
             </div>
-            <Link to="/sign-in" className="text-sm font-semibold text-primary hover:underline">
+            <Link to="/employer/sign-in" className="text-sm font-semibold text-primary hover:underline">
               Go to sign in
             </Link>
           </div>
@@ -181,10 +181,10 @@ export function JoinOrg() {
                 <p className="text-center text-sm text-muted-foreground">Sign in or create an account to accept this invitation.</p>
                 <div className="flex gap-3">
                   <Button asChild className="flex-1">
-                    <Link to="/sign-in">Sign in</Link>
+                    <Link to="/employer/sign-in">Sign in</Link>
                   </Button>
                   <Button asChild variant="outline" className="flex-1">
-                    <Link to="/sign-up">Create account</Link>
+                    <Link to="/employer/sign-up">Create account</Link>
                   </Button>
                 </div>
               </div>

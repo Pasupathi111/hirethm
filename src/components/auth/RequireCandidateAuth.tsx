@@ -14,7 +14,7 @@ export function RequireCandidateAuth() {
     )
   }
 
-  if (!session) return <Navigate to="/sign-in" replace />
+  if (!session) return <Navigate to="/candidate/sign-in" replace />
 
   return <Outlet />
 }

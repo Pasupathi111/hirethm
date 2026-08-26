@@ -13,7 +13,7 @@ export function CandidateSidebarContent({ onNavigate }: { onNavigate?: () => voi
   const handleSignOut = async () => {
     await signOut()
     onNavigate?.()
-    navigate("/sign-in")
+    navigate("/candidate/sign-in")
   }
 
   return (

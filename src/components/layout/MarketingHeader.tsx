@@ -44,14 +44,14 @@ export function MarketingHeader() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Link to="/admin/login" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
-            Admin
+          <Link to="/employer/sign-in" className="text-sm font-semibold text-muted-foreground hover:text-foreground">
+            For Employers
           </Link>
           <Button asChild variant="outline">
-            <Link to="/sign-in">Sign In</Link>
+            <Link to="/candidate/sign-in">Sign In</Link>
           </Button>
           <Button asChild>
-            <Link to="/create-profile">
+            <Link to="/candidate/sign-up">
               <UserPlus className="size-4" />
               Create Profile
             </Link>
@@ -80,16 +80,19 @@ export function MarketingHeader() {
                   {link.label}
                 </a>
               ))}
+              <Link to="/employer/sign-in" className="rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted">
+                For Employers
+              </Link>
               <Link to="/admin/login" className="rounded-lg px-3 py-2.5 text-sm font-semibold text-foreground hover:bg-muted">
                 Admin
               </Link>
             </div>
             <div className="mt-auto flex flex-col gap-2 p-4">
               <Button asChild variant="outline">
-                <Link to="/sign-in">Sign In</Link>
+                <Link to="/candidate/sign-in">Sign In</Link>
               </Button>
               <Button asChild>
-                <Link to="/create-profile">Create Profile</Link>
+                <Link to="/candidate/sign-up">Create Profile</Link>
               </Button>
             </div>
           </SheetContent>
