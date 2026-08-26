@@ -61,10 +61,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const [org, documents, preference] = await Promise.all([
-    db.query.organization.findFirst({
-      where: eq(organization.id, result.organizationId),
-      columns: { id: true, name: true },
-    }),
+    // Platform-level self-serve candidates have no owning org (issue #46).
+    result.organizationId
+      ? db.query.organization.findFirst({
+          where: eq(organization.id, result.organizationId),
+          columns: { id: true, name: true },
+        })
+      : Promise.resolve(undefined),
     db.query.document.findMany({
       where: eq(document.candidateId, result.id),
       columns: { type: true, parsedContent: true },

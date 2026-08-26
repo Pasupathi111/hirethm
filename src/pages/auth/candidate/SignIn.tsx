@@ -47,7 +47,9 @@ export function CandidateSignIn() {
       return
     }
 
-    window.location.href = "/onboarding/create-org"
+    // Signed in on the candidate page with no profile yet — finish creating it
+    // rather than dropping them into the employer org-creation flow (#46).
+    window.location.href = "/create-profile"
   }
 
   return (

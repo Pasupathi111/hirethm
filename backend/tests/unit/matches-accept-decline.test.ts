@@ -49,6 +49,14 @@ function fakeEvent(params: unknown, body: unknown): H3Event {
 }
 
 const CANDIDATE = { id: 'cand_1', organizationId: 'org_1' }
+/**
+ * Deliberately DIFFERENT from the candidate's org: matches are generated
+ * against every open job regardless of org, so accepting one must file the
+ * application under the *employer's* org, not the candidate's. Using the same
+ * id here would let the old bug pass unnoticed.
+ */
+const EMPLOYER_ORG = 'org_employer'
+const JOB = { id: 'job_1', title: 'Engineer', organizationId: EMPLOYER_ORG }
 
 describe('PATCH /api/me/matches/:id', () => {
   beforeEach(() => {
@@ -82,7 +90,7 @@ describe('PATCH /api/me/matches/:id', () => {
   })
 
   it('rejecting a match only updates its status — no application or notification created', async () => {
-    findFirstMatchMock.mockResolvedValue({ id: 'match_1', jobId: 'job_1', job: { id: 'job_1', title: 'Engineer' } })
+    findFirstMatchMock.mockResolvedValue({ id: 'match_1', jobId: 'job_1', job: JOB })
     matchReturningMock.mockResolvedValue([{ id: 'match_1', status: 'rejected' }])
 
     const result = await matchPatchHandler(fakeEvent({ id: 'match_1' }, { status: 'rejected' }))
@@ -93,7 +101,7 @@ describe('PATCH /api/me/matches/:id', () => {
   })
 
   it('accepting a match updates status, creates an application, and a notification, inside a transaction', async () => {
-    findFirstMatchMock.mockResolvedValue({ id: 'match_1', jobId: 'job_1', job: { id: 'job_1', title: 'Engineer' } })
+    findFirstMatchMock.mockResolvedValue({ id: 'match_1', jobId: 'job_1', job: JOB })
     findFirstApplicationMock.mockResolvedValue(undefined) // no existing application
     matchReturningMock.mockResolvedValue([{ id: 'match_1', status: 'accepted' }])
 
@@ -104,7 +112,7 @@ describe('PATCH /api/me/matches/:id', () => {
     expect(applicationValuesMock).toHaveBeenCalledWith(expect.objectContaining({
       candidateId: CANDIDATE.id,
       jobId: 'job_1',
-      organizationId: CANDIDATE.organizationId,
+      organizationId: EMPLOYER_ORG,
     }))
     expect(notificationValuesMock).toHaveBeenCalledWith(expect.objectContaining({
       candidateId: CANDIDATE.id,
@@ -114,7 +122,7 @@ describe('PATCH /api/me/matches/:id', () => {
   })
 
   it('accepting a match with an existing application does not create a duplicate', async () => {
-    findFirstMatchMock.mockResolvedValue({ id: 'match_1', jobId: 'job_1', job: { id: 'job_1', title: 'Engineer' } })
+    findFirstMatchMock.mockResolvedValue({ id: 'match_1', jobId: 'job_1', job: JOB })
     findFirstApplicationMock.mockResolvedValue({ id: 'existing_app' })
     matchReturningMock.mockResolvedValue([{ id: 'match_1', status: 'accepted' }])
 
@@ -123,6 +131,31 @@ describe('PATCH /api/me/matches/:id', () => {
     // Only the notification insert should have happened — no application insert.
     expect(insertMock).toHaveBeenCalledTimes(1)
     expect(notificationValuesMock).toHaveBeenCalledTimes(1)
+  })
+
+  it('files the application under the employer org, never the candidate org', async () => {
+    // Regression guard for the cross-org bug: matches are generated against
+    // every open job regardless of org, so filing under the candidate's own org
+    // meant the hiring employer never saw the application.
+    findFirstMatchMock.mockResolvedValue({ id: 'match_1', jobId: 'job_1', job: JOB })
+    findFirstApplicationMock.mockResolvedValue(undefined)
+    matchReturningMock.mockResolvedValue([{ id: 'match_1', status: 'accepted' }])
+
+    await matchPatchHandler(fakeEvent({ id: 'match_1' }, { status: 'accepted' }))
+
+    const filed = applicationValuesMock.mock.calls[0]?.[0] as { organizationId: string }
+    expect(filed.organizationId).toBe(EMPLOYER_ORG)
+    expect(filed.organizationId).not.toBe(CANDIDATE.organizationId)
+  })
+
+  it('409s when the matched job no longer exists, rather than filing a bad application', async () => {
+    findFirstMatchMock.mockResolvedValue({ id: 'match_1', jobId: 'job_1', job: null })
+
+    await expect(
+      matchPatchHandler(fakeEvent({ id: 'match_1' }, { status: 'accepted' })),
+    ).rejects.toMatchObject({ statusCode: 409 })
+
+    expect(transactionMock).not.toHaveBeenCalled()
   })
 
   it('rejects an invalid status value', async () => {

@@ -1,256 +1,239 @@
-import { Check, UserPlus, Upload } from "lucide-react"
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { motion } from "framer-motion"
+import { Check, Loader2, Upload } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { Link } from "react-router-dom"
 
-import { ChipGroup } from "@/components/forms/ChipGroup"
-import { Stepper } from "@/components/forms/Stepper"
 import { Logo } from "@/components/layout/Logo"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { ApiError, api } from "@/lib/api"
+import { useSession } from "@/lib/authClient"
+import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
+import type { ApiDocument, MyCandidate } from "@/types"
 
-const steps = [
-  { number: 1, title: "Account", description: "Name, email, password" },
-  { number: 2, title: "Profile", description: "Role, location, summary" },
-  { number: 3, title: "Resume", description: "Upload and review extraction" },
-  { number: 4, title: "Preferences", description: "Salary, locations, goals" },
-  { number: 5, title: "Complete", description: "Start getting matched" },
-]
-
-const roleOptions = ["Senior Frontend Engineer", "Product Engineer", "Frontend Architect", "Engineering Manager", "Full Stack Engineer"]
-const skillOptions = ["React", "TypeScript", "Node.js", "GraphQL", "Python", "AWS"]
-const industryOptions = ["SaaS", "Fintech", "Healthcare", "Climate", "Public sector"]
-const locationOptions = ["Remote (US)", "Austin, TX", "Denver, CO", "New York, NY"]
-const workModeOptions = ["Remote", "Hybrid", "On-site", "Full Time", "Contract"]
-const availabilityOptions = ["Immediately", "2 weeks", "1 month", "3 months"]
-
+/**
+ * Real self-serve candidate profile creation (issue #46).
+ *
+ * Two genuine steps, both hitting real APIs:
+ *   1. POST /api/me/candidate   — creates the platform-level candidate row
+ *   2. POST /api/me/documents   — uploads the CV, which the backend parses to
+ *                                 extract skills automatically
+ *
+ * Everything else (salary, locations, availability) is editable afterwards in
+ * the portal, which is already fully built — so this stays deliberately short
+ * to minimise drop-off before the candidate reaches value.
+ */
 export function CreateProfile() {
-  const navigate = useNavigate()
-  const [step, setStep] = useState(1)
-  const [agree, setAgree] = useState(true)
+  const reduced = useReducedMotion()
+  const { data: session, isPending: sessionPending } = useSession()
 
-  const [roles, setRoles] = useState<string[]>(["Senior Frontend Engineer", "Product Engineer"])
-  const [skills, setSkills] = useState<string[]>(["React", "TypeScript", "Node.js"])
-  const [industries, setIndustries] = useState<string[]>(["SaaS", "Fintech"])
-  const [locations, setLocations] = useState<string[]>(["Remote (US)", "Austin, TX"])
-  const [workMode, setWorkMode] = useState<string[]>(["Full Time"])
-  const [availability, setAvailability] = useState<string[]>(["1 month"])
+  const [checking, setChecking] = useState(true)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [phone, setPhone] = useState("")
+  const [error, setError] = useState("")
+  const [creating, setCreating] = useState(false)
 
-  const toggle = (list: string[], setList: (v: string[]) => void, value: string) => {
-    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
+  const [profile, setProfile] = useState<MyCandidate | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploaded, setUploaded] = useState<ApiDocument | null>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+
+  // If a profile already exists (e.g. they applied to a job before signing up,
+  // or refreshed mid-flow), skip straight to the CV step instead of failing.
+  // Also prefills the name from their signup name so the form isn't empty.
+  useEffect(() => {
+    if (sessionPending || !session) return
+    let cancelled = false
+
+    const nameParts = (session.user.name ?? "").trim().split(/\s+/).filter(Boolean)
+
+    api
+      .get<MyCandidate>("/api/me/candidate")
+      .then((c) => {
+        if (cancelled) return
+        setProfile(c)
+        setFirstName(c.firstName ?? "")
+        setLastName(c.lastName ?? "")
+      })
+      .catch(() => {
+        // 404 is the normal "no profile yet" case — fall back to the signup name.
+        if (cancelled) return
+        setFirstName(nameParts[0] ?? "")
+        setLastName(nameParts.slice(1).join(" "))
+      })
+      .finally(() => { if (!cancelled) setChecking(false) })
+
+    return () => { cancelled = true }
+  }, [session, sessionPending])
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setCreating(true)
+    try {
+      const created = await api.post<MyCandidate>("/api/me/candidate", {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        phone: phone.trim() || null,
+      })
+      setProfile(created)
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not create your profile.")
+    } finally {
+      setCreating(false)
+    }
   }
 
-  const next = () => setStep((s) => Math.min(5, s + 1))
-  const back = () => setStep((s) => Math.max(1, s - 1))
+  const handleUpload = async (file: File) => {
+    setError("")
+    setUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("type", "resume")
+      setUploaded(await api.upload<ApiDocument>("/api/me/documents", formData))
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not upload your CV.")
+    } finally {
+      setUploading(false)
+    }
+  }
 
-  if (step === 1) {
+  // Signed-out resolves during render — no effect needed, so no extra pass.
+  if (sessionPending || (session && checking)) {
     return (
-      <div className="min-h-screen bg-background">
-        <header className="border-b border-border px-4 py-4 sm:px-6">
-          <Link to="/">
-            <Logo />
-          </Link>
-        </header>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="size-6 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
-        <div className="mx-auto grid max-w-5xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[1fr_320px] lg:items-start">
-          <div>
-            <p className="eyebrow">Step 1 of 5</p>
-            <h1 className="mt-2 text-4xl">Create your account</h1>
-            <p className="mt-3 text-muted-foreground">One profile. Reusable across every employer.</p>
-
-            <form
-              className="mt-8 space-y-5 rounded-lg border border-border bg-card p-6"
-              onSubmit={(e) => {
-                e.preventDefault()
-                next()
-              }}
-            >
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="first-name">First Name</Label>
-                  <Input id="first-name" defaultValue="Alex" required />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="last-name">Last Name</Label>
-                  <Input id="last-name" defaultValue="Johnson" required />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
-                <Input id="signup-email" type="email" defaultValue="alex.johnson@email.com" required />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
-                <Input id="signup-password" type="password" defaultValue="hirethm2026" required />
-                <div className="flex gap-1 pt-1">
-                  {[0, 1, 2].map((i) => (
-                    <span key={i} className="h-1.5 flex-1 rounded-full bg-primary" />
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground">Strong password</p>
-              </div>
-              <label className="flex items-start gap-2.5 text-sm text-muted-foreground">
-                <Checkbox checked={agree} onCheckedChange={(v) => setAgree(v === true)} className="mt-0.5" />
-                I agree that HireThm may analyse my CV to generate matches. Employers see nothing until I accept a
-                match.
-              </label>
-              <Button type="submit" size="lg" className="w-full">
-                <UserPlus className="size-4" />
-                Create Account
-              </Button>
-            </form>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-6">
-            <p className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Onboarding</p>
-            <div className="mt-4">
-              <Stepper steps={steps} current={1} orientation="vertical" />
-            </div>
-          </div>
-        </div>
+  if (!session) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4 text-center">
+        <Logo />
+        <h1 className="mt-6 text-2xl">Sign in to build your profile</h1>
+        <Button asChild variant="dark" className="mt-6">
+          <Link to="/candidate/sign-up">Create an account</Link>
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 sm:px-6">
-      <div className="mx-auto max-w-3xl">
-        <div className="mb-10 flex items-center justify-between">
-          <Logo />
-          <p className="text-sm font-semibold text-muted-foreground">Step {step} of 5</p>
+    <div className="flex min-h-screen flex-col items-center bg-background px-4 py-16">
+      <Link to="/" className="mb-8">
+        <Logo />
+      </Link>
+
+      <motion.div
+        className="w-full max-w-md"
+        variants={withReducedMotion(reduced, fadeInUp)}
+        initial="hidden"
+        animate="show"
+      >
+        {/* Step indicator */}
+        <div className="mb-6 flex items-center gap-2 text-xs font-semibold">
+          <span className={profile ? "text-primary" : "text-foreground"}>1. Your details</span>
+          <span className="h-px flex-1 bg-border" />
+          <span className={profile ? "text-foreground" : "text-muted-foreground"}>2. Your CV</span>
         </div>
 
-        <Stepper steps={steps} current={step} orientation="horizontal" />
+        {error && (
+          <motion.p
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+          >
+            {error}
+          </motion.p>
+        )}
 
-        <div className="mx-auto mt-10 max-w-2xl rounded-lg border border-border bg-card p-6 sm:p-8">
-          {step === 2 && (
-            <>
-              <h2 className="text-2xl">Tell us about your work</h2>
-              <p className="mt-2 text-muted-foreground">
-                This becomes your reusable HireThm profile. Employers never see it without your consent.
-              </p>
-              <div className="mt-6 grid gap-5 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="current-role">Current role</Label>
-                  <Input id="current-role" defaultValue="Senior React Developer" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="years-exp">Years of experience</Label>
-                  <Input id="years-exp" defaultValue="5" />
-                </div>
-              </div>
-              <div className="mt-5 space-y-2">
-                <Label htmlFor="location">Location</Label>
-                <Input id="location" defaultValue="Austin, TX" />
-              </div>
-              <div className="mt-5 space-y-2">
-                <Label htmlFor="summary">Professional summary</Label>
-                <Textarea
-                  id="summary"
-                  rows={3}
-                  defaultValue="Senior frontend engineer with 5+ years building production React and TypeScript applications for SaaS products."
-                />
-              </div>
-            </>
-          )}
-
-          {step === 3 && (
-            <>
-              <h2 className="text-2xl">Upload your CV</h2>
-              <p className="mt-2 text-muted-foreground">
-                HireThm extracts your experience and skills, and shows you exactly what it read.
-              </p>
-              <div className="mt-6 flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-border py-16 text-center">
-                <div className="flex size-14 items-center justify-center rounded-lg bg-accent">
-                  <Upload className="size-6 text-accent-foreground" />
-                </div>
-                <p className="font-bold">Upload your resume</p>
-                <p className="text-sm text-muted-foreground">PDF, DOC, DOCX</p>
-              </div>
-            </>
-          )}
-
-          {step === 4 && (
-            <>
-              <h2 className="text-2xl">What are you looking for?</h2>
-              <p className="mt-2 text-muted-foreground">Preferences drive five of the eight Mutual Readiness criteria.</p>
-
-              <div className="mt-6 space-y-6">
-                <div>
-                  <p className="mb-2 font-semibold">Desired roles</p>
-                  <ChipGroup options={roleOptions} selected={roles} onToggle={(v) => toggle(roles, setRoles, v)} />
-                </div>
-                <div>
-                  <p className="mb-2 font-semibold">Skills to be matched on</p>
-                  <ChipGroup options={skillOptions} selected={skills} onToggle={(v) => toggle(skills, setSkills, v)} />
-                </div>
-                <div>
-                  <p className="mb-2 font-semibold">Industries</p>
-                  <ChipGroup options={industryOptions} selected={industries} onToggle={(v) => toggle(industries, setIndustries, v)} />
-                </div>
-                <div>
-                  <p className="mb-2 font-semibold">Preferred locations</p>
-                  <ChipGroup options={locationOptions} selected={locations} onToggle={(v) => toggle(locations, setLocations, v)} />
-                </div>
-                <div>
-                  <p className="mb-2 font-semibold">Work mode and employment type</p>
-                  <ChipGroup options={workModeOptions} selected={workMode} onToggle={(v) => toggle(workMode, setWorkMode, v)} />
-                </div>
-                <div>
-                  <p className="mb-2 font-semibold">Availability</p>
-                  <ChipGroup
-                    options={availabilityOptions}
-                    selected={availability}
-                    onToggle={(v) => toggle(availability, setAvailability, v)}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-
-          {step === 5 && (
-            <div className="py-6 text-center">
-              <h2 className="text-2xl">You're all set</h2>
-              <p className="mt-2 text-muted-foreground">Your profile is complete and matching is active.</p>
-
-              <div className="mx-auto mt-8 flex size-16 items-center justify-center rounded-lg bg-accent">
-                <Check className="size-8 text-accent-foreground" />
-              </div>
-              <h3 className="mt-4 text-xl">Your profile is live</h3>
-              <p className="mx-auto mt-2 max-w-sm text-muted-foreground">
-                HireThm will start scoring you against open roles tonight. You will hear about a match before any
-                employer sees you.
+        {!profile ? (
+          <form className="space-y-5 rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-card)]" onSubmit={handleCreate}>
+            <div>
+              <h1 className="text-2xl">Build your profile</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Signed in as {session.user.email}
               </p>
             </div>
-          )}
-
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            {step === 5 ? (
-              <Button size="lg" onClick={() => navigate("/app")}>
-                Go to my dashboard
-              </Button>
-            ) : (
-              <Button size="lg" onClick={next}>
-                Continue
-              </Button>
-            )}
-            <Button variant="outline" size="lg" onClick={back}>
-              Back
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="firstName">First name</Label>
+                <Input id="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="lastName">Last name</Label>
+                <Input id="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} required />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phone">Phone (optional)</Label>
+              <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
+            <Button type="submit" variant="dark" size="lg" className="w-full" disabled={creating}>
+              {creating ? "Creating…" : "Continue"}
             </Button>
-            {step < 5 && (
-              <button
-                type="button"
-                onClick={() => navigate("/app")}
-                className="ml-auto text-sm font-semibold text-muted-foreground hover:text-foreground"
-              >
-                Skip for now
-              </button>
+          </form>
+        ) : (
+          <div className="space-y-5 rounded-lg border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl">Add your CV</h1>
+                <Badge variant="success">Profile created</Badge>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                We read your CV to extract your skills, which is what powers matching.
+              </p>
+            </div>
+
+            {uploaded ? (
+              <div className="flex items-center gap-3 rounded-md border border-success/30 bg-success/10 p-4 text-sm">
+                <Check className="size-5 shrink-0 text-success" />
+                <div>
+                  <p className="font-semibold">{uploaded.originalFilename}</p>
+                  <p className="text-muted-foreground">Uploaded and analyzed.</p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0]
+                    if (f) handleUpload(f)
+                  }}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  disabled={uploading}
+                  onClick={() => fileRef.current?.click()}
+                >
+                  {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
+                  {uploading ? "Uploading…" : "Upload CV (PDF or Word)"}
+                </Button>
+              </>
+            )}
+
+            <Button asChild variant="dark" size="lg" className="w-full">
+              <a href="/app">{uploaded ? "Go to my dashboard" : "Skip for now"}</a>
+            </Button>
+            {!uploaded && (
+              <p className="text-center text-xs text-muted-foreground">
+                You can add your CV later — but matching needs it to find roles for you.
+              </p>
             )}
           </div>
-        </div>
-      </div>
+        )}
+      </motion.div>
     </div>
   )
 }

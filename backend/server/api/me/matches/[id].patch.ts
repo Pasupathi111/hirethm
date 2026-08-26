@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   const existingMatch = await db.query.candidateMatch.findFirst({
     where: and(eq(candidateMatch.id, id), eq(candidateMatch.candidateId, candidate.id)),
     with: {
-      job: { columns: { id: true, title: true } },
+      job: { columns: { id: true, title: true, organizationId: true } },
     },
   })
 
@@ -35,6 +35,17 @@ export default defineEventHandler(async (event) => {
   }
 
   // status === 'accepted'
+  //
+  // The application belongs to the JOB's organization — the employer being
+  // applied to. This previously used candidate.organizationId, which was wrong
+  // for any cross-org match: matches are generated against every open job
+  // regardless of org, so accepting one filed the application under the
+  // candidate's own org and the hiring employer never saw it.
+  const employerOrgId = existingMatch.job?.organizationId
+  if (!employerOrgId) {
+    throw createError({ statusCode: 409, statusMessage: 'This job is no longer available' })
+  }
+
   const updated = await db.transaction(async (tx) => {
     const [updatedMatch] = await tx.update(candidateMatch)
       .set({ status: 'accepted', updatedAt: new Date() })
@@ -43,7 +54,7 @@ export default defineEventHandler(async (event) => {
 
     const existingApplication = await tx.query.application.findFirst({
       where: and(
-        eq(application.organizationId, candidate.organizationId),
+        eq(application.organizationId, employerOrgId),
         eq(application.candidateId, candidate.id),
         eq(application.jobId, existingMatch.jobId),
       ),
@@ -52,7 +63,7 @@ export default defineEventHandler(async (event) => {
 
     if (!existingApplication) {
       await tx.insert(application).values({
-        organizationId: candidate.organizationId,
+        organizationId: employerOrgId,
         candidateId: candidate.id,
         jobId: existingMatch.jobId,
         status: 'new',

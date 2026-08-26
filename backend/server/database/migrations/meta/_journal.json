@@ -274,6 +274,20 @@
       "when": 1787721749660,
       "tag": "0038_slimy_killer_shrike",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1787727063874,
+      "tag": "0039_watery_logan",
+      "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1787727559272,
+      "tag": "0040_lyrical_mystique",
+      "breakpoints": true
     }
   ]
 }

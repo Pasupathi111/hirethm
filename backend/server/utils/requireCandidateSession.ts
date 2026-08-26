@@ -31,6 +31,21 @@ export async function requireCandidateSession(event: H3Event) {
   const candidateRow = await db.query.candidate.findFirst({
     where: (candidateTable, { and, ilike }) =>
       and(ilike(candidateTable.email, session.user.email), isNull(candidateTable.quarantinedAt)),
+    /**
+     * Candidates are deduplicated *per org*, so one person who applied to
+     * three employers has three rows. Without an explicit order this picked an
+     * arbitrary one, meaning the portal could show a different profile between
+     * requests.
+     *
+     * Order deterministically: the platform-level row (organizationId NULL,
+     * created via self-serve signup) is the person's own profile and always
+     * wins; otherwise fall back to the oldest employer-sourced row so the
+     * answer is at least stable.
+     */
+    orderBy: (candidateTable, { asc, sql }) => [
+      sql`CASE WHEN ${candidateTable.organizationId} IS NULL THEN 0 ELSE 1 END`,
+      asc(candidateTable.createdAt),
+    ],
     columns: {
       id: true,
       organizationId: true,

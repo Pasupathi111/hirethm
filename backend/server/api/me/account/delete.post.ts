@@ -34,10 +34,14 @@ export default defineEventHandler(async (event) => {
     return { status: 'quarantined' as const }
   }
 
-  const settings = await db.query.orgSettings.findFirst({
-    where: eq(orgSettings.organizationId, candidateSession.organizationId),
-    columns: { quarantineDays: true },
-  })
+  // Platform-level self-serve candidates have no owning org, so there are no
+  // org retention settings to read — fall back to the same 30-day default.
+  const settings = candidateSession.organizationId
+    ? await db.query.orgSettings.findFirst({
+        where: eq(orgSettings.organizationId, candidateSession.organizationId),
+        columns: { quarantineDays: true },
+      })
+    : undefined
   const quarantineDays = settings?.quarantineDays ?? 30
   const now = new Date()
   const purgeAt = new Date(now.getTime() + quarantineDays * 24 * 60 * 60 * 1000)
@@ -61,7 +65,7 @@ export default defineEventHandler(async (event) => {
   )
   if (!audited) {
     logError('retention.self_service_soft_delete_audit_failed', {
-      org_id: candidateSession.organizationId,
+      org_id: candidateSession.organizationId ?? undefined,
       candidate_id: candidateSession.id,
     })
   }

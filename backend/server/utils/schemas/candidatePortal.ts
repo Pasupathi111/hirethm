@@ -39,6 +39,19 @@ export const updatePreferencesSchema = z.object({
   notifyInterviews: z.boolean().default(true),
 })
 
+/**
+ * POST /api/me/candidate body — self-serve profile creation (issue #46).
+ *
+ * Email is NOT accepted: it is always taken from the authenticated session, so
+ * a user can never create a profile under someone else's address.
+ */
+export const createSelfCandidateSchema = z.object({
+  firstName: z.string().trim().min(1, 'First name is required').max(100),
+  lastName: z.string().trim().min(1, 'Last name is required').max(100),
+  phone: z.string().trim().max(50).nullish(),
+  skills: z.array(z.string().trim().min(1).max(100)).max(100).default([]),
+})
+
 /** PATCH /api/me/candidate body — self-edit is restricted to a small field set */
 export const updateSelfCandidateSchema = z.object({
   firstName: z.string().trim().min(1, 'First name is required').max(100).optional(),
