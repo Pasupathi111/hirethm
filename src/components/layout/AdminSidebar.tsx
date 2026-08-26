@@ -2,7 +2,7 @@ import { LogOut } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 
 import { Badge } from "@/components/ui/badge"
-import { signOut } from "@/lib/authClient"
+import { signOut, useSession } from "@/lib/authClient"
 import { adminNav } from "@/lib/navigation"
 import { usePlatformAdmin } from "@/lib/usePlatformAdmin"
 import { cn } from "@/lib/utils"
@@ -10,13 +10,21 @@ import { cn } from "@/lib/utils"
 export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const navigate = useNavigate()
   const { isPlatformAdmin } = usePlatformAdmin()
+  const { data: session } = useSession()
+  const hasOrg = Boolean(session?.session.activeOrganizationId)
 
-  // Hide cross-tenant destinations from org users (issue #43). Groups that end
-  // up empty are dropped entirely so no stray section headers are left behind.
+  // Filter both ways so nobody is shown a link that only ever leads to a
+  // redirect or a 403. Cross-tenant destinations need the platform-admin flag
+  // (issue #43); org-scoped destinations need an active organization, which
+  // HireThm staff don't have. Groups that end up empty are dropped entirely so
+  // no stray section headers are left behind.
   const visibleNav = adminNav
     .map((group) => ({
       ...group,
-      items: group.items.filter((item) => isPlatformAdmin || !item.platformAdminOnly),
+      items: group.items.filter(
+        (item) =>
+          (isPlatformAdmin || !item.platformAdminOnly) && (hasOrg || !item.orgOnly),
+      ),
     }))
     .filter((group) => group.items.length > 0)
 
