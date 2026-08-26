@@ -154,15 +154,29 @@ export interface Plan {
   features: string[]
 }
 
-export interface SourceTrackingEntry {
+export interface ApiSourceChannelBreakdown {
+  channel: string
+  count: number
+}
+
+export interface ApiSourceTopLink {
   id: string
-  source: string
-  campaign: string
-  candidates: number
-  applications: number
-  hires: number
-  conversionRate: number
-  updated: string
+  name: string
+  channel: string
+  code: string
+  jobTitle: string | null
+  clickCount: number
+  applicationCount: number
+  isActive: boolean
+}
+
+export interface ApiSourceStats {
+  channelBreakdown: ApiSourceChannelBreakdown[]
+  topLinks: ApiSourceTopLink[]
+  funnel: Record<string, Record<string, number>>
+  dailyTrend: { date: string; channel: string; count: number }[]
+  topReferrerDomains: { domain: string | null; count: number }[]
+  summary: { totalTracked: number; totalUntracked: number; attributionRate: number }
 }
 
 export interface TimelineEvent {

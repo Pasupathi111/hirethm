@@ -1,56 +1,106 @@
+import { useEffect, useState } from "react"
 import { Navigate, useParams } from "react-router-dom"
 
 import { MetricTile } from "@/components/cards/MetricTile"
 import { SectionCard } from "@/components/cards/SectionCard"
+import { Skeleton } from "@/components/feedback/Skeleton"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
-import { sourceTrackingEntries } from "@/data/mockData"
+import { api } from "@/lib/api"
+import type { ApiSourceStats } from "@/types"
+
+const channelLabel: Record<string, string> = {
+  linkedin: "LinkedIn", indeed: "Indeed", glassdoor: "Glassdoor", ziprecruiter: "ZipRecruiter",
+  monster: "Monster", handshake: "Handshake", angellist: "AngelList", wellfound: "Wellfound",
+  dice: "Dice", stackoverflow: "Stack Overflow", weworkremotely: "We Work Remotely", remoteok: "Remote OK",
+  builtin: "Built In", hired: "Hired.com", lever: "Lever", greenhouse_board: "Greenhouse Job Board",
+  google_jobs: "Google Jobs", facebook: "Facebook", twitter: "Twitter/X", instagram: "Instagram",
+  tiktok: "TikTok", reddit: "Reddit", referral: "Referral", career_site: "Career Site", email: "Email",
+  event: "Event", agency: "Agency", direct: "Direct", other: "Other", custom: "Custom",
+}
+
+const funnelSteps: { key: string; label: string }[] = [
+  { key: "new", label: "Applied" },
+  { key: "screening", label: "Screening" },
+  { key: "interview", label: "Interview" },
+  { key: "offer", label: "Offer" },
+  { key: "hired", label: "Hired" },
+]
 
 export function AdminSourceTrackingDetail() {
-  const { id } = useParams()
-  const entry = sourceTrackingEntries.find((s) => s.id === id)
+  const { id: channel } = useParams()
+  const [stats, setStats] = useState<ApiSourceStats | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!entry) return <Navigate to="/admin/source-tracking" replace />
+  useEffect(() => {
+    api.get<ApiSourceStats>("/api/source-tracking/stats").then(setStats).finally(() => setLoading(false))
+  }, [])
 
-  const funnel = [
-    { label: "Candidates reached", value: entry.candidates },
-    { label: "Applications submitted", value: entry.applications },
-    { label: "Advanced to interview", value: Math.round(entry.applications * 0.32) },
-    { label: "Hired", value: entry.hires },
-  ]
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-40 w-full" />
+      </div>
+    )
+  }
+
+  const applications = stats?.channelBreakdown.find((c) => c.channel === channel)?.count
+  if (!stats || applications === undefined) return <Navigate to="/admin/source-tracking" replace />
+
+  const channelFunnel = stats.funnel[channel!] ?? {}
+  const hired = channelFunnel.hired ?? 0
+  const conversionRate = applications > 0 ? Math.round((hired / applications) * 100) : 0
+  const links = stats.topLinks.filter((l) => l.channel === channel)
+  const label = channelLabel[channel!] ?? channel
 
   return (
     <div className="space-y-6">
       <AdminDetailHeader
         backHref="/admin/source-tracking"
         backLabel="Back to source tracking"
-        initials={entry.source.slice(0, 2).toUpperCase()}
-        name={entry.source}
-        meta={`${entry.campaign} · Updated ${entry.updated}`}
+        initials={(label ?? "").slice(0, 2).toUpperCase()}
+        name={label ?? ""}
+        meta={`${links.length} tracking link${links.length === 1 ? "" : "s"}`}
       />
 
-      <div className="grid gap-4 sm:grid-cols-4">
-        <MetricTile label="Candidates" value={entry.candidates.toLocaleString()} />
-        <MetricTile label="Applications" value={entry.applications.toLocaleString()} />
-        <MetricTile label="Hires" value={entry.hires} tone="positive" />
-        <MetricTile label="Conversion rate" value={`${entry.conversionRate}%`} />
+      <div className="grid gap-4 sm:grid-cols-3">
+        <MetricTile label="Applications" value={applications.toLocaleString()} />
+        <MetricTile label="Hires" value={hired} tone="positive" />
+        <MetricTile label="Conversion rate" value={`${conversionRate}%`} />
       </div>
 
       <SectionCard title="Funnel breakdown" animate={false}>
         <div className="space-y-3">
-          {funnel.map((step, i) => (
-            <div key={step.label} className="flex items-center gap-4">
-              <span className="w-40 shrink-0 text-sm text-muted-foreground">{step.label}</span>
-              <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${Math.max(6, 100 - i * 26)}%` }}
-                />
+          {funnelSteps.map((step) => {
+            const value = channelFunnel[step.key] ?? 0
+            const max = Math.max(...funnelSteps.map((s) => channelFunnel[s.key] ?? 0), 1)
+            return (
+              <div key={step.key} className="flex items-center gap-4">
+                <span className="w-32 shrink-0 text-sm text-muted-foreground">{step.label}</span>
+                <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                  <div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(4, (value / max) * 100)}%` }} />
+                </div>
+                <span className="w-16 shrink-0 text-right text-sm font-semibold">{value.toLocaleString()}</span>
               </div>
-              <span className="w-16 shrink-0 text-right text-sm font-semibold">{step.value.toLocaleString()}</span>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </SectionCard>
+
+      {links.length > 0 && (
+        <SectionCard title="Tracking links" animate={false}>
+          <div className="space-y-2">
+            {links.map((l) => (
+              <div key={l.id} className="flex items-center justify-between border-b border-hairline py-2 text-sm last:border-0">
+                <span className="font-semibold">{l.name}{l.jobTitle ? ` · ${l.jobTitle}` : ""}</span>
+                <span className="text-muted-foreground">
+                  {l.clickCount} clicks · {l.applicationCount} applications {!l.isActive && "· Inactive"}
+                </span>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
     </div>
   )
 }
