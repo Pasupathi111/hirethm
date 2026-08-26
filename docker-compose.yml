@@ -1,0 +1,19 @@
+# Frontend service — combine with the backend's compose file:
+#   docker compose -p hirethm-aidev -f backend/docker-compose.yml -f docker-compose.yml up -d --build
+#
+# Serves on host port 3002, which is already in better-auth's trusted-origins
+# list (backend/server/utils/auth.ts) alongside 3000/3001/3333.
+services:
+  web:
+    build:
+      # Compose resolves relative paths against the directory of the FIRST
+      # -f file (backend/docker-compose.yml), not this file's own directory —
+      # so ".." here means "one level up from backend/", i.e. the repo root.
+      context: ..
+      dockerfile: Dockerfile
+    container_name: reqcore_web
+    restart: unless-stopped
+    ports:
+      - "3002:80"
+    depends_on:
+      - app
