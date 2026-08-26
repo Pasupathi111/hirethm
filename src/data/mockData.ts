@@ -9,7 +9,6 @@ import type {
   ChatMessage,
   Job,
   Plan,
-  SourceTrackingEntry,
   SystemService,
   TimelineEvent,
   UpdateItem,
@@ -321,15 +320,6 @@ export const systemServices: SystemService[] = [
   { name: "Email", status: "Healthy", detail: "99.8% delivery" },
   { name: "Calendar", status: "Healthy", detail: "ICS generation nominal" },
   { name: "Payment", status: "Down", detail: "PayPal webhook failures" },
-]
-
-export const sourceTrackingEntries: SourceTrackingEntry[] = [
-  { id: "src-1", source: "LinkedIn", campaign: "Always-on organic", candidates: 3120, applications: 842, hires: 24, conversionRate: 27, updated: "24 Aug 2026" },
-  { id: "src-2", source: "Indeed", campaign: "Q3 sponsored listings", candidates: 2480, applications: 610, hires: 15, conversionRate: 25, updated: "24 Aug 2026" },
-  { id: "src-3", source: "Referral", campaign: "Employee referral program", candidates: 640, applications: 301, hires: 41, conversionRate: 47, updated: "23 Aug 2026" },
-  { id: "src-4", source: "Direct", campaign: "hirethm.com/jobs", candidates: 1890, applications: 402, hires: 18, conversionRate: 21, updated: "24 Aug 2026" },
-  { id: "src-5", source: "Google Jobs", campaign: "Organic search", candidates: 970, applications: 188, hires: 6, conversionRate: 19, updated: "22 Aug 2026" },
-  { id: "src-6", source: "AngelList", campaign: "Startup roles push", candidates: 340, applications: 96, hires: 3, conversionRate: 28, updated: "19 Aug 2026" },
 ]
 
 export const timelineEvents: TimelineEvent[] = [
