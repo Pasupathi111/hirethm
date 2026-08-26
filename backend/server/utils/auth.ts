@@ -2,7 +2,7 @@ import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { organization, genericOAuth } from "better-auth/plugins";
 import { sso } from "@better-auth/sso";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { ac, owner, admin, member } from "~~/shared/permissions";
 import { sendOrgInvitationEmail, sendPasswordResetEmail } from "./email";
 import * as schema from "../database/schema";
@@ -237,6 +237,37 @@ function getAuth(): Auth {
       // using BETTER_AUTH_SECRET as the encryption key.
       account: {
         encryptOAuthTokens: true,
+      },
+
+      // ── Restore the active organization on every sign-in ─────
+      // better-auth only sets `activeOrganizationId` on the session that
+      // actually creates an organization. Without this hook a returning
+      // employer signs in with a null active org, so every org-scoped route
+      // 403s with "No active organization" and the UI pushes them back into
+      // the create-organization flow they already completed.
+      //
+      // Members of several organizations resume in their oldest one; they can
+      // still switch afterwards via organization.setActive().
+      databaseHooks: {
+        session: {
+          create: {
+            before: async (session) => {
+              const membership = await db
+                .select({ organizationId: schema.member.organizationId })
+                .from(schema.member)
+                .where(eq(schema.member.userId, session.userId))
+                .orderBy(asc(schema.member.createdAt))
+                .limit(1);
+
+              return {
+                data: {
+                  ...session,
+                  activeOrganizationId: membership[0]?.organizationId ?? null,
+                },
+              };
+            },
+          },
+        },
       },
 
       // ── Rate Limiting (built-in, database-backed) ──────────

@@ -41,3 +41,14 @@ export function useMyCandidate() {
   if (!ctx) throw new Error("useMyCandidate must be used within a CandidateSessionProvider")
   return ctx
 }
+
+/**
+ * Same context, but returns null instead of throwing when there is no
+ * provider above. For components rendered on BOTH the public marketing routes
+ * and the signed-in /app routes (JobApply is the same component in each), so
+ * they can prefill from the profile when it exists without crashing when it
+ * doesn't.
+ */
+export function useMyCandidateOptional(): CandidateSessionState | null {
+  return useContext(CandidateSessionContext)
+}

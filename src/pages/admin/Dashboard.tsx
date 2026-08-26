@@ -1,138 +1,260 @@
 import { motion } from "framer-motion"
+import { Briefcase, Building2, Inbox } from "lucide-react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
 
-import { Badge } from "@/components/ui/badge"
+import { EmptyState } from "@/components/feedback/EmptyState"
+import { ErrorState } from "@/components/feedback/ErrorState"
+import { Skeleton } from "@/components/feedback/Skeleton"
+import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { Button } from "@/components/ui/button"
+import { ApiError, api } from "@/lib/api"
+import { useSession } from "@/lib/authClient"
 import { fadeInUp, staggerContainer, useReducedMotion, withReducedMotion } from "@/lib/motion"
+import { useActiveOrganization } from "@/lib/useActiveOrganization"
+import type { ApiDashboardStats } from "@/types"
 
-const stats = [
-  { label: "Total candidates", value: "12,842", change: "+312 this week", positive: true },
-  { label: "Active employers", value: "426", change: "+8 this week", positive: true },
-  { label: "Active jobs", value: "1,284", change: "+64 this week", positive: true },
-  { label: "Applications", value: "18,492", change: "+1,204 this week", positive: true },
-  { label: "AI matches", value: "8,291", change: "+486 this week", positive: true },
-  { label: "Interviews", value: "1,284", change: "-18 this week", positive: false },
-]
+/** Pipeline stages in funnel order — candidates only ever move down this list. */
+const PIPELINE_STAGES = [
+  { key: "new", label: "New" },
+  { key: "screening", label: "Screening" },
+  { key: "interview", label: "Interview" },
+  { key: "offer", label: "Offer" },
+  { key: "hired", label: "Hired" },
+] as const
 
-const funnel = [
-  { label: "Jobs published", value: "1,284", percent: 100, tone: "bg-secondary" },
-  { label: "Applications", value: "18,492", percent: 92, tone: "bg-secondary" },
-  { label: "AI matches created", value: "8,291", percent: 68, tone: "bg-secondary" },
-  { label: "Candidate accepted", value: "5,104", percent: 48, tone: "bg-primary/60" },
-  { label: "Employer shortlisted", value: "2,860", percent: 30, tone: "bg-primary/80" },
-  { label: "Interviews scheduled", value: "1,284", percent: 16, tone: "bg-primary" },
-]
-
-const alerts = [
-  { level: "Critical", title: "PayPal webhook signature", time: "23 Aug · 03:02 · 48 events" },
-  { level: "Error", title: "AI execution failed: CV Enhancement", time: "23 Aug · 10:04 · 12 events" },
-  { level: "Warning", title: "Notification retry exhausted", time: "18 Aug · 03:02 · 4 events" },
-  { level: "Warning", title: "Queue backlog above threshold", time: "23 Aug · 09:50 · ongoing" },
-]
+function StatCard({ label, value, hint, to }: { label: string; value: number; hint?: string; to?: string }) {
+  const body = (
+    <>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-1 font-display text-2xl font-semibold tracking-[-0.02em]">{value.toLocaleString()}</p>
+      {hint && <p className="mt-1 text-xs text-muted-foreground">{hint}</p>}
+    </>
+  )
+  const className = "block rounded-lg border border-border bg-card p-5"
+  return to ? (
+    <Link to={to} className={`${className} transition-colors hover:border-primary/40`}>
+      {body}
+    </Link>
+  ) : (
+    <div className={className}>{body}</div>
+  )
+}
 
 export function AdminDashboard() {
   const reduced = useReducedMotion()
+  const { organization } = useActiveOrganization()
+  const { data: session, isPending: sessionPending } = useSession()
+  // Platform admins (HireThm staff) belong to no organization, so the
+  // org-scoped stats endpoint would only ever 403 for them.
+  const hasOrg = Boolean(session?.session.activeOrganizationId)
+
+  const [stats, setStats] = useState<ApiDashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+
+  const load = () => {
+    setLoading(true)
+    setError("")
+    api
+      .get<ApiDashboardStats>("/api/dashboard/stats")
+      .then(setStats)
+      .catch((err) => setError(err instanceof ApiError ? err.message : "Failed to load dashboard"))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    if (sessionPending) return
+    if (!hasOrg) { setLoading(false); return }
+    load()
+  }, [sessionPending, hasOrg])
+
+  if (!sessionPending && !hasOrg) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl">Platform overview</h1>
+          <p className="mt-1 text-muted-foreground">
+            You're signed in as HireThm staff, which isn't scoped to any single organization.
+          </p>
+        </div>
+        <EmptyState
+          icon={Building2}
+          title="No organization selected"
+          description="Hiring figures are per-organization. Open the platform console to browse employers across the whole platform."
+        />
+        <Button asChild>
+          <Link to="/admin/employers">Go to Employers</Link>
+        </Button>
+      </div>
+    )
+  }
+
+  if (loading || sessionPending) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-9 w-56" />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }, (_, i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    )
+  }
+
+  if (error) return <ErrorState description={error} onRetry={load} />
+  if (!stats) return null
+
+  const { counts, pipeline, jobsByStatus, recentApplications, topJobs } = stats
+  // Scale bars against the widest stage rather than the total, so a small
+  // pipeline still renders readable bars instead of slivers.
+  const pipelineMax = Math.max(...PIPELINE_STAGES.map((s) => pipeline[s.key]), 1)
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl">Platform overview</h1>
-        <p className="mt-1 text-muted-foreground">Week of 17–23 August 2026 · all figures live</p>
+        <h1 className="text-3xl">{organization?.name ?? "Dashboard"}</h1>
+        <p className="mt-1 text-muted-foreground">
+          Hiring overview for your organization · figures update on every load
+        </p>
       </div>
 
       <motion.div
-        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6"
+        className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
         variants={withReducedMotion(reduced, staggerContainer)}
         initial="hidden"
         animate="show"
       >
-        {stats.map((s) => (
-          <motion.div key={s.label} variants={withReducedMotion(reduced, fadeInUp)} className="rounded-lg border border-border bg-card p-5">
-            <p className="text-sm text-muted-foreground">{s.label}</p>
-            <p className="mt-1 font-display text-2xl font-semibold tracking-[-0.02em]">{s.value}</p>
-            <p className={`mt-1 text-xs font-semibold ${s.positive ? "text-primary" : "text-destructive"}`}>{s.change}</p>
+        {[
+          { label: "Open jobs", value: counts.openJobs, hint: `${jobsByStatus.draft ?? 0} draft`, to: "/admin/jobs" },
+          { label: "Candidates", value: counts.totalCandidates, to: "/admin/candidates" },
+          { label: "Applications", value: counts.totalApplications, to: "/admin/applications" },
+          { label: "Awaiting review", value: counts.newApplications, hint: "Status: new", to: "/admin/applications" },
+        ].map((s) => (
+          <motion.div key={s.label} variants={withReducedMotion(reduced, fadeInUp)}>
+            <StatCard {...s} />
           </motion.div>
         ))}
       </motion.div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {["Candidate growth", "Employer growth", "Jobs published"].map((label, i) => (
-          <div key={label} className="rounded-lg border border-border bg-card p-6">
-            <div className="flex items-center justify-between">
-              <p className="font-bold">{label}</p>
-              <p className="font-display text-xl font-semibold tracking-[-0.02em]">{[12842, 426, 1284][i].toLocaleString()}</p>
-            </div>
-            <svg viewBox="0 0 200 60" className="mt-4 h-16 w-full">
-              <polyline
-                points="0,50 40,42 80,35 120,26 160,15 200,5"
-                fill="none"
-                stroke="var(--color-primary)"
-                strokeWidth="2.5"
-              />
-            </svg>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Mar</span>
-              <span>May</span>
-              <span>Jul</span>
-              <span>Aug</span>
-            </div>
-          </div>
-        ))}
-      </div>
-
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="rounded-lg border border-border bg-card p-6">
-          <h2 className="text-lg">Match and application funnel</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Candidate consent sits between match creation and employer visibility.</p>
-          <div className="mt-5 space-y-4">
-            {funnel.map((f) => (
-              <div key={f.label}>
-                <div className="mb-1 flex justify-between text-sm">
-                  <span className="text-muted-foreground">{f.label}</span>
-                  <span className="font-bold">{f.value}</span>
-                </div>
-                <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
-                  <div className={`h-full rounded-full ${f.tone}`} style={{ width: `${f.percent}%` }} />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+          <h2 className="text-lg">Application pipeline</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {counts.totalApplications.toLocaleString()} application{counts.totalApplications === 1 ? "" : "s"} by
+            current stage. Rejected: {pipeline.rejected.toLocaleString()}.
+          </p>
 
-        <div className="space-y-6">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg">Needs attention</h2>
-            <div className="mt-4 space-y-3">
-              {alerts.map((a) => (
-                <div key={a.title} className="flex items-start gap-3 border-b border-hairline pb-3 last:border-0">
-                  <Badge
-                    variant={a.level === "Critical" ? "destructive" : a.level === "Error" ? "destructive" : "warning"}
-                  >
-                    {a.level}
-                  </Badge>
-                  <div>
-                    <p className="text-sm font-semibold">{a.title}</p>
-                    <p className="text-xs text-muted-foreground">{a.time}</p>
+          {counts.totalApplications === 0 ? (
+            <EmptyState
+              className="mt-6"
+              title="No applications yet"
+              description="Publish a job and applications will appear here as candidates apply."
+            />
+          ) : (
+            <div className="mt-5 space-y-4">
+              {PIPELINE_STAGES.map((stage) => (
+                <div key={stage.key}>
+                  <div className="mb-1 flex justify-between text-sm">
+                    <span className="text-muted-foreground">{stage.label}</span>
+                    <span className="font-bold">{pipeline[stage.key].toLocaleString()}</span>
+                  </div>
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className="h-full rounded-full bg-primary"
+                      style={{ width: `${(pipeline[stage.key] / pipelineMax) * 100}%` }}
+                    />
                   </div>
                 </div>
               ))}
             </div>
-            <Button asChild variant="outline" className="mt-4 w-full">
-              <Link to="/admin/system-health">Open system health</Link>
-            </Button>
-          </div>
-
-          <div className="rounded-xl bg-secondary p-6 text-secondary-foreground">
-            <p className="text-xs font-bold tracking-wide text-mint uppercase">Consent integrity</p>
-            <p className="mt-2 font-display text-3xl font-semibold tracking-[-0.02em]">0 breaches</p>
-            <p className="mt-1 text-sm text-white/60">
-              No employer accessed a candidate profile without consent in the last 90 days. 8,291 transitions audited.
-            </p>
-            <Button asChild variant="outline" className="mt-4 w-full bg-white text-secondary hover:bg-white/90">
-              <Link to="/admin/audit-logs">Review audit log</Link>
-            </Button>
-          </div>
+          )}
         </div>
+
+        <div className="rounded-lg border border-border bg-card p-6">
+          <h2 className="text-lg">Recent applications</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Latest {recentApplications.length} received.</p>
+
+          {recentApplications.length === 0 ? (
+            <EmptyState className="mt-6" title="Nothing yet" description="New applications will show up here." />
+          ) : (
+            <div className="mt-4 space-y-3">
+              {recentApplications.map((a) => (
+                <Link
+                  key={a.id}
+                  to={`/admin/applications`}
+                  className="flex items-start justify-between gap-3 border-b border-hairline pb-3 last:border-0"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">
+                      {a.candidateFirstName} {a.candidateLastName}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {a.jobTitle} · {new Date(a.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <StatusBadge status={a.status} />
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg">Most active jobs</h2>
+            <p className="mt-1 text-sm text-muted-foreground">Open roles ranked by applications received.</p>
+          </div>
+          <Button asChild variant="outline">
+            <Link to="/admin/jobs">All jobs</Link>
+          </Button>
+        </div>
+
+        {topJobs.length === 0 ? (
+          <EmptyState
+            className="mt-6"
+            icon={counts.openJobs === 0 ? Briefcase : Inbox}
+            title={counts.openJobs === 0 ? "No open jobs" : "No applications yet"}
+            description={
+              counts.openJobs === 0
+                ? "Publish a job to start receiving applications."
+                : "Your open jobs haven't received applications yet."
+            }
+          />
+        ) : (
+          <div className="mt-5 overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-hairline text-left text-xs font-bold tracking-wide text-muted-foreground uppercase">
+                  <th className="pb-2">Job</th>
+                  <th className="pb-2 text-right">Applications</th>
+                  <th className="pb-2 text-right">New</th>
+                  <th className="pb-2 text-right">Interview</th>
+                  <th className="pb-2 text-right">Hired</th>
+                </tr>
+              </thead>
+              <tbody>
+                {topJobs.map((j) => (
+                  <tr key={j.id} className="border-b border-hairline last:border-0">
+                    <td className="py-3">
+                      <Link to={`/admin/jobs/${j.id}`} className="font-semibold hover:text-primary">
+                        {j.title}
+                      </Link>
+                    </td>
+                    <td className="py-3 text-right font-semibold">{j.applicationCount}</td>
+                    <td className="py-3 text-right text-muted-foreground">{j.newCount}</td>
+                    <td className="py-3 text-right text-muted-foreground">{j.interviewCount}</td>
+                    <td className="py-3 text-right text-muted-foreground">{j.hiredCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   )
