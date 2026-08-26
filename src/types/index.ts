@@ -575,6 +575,39 @@ export interface ApiOrgUsage {
   activeJobPercent: number | null
 }
 
+export type ApiNameDisplayFormat = "first_last" | "last_first"
+export type ApiDateFormat = "mdy" | "dmy" | "ymd"
+
+export interface ApiOrgSettings {
+  nameDisplayFormat: ApiNameDisplayFormat
+  dateFormat: ApiDateFormat
+  retentionEnabled: boolean
+  retentionMonths: number
+  quarantineDays: number
+  retentionActivatedAt: string | null
+  privacyPolicyUrl: string | null
+  privacyPolicyText: string | null
+  privacyContactEmail: string | null
+}
+
+export interface ApiSsoProvider {
+  id: string
+  providerId: string
+  issuer: string
+  domain: string
+  organizationId: string | null
+}
+
+export interface ApiCalendarStatus {
+  available: boolean
+  connected: boolean
+  provider: "google" | null
+  accountEmail: string | null
+  calendarId: string | null
+  webhookActive: boolean
+  connectedAt?: string
+}
+
 export interface ApiPlatformOrgUsage extends ApiOrgUsage {
   organization: { id: string; name: string; slug: string }
 }
