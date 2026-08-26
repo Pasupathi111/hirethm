@@ -3,14 +3,11 @@ import type {
   AdminCandidate,
   AdminEmployer,
   AdminHiringManager,
-  AdminInterview,
   AdminMatch,
   AdminRecruiter,
   Application,
   CandidateProfile,
   ChatMessage,
-  Interview,
-  InterviewTemplate,
   Job,
   Match,
   Plan,
@@ -353,45 +350,6 @@ export const applications: Application[] = [
   },
 ]
 
-export const interviews: Interview[] = [
-  {
-    id: "int-1",
-    jobId: "job-1",
-    title: "Senior React Developer",
-    company: "ABC Technologies",
-    type: "Technical Interview",
-    date: "28 Aug",
-    time: "10:30 AM PDT",
-    location: "Google Meet",
-    status: "Upcoming",
-    slotConfirmed: false,
-  },
-  {
-    id: "int-2",
-    jobId: "job-3",
-    title: "React Team Lead",
-    company: "Verta Labs",
-    type: "Hiring Manager Interview",
-    date: "28 Aug",
-    time: "2:00 PM PDT",
-    location: "Zoom",
-    status: "Upcoming",
-    slotConfirmed: true,
-  },
-  {
-    id: "int-3",
-    jobId: "job-5",
-    title: "Frontend Architect",
-    company: "TechFlow",
-    type: "Portfolio Review",
-    date: "12 Aug",
-    time: "11:00 AM PDT",
-    location: "Google Meet",
-    status: "Completed",
-    slotConfirmed: true,
-  },
-]
-
 // ---------------- Admin mock data ----------------
 
 export const adminCandidates: AdminCandidate[] = [
@@ -444,13 +402,6 @@ export const adminMatches: AdminMatch[] = [
   { id: "MTH-8287", candidate: "Grace Lin", job: "Full Stack Engineer", employer: "CloudWorks", readiness: 58, status: "Rejected", created: "15 Aug 2026" },
 ]
 
-export const adminInterviews: AdminInterview[] = [
-  { id: "INT-901", candidate: "Alex Johnson", job: "Senior React Developer", employer: "ABC Technologies", type: "Technical Interview", date: "28 Aug 2026", status: "Upcoming" },
-  { id: "INT-902", candidate: "Grace Lin", job: "React Team Lead", employer: "Verta Labs", type: "Hiring Manager Interview", date: "28 Aug 2026", status: "Upcoming" },
-  { id: "INT-903", candidate: "Priya Nair", job: "Frontend Architect", employer: "TechFlow", type: "Portfolio Review", date: "12 Aug 2026", status: "Completed" },
-  { id: "INT-904", candidate: "Daniel Okoye", job: "Full Stack Engineer", employer: "CloudWorks", type: "Technical Interview", date: "08 Aug 2026", status: "Cancelled" },
-]
-
 export const plans: Plan[] = [
   { id: "plan-free", name: "Free", price: "$0", billingPeriod: "/month", employers: 180, features: ["1 active job", "Basic matching", "Email support"] },
   { id: "plan-premium", name: "Premium", price: "$499", billingPeriod: "/month", employers: 198, features: ["25 active jobs", "AI matching", "Priority support"] },
@@ -466,73 +417,6 @@ export const systemServices: SystemService[] = [
   { name: "Email", status: "Healthy", detail: "99.8% delivery" },
   { name: "Calendar", status: "Healthy", detail: "ICS generation nominal" },
   { name: "Payment", status: "Down", detail: "PayPal webhook failures" },
-]
-
-export const interviewTemplates: InterviewTemplate[] = [
-  {
-    id: "tmpl-1",
-    name: "Frontend Technical Screen",
-    type: "Technical Interview",
-    questionCount: 6,
-    duration: "45 min",
-    status: "Active",
-    updated: "18 Aug 2026",
-    questions: [
-      "Walk through a recent React project you led end to end.",
-      "How do you approach state management in a large app?",
-      "Describe a time you improved rendering performance.",
-      "How do you test component behavior?",
-      "How do you handle accessibility in your components?",
-      "What's a technical decision you'd make differently now?",
-    ],
-  },
-  {
-    id: "tmpl-2",
-    name: "Hiring Manager Conversation",
-    type: "Hiring Manager Interview",
-    questionCount: 5,
-    duration: "30 min",
-    status: "Active",
-    updated: "10 Aug 2026",
-    questions: [
-      "What drew you to this role?",
-      "Tell me about a project you're most proud of.",
-      "How do you handle conflicting priorities?",
-      "What does success look like in your first 90 days?",
-      "What questions do you have for us?",
-    ],
-  },
-  {
-    id: "tmpl-3",
-    name: "Portfolio Review",
-    type: "Portfolio Review",
-    questionCount: 4,
-    duration: "40 min",
-    status: "Draft",
-    updated: "02 Aug 2026",
-    questions: [
-      "Walk us through your favorite piece in your portfolio.",
-      "What was the biggest constraint on this project?",
-      "How did you collaborate with design/product?",
-      "What would you change if you revisited it today?",
-    ],
-  },
-  {
-    id: "tmpl-4",
-    name: "Legacy Culture Fit",
-    type: "Culture Interview",
-    questionCount: 5,
-    duration: "30 min",
-    status: "Archived",
-    updated: "14 Feb 2026",
-    questions: [
-      "Describe your ideal working environment.",
-      "How do you give and receive feedback?",
-      "Tell me about a disagreement with a teammate.",
-      "What motivates you day to day?",
-      "How do you stay current in your field?",
-    ],
-  },
 ]
 
 export const sourceTrackingEntries: SourceTrackingEntry[] = [
