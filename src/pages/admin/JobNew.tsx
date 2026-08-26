@@ -2,11 +2,12 @@ import { Sparkles } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-import { JobDescriptionAiDialog, type JdAiDraft } from "@/components/dialogs/JobDescriptionAiDialog"
-import { JobForm, useJobFormState } from "@/components/forms/JobForm"
+import { JobDescriptionAiDialog } from "@/components/dialogs/JobDescriptionAiDialog"
+import { JobForm, useJobFormState, type JobFormValues } from "@/components/forms/JobForm"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Button } from "@/components/ui/button"
 import { ApiError, api } from "@/lib/api"
+import type { JdAiDraft } from "@/lib/useJdAiChat"
 import type { ApiJob } from "@/types"
 import { useState } from "react"
 
@@ -17,8 +18,16 @@ export function AdminJobNew() {
   const [isSaving, setIsSaving] = useState(false)
   const [showAiDialog, setShowAiDialog] = useState(false)
 
-  const submit = async (status: "draft" | "open") => {
-    const { title, location, type, remoteStatus, experienceLevel, salaryMin, salaryMax, closingDate, description, skills } = state.values
+  /**
+   * Creates the job from an explicit set of values.
+   *
+   * Takes `values` as an argument rather than reading `state.values` through
+   * the closure: the AI path applies a draft and creates the job in the same
+   * tick, and React state updates are asynchronous, so reading through the
+   * closure there would post the pre-draft (empty) form and 400.
+   */
+  const createJob = async (values: JobFormValues, status: "draft" | "open") => {
+    const { title, location, type, remoteStatus, experienceLevel, salaryMin, salaryMax, closingDate, description, skills } = values
     setError("")
     setIsSaving(true)
     try {
@@ -44,20 +53,38 @@ export function AdminJobNew() {
     }
   }
 
+  const submit = (status: "draft" | "open") => createJob(state.values, status)
+
   const applyAiDraft = ({ mode, draft }: { mode: "draft" | "open"; draft: JdAiDraft }) => {
     const department = draft.department?.trim()
-    state.setTitle(draft.title)
-    state.setLocation(draft.location ?? "")
-    state.setType(draft.employmentType)
-    state.setExperienceLevel(draft.experienceLevel)
-    state.setRemoteStatus(draft.remoteStatus ?? "")
-    state.setSalaryMin(draft.salaryMin != null ? String(draft.salaryMin) : "")
-    state.setSalaryMax(draft.salaryMax != null ? String(draft.salaryMax) : "")
-    // The manual form has no dedicated "department" field — fold it into the description.
-    state.setDescription(department ? `**Department:** ${department}\n\n${draft.description}` : draft.description)
-    state.setSkills(draft.skills)
+    const values: JobFormValues = {
+      ...state.values,
+      title: draft.title,
+      location: draft.location ?? "",
+      type: draft.employmentType,
+      experienceLevel: draft.experienceLevel,
+      remoteStatus: draft.remoteStatus ?? "",
+      salaryMin: draft.salaryMin != null ? String(draft.salaryMin) : "",
+      salaryMax: draft.salaryMax != null ? String(draft.salaryMax) : "",
+      // The manual form has no dedicated "department" field — fold it into the description.
+      description: department ? `**Department:** ${department}\n\n${draft.description}` : draft.description,
+      skills: draft.skills,
+    }
+
+    // Mirror the draft into the form too, so the values are visible and
+    // editable if creation fails and the user is left on the wizard.
+    state.setTitle(values.title)
+    state.setLocation(values.location)
+    state.setType(values.type)
+    state.setExperienceLevel(values.experienceLevel)
+    state.setRemoteStatus(values.remoteStatus)
+    state.setSalaryMin(values.salaryMin)
+    state.setSalaryMax(values.salaryMax)
+    state.setDescription(values.description)
+    state.setSkills(values.skills)
+
     setShowAiDialog(false)
-    void submit(mode)
+    void createJob(values, mode)
   }
 
   return (

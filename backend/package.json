@@ -19,8 +19,10 @@
     "db:seed": "npx tsx server/scripts/seed.ts",
     "db:reseed": "npx tsx server/scripts/delete-demo-org.ts && npx tsx server/scripts/seed.ts",
     "grant-platform-admin": "npx tsx server/scripts/grant-platform-admin.ts",
+    "ai:set-key": "npx tsx server/scripts/set-ai-key.ts",
     "test": "vitest run",
     "test:e2e": "npx playwright test",
+    "test:e2e:live-ai": "npx playwright test --config playwright.live-ai.config.ts",
     "i18n:crowdin:upload": "crowdin upload sources",
     "i18n:crowdin:download": "crowdin download --all",
     "i18n:crowdin:sync": "npm run i18n:crowdin:upload && npm run i18n:crowdin:download"

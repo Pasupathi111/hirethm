@@ -2665,14 +2665,21 @@ async function seed() {
   const OUTPUT_PRICE_PER_1M = '0.6000' // GPT-4o-mini output
 
   const encryptionSecret = process.env.BETTER_AUTH_SECRET ?? 'demo-secret-change-me'
-  const demoApiKey = encrypt('sk-demo-placeholder-key', encryptionSecret)
+  // Use the real key from .env when one is configured, so a freshly seeded demo
+  // org can actually talk to OpenAI. Falls back to a placeholder that keeps the
+  // Usage/cost dashboards populated but cannot make live calls.
+  const seedApiKey = process.env.OPENAI_API_KEY ?? 'sk-demo-placeholder-key'
+  const seedModel = process.env.OPENAI_MODEL ?? 'gpt-4o-mini'
+  const demoApiKey = encrypt(seedApiKey, encryptionSecret)
 
   await db.insert(schema.aiConfig).values({
     id: id(),
     organizationId: orgId,
     provider: 'openai',
-    model: 'gpt-4o-mini',
+    model: seedModel,
     apiKeyEncrypted: demoApiKey,
+    isDefaultChatbot: true,
+    isDefaultAnalysis: true,
     inputPricePer1m: INPUT_PRICE_PER_1M,
     outputPricePer1m: OUTPUT_PRICE_PER_1M,
     maxTokens: 4096,
