@@ -14,12 +14,15 @@ import {
   jsonb,
   pgEnum,
   uniqueIndex,
+  index,
 } from 'drizzle-orm/pg-core'
 import { relations, sql } from 'drizzle-orm'
 import { organization } from './auth'
 
 export const planTierEnum = pgEnum('plan_tier', ['free', 'premium', 'enterprise'])
 export const subscriptionStatusEnum = pgEnum('subscription_status', ['active', 'past_due', 'cancelled', 'trialing'])
+export const paymentProviderEnum = pgEnum('payment_provider', ['paypal'])
+export const paymentStatusEnum = pgEnum('payment_status', ['pending', 'paid', 'failed', 'refunded'])
 
 /**
  * Global catalog of subscription plans. Not org-scoped — every organization
@@ -62,11 +65,39 @@ export const organizationSubscription = pgTable('organization_subscription', {
   uniqueIndex('organization_subscription_org_idx').on(t.organizationId),
 ]))
 
+/**
+ * A single billing transaction for an org's subscription. Data-layer only —
+ * there is no live PayPal checkout/webhook wiring yet (needs real merchant
+ * credentials the agent does not have; see GitHub issue #17). Rows here are
+ * created manually / by a future gateway integration, never fabricated.
+ */
+export const payment = pgTable('payment', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
+  planId: text('plan_id').references(() => plan.id, { onDelete: 'set null' }),
+  amountCents: integer('amount_cents').notNull(),
+  currency: text('currency').notNull().default('USD'),
+  status: paymentStatusEnum('status').notNull().default('pending'),
+  provider: paymentProviderEnum('provider').notNull().default('paypal'),
+  providerTransactionId: text('provider_transaction_id'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  settledAt: timestamp('settled_at'),
+}, (t) => ([
+  index('payment_organization_id_idx').on(t.organizationId),
+  index('payment_status_idx').on(t.status),
+]))
+
 export const planRelations = relations(plan, ({ many }) => ({
   subscriptions: many(organizationSubscription),
+  payments: many(payment),
 }))
 
 export const organizationSubscriptionRelations = relations(organizationSubscription, ({ one }) => ({
   organization: one(organization, { fields: [organizationSubscription.organizationId], references: [organization.id] }),
   plan: one(plan, { fields: [organizationSubscription.planId], references: [plan.id] }),
+}))
+
+export const paymentRelations = relations(payment, ({ one }) => ({
+  organization: one(organization, { fields: [payment.organizationId], references: [organization.id] }),
+  plan: one(plan, { fields: [payment.planId], references: [plan.id] }),
 }))

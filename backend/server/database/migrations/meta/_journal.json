@@ -253,6 +253,13 @@
       "when": 1787709652782,
       "tag": "0035_normal_puck",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1787710873757,
+      "tag": "0036_yellow_loa",
+      "breakpoints": true
     }
   ]
 }

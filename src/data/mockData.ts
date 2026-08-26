@@ -13,7 +13,6 @@ import type {
   InterviewTemplate,
   Job,
   Match,
-  Payment,
   Plan,
   SourceTrackingEntry,
   SystemService,
@@ -456,14 +455,6 @@ export const plans: Plan[] = [
   { id: "plan-free", name: "Free", price: "$0", billingPeriod: "/month", employers: 180, features: ["1 active job", "Basic matching", "Email support"] },
   { id: "plan-premium", name: "Premium", price: "$499", billingPeriod: "/month", employers: 198, features: ["25 active jobs", "AI matching", "Priority support"] },
   { id: "plan-enterprise", name: "Enterprise", price: "Custom", billingPeriod: "", employers: 48, features: ["Unlimited jobs", "Dedicated success manager", "SSO & audit exports"] },
-]
-
-export const payments: Payment[] = [
-  { id: "PAY-3301", employer: "ABC Technologies", amount: "$4,990", plan: "Enterprise", status: "Paid", date: "01 Aug 2026" },
-  { id: "PAY-3302", employer: "TechFlow", amount: "$4,990", plan: "Enterprise", status: "Paid", date: "01 Aug 2026" },
-  { id: "PAY-3303", employer: "Nova Systems", amount: "$499", plan: "Premium", status: "Paid", date: "03 Aug 2026" },
-  { id: "PAY-3304", employer: "Verta Labs", amount: "$499", plan: "Premium", status: "Failed", date: "30 Apr 2026" },
-  { id: "PAY-3305", employer: "CloudWorks", amount: "$0", plan: "Free", status: "Pending", date: "18 Jul 2026" },
 ]
 
 export const systemServices: SystemService[] = [
