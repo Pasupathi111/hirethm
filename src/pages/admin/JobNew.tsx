@@ -2,11 +2,12 @@ import { Sparkles } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 
-import { JobDescriptionAiDialog, type JdAiDraft } from "@/components/dialogs/JobDescriptionAiDialog"
+import { JobDescriptionAiDialog } from "@/components/dialogs/JobDescriptionAiDialog"
 import { JobForm, useJobFormState } from "@/components/forms/JobForm"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
 import { Button } from "@/components/ui/button"
 import { ApiError, api } from "@/lib/api"
+import type { JdAiDraft } from "@/lib/useJdAiChat"
 import type { ApiJob } from "@/types"
 import { useState } from "react"
 

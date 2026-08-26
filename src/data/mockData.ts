@@ -6,7 +6,6 @@ import type {
   AdminRecruiter,
   Application,
   CandidateProfile,
-  ChatMessage,
   Job,
   Plan,
   SystemService,
@@ -281,7 +280,6 @@ export const adminEmployers: AdminEmployer[] = [
   { id: "EMP-2005", company: "Verta Labs", domain: "vertalabs.io", recruiters: 6, activeJobs: 11, applications: 410, plan: "Premium", usage: 42, status: "Active", created: "30 Apr 2026" },
 ]
 
-
 export const adminRecruiters: AdminRecruiter[] = [
   { id: "REC-501", name: "Sara Kim", initials: "SK", email: "sara@abc-tech.com", employer: "ABC Technologies", activeJobs: 6, status: "Active", created: "10 Feb 2026" },
   { id: "REC-502", name: "Tom Bailey", initials: "TB", email: "tom@techflow.com", employer: "TechFlow", activeJobs: 11, status: "Active", created: "02 Dec 2025" },
@@ -341,37 +339,4 @@ export const updateItems: UpdateItem[] = [
   { id: "upd-5", date: "27 Jul 2026", title: "SSO for Enterprise plans", description: "Enterprise employers can now enforce single sign-on for their teams.", tag: "Feature" },
   { id: "upd-6", date: "19 Jul 2026", title: "Improved match reasoning copy", description: "Match explanations are now clearer about which criteria drove the score.", tag: "Improvement" },
 ]
-
-export const aiChatSeed: ChatMessage[] = [
-  {
-    id: "msg-1",
-    role: "assistant",
-    content: "Hi, I'm the HireThm AI assistant. Ask me about candidates, jobs, matching rules, or platform activity.",
-    timestamp: "09:00 AM",
-  },
-  {
-    id: "msg-2",
-    role: "user",
-    content: "Which open roles have the weakest match pipeline this week?",
-    timestamp: "09:01 AM",
-  },
-  {
-    id: "msg-3",
-    role: "assistant",
-    content:
-      "Data Platform Lead at Nova Systems and Full Stack Engineer at CloudWorks both have fewer than 10 AI matches over 75% readiness. Want me to suggest sourcing channels for either?",
-    timestamp: "09:01 AM",
-  },
-]
-
-const canned = [
-  "Here's what I found — Senior React Developer at ABC Technologies has 38 matches over 75% readiness, the strongest pipeline this week.",
-  "I'd recommend widening the location preference for that role — 60% of near-miss candidates are outside the current radius.",
-  "Consent-first visibility means employers only see candidates who've opted in. Right now 94% of active candidates have visibility enabled.",
-  "I can draft a job description enhancement for that req — want me to queue it for AI re-analysis?",
-]
-
-export function nextAiReply(turn: number) {
-  return canned[turn % canned.length]
-}
 

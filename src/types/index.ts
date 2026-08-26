@@ -196,13 +196,6 @@ export interface UpdateItem {
   tag: "Feature" | "Improvement" | "Fix"
 }
 
-export interface ChatMessage {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  timestamp: string
-}
-
 export interface OrgSearchResult {
   id: string
   name: string
