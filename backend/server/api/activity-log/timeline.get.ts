@@ -1,4 +1,4 @@
-import { eq, and, desc, gte, lte, inArray } from 'drizzle-orm'
+import { eq, and, desc, gte, lte, inArray, ne } from 'drizzle-orm'
 import { z } from 'zod'
 import { activityLog, user, job, candidate, application, interview } from '../../database/schema'
 
@@ -7,6 +7,7 @@ const timelineQuerySchema = z.object({
   after: z.string().datetime().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(100),
   resourceType: z.enum(['job', 'candidate', 'application', 'interview', 'member']).optional(),
+  excludeProfileViews: z.coerce.boolean().optional(),
 })
 
 /**
@@ -28,6 +29,12 @@ export default defineEventHandler(async (event) => {
   const query = await getValidatedQuery(event, timelineQuerySchema.parse)
 
   const conditions = [eq(activityLog.organizationId, orgId)]
+
+  // Audit Logs wants the complete record; the curated Timeline feed opts
+  // out of high-volume, low-signal profile_viewed events via this flag.
+  if (query.excludeProfileViews) {
+    conditions.push(ne(activityLog.action, 'profile_viewed'))
+  }
 
   if (query.resourceType) {
     conditions.push(eq(activityLog.resourceType, query.resourceType))

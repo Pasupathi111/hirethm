@@ -563,6 +563,22 @@ export interface ApiOrganizationSubscription {
   plan?: ApiPlan
 }
 
+export interface ApiOrgUsage {
+  plan: ApiPlan | null
+  periodStart: string | null
+  periodEnd: string | null
+  profileViews: number
+  profileViewQuota: number | null
+  profileViewPercent: number | null
+  activeJobs: number
+  activeJobLimit: number | null
+  activeJobPercent: number | null
+}
+
+export interface ApiPlatformOrgUsage extends ApiOrgUsage {
+  organization: { id: string; name: string; slug: string }
+}
+
 export interface ApiPlatformEmployer {
   id: string
   name: string

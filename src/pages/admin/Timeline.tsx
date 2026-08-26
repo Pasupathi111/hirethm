@@ -47,7 +47,7 @@ export function AdminTimeline() {
     setLoading(true)
     setError("")
     api
-      .get<ApiActivityTimelineResponse>("/api/activity-log/timeline?limit=200")
+      .get<ApiActivityTimelineResponse>("/api/activity-log/timeline?limit=200&excludeProfileViews=true")
       .then((res) => setEvents([...res.upcoming, ...res.items]))
       .catch((err) => setError(err instanceof ApiError ? err.message : "Failed to load timeline"))
       .finally(() => setLoading(false))
