@@ -33,21 +33,6 @@ export interface ReadinessCriterion {
   value: number
 }
 
-export interface Match {
-  id: string
-  jobId: string
-  title: string
-  company: string
-  companyInitials: string
-  companyColor: string
-  status: "New" | "Waiting for Decision" | "Accepted" | "Rejected" | "In Progress"
-  matchedAt: string
-  readiness: number
-  criteria: ReadinessCriterion[]
-  reasons: string[]
-  gap?: string
-}
-
 export type ApplicationStage = "Applied" | "Viewed" | "Employer Review" | "Shortlisted" | "Interview"
 
 export interface Application {
@@ -158,16 +143,6 @@ export interface AdminApplication {
   employer: string
   status: "Applied" | "Under Review" | "Shortlisted" | "Interview" | "Rejected"
   applied: string
-}
-
-export interface AdminMatch {
-  id: string
-  candidate: string
-  job: string
-  employer: string
-  readiness: number
-  status: "New" | "Waiting for Decision" | "Accepted" | "Rejected"
-  created: string
 }
 
 export interface Plan {
@@ -458,6 +433,40 @@ export interface ApiMatch {
   status: ApiMatchStatus
   matchedAt: string
   updatedAt: string
+}
+
+export type ApiMatchStatusAdmin = "new" | "waiting" | "accepted" | "rejected" | "in_progress"
+
+export interface ApiAdminMatch {
+  id: string
+  score: number
+  status: ApiMatchStatusAdmin
+  matchedAt: string
+  candidateId: string
+  candidateFirstName: string
+  candidateLastName: string
+  jobId: string
+  jobTitle: string
+}
+
+export interface ApiAdminMatchDetail {
+  id: string
+  score: number
+  criteria: ReadinessCriterion[]
+  reasons: string[]
+  gap: string | null
+  status: ApiMatchStatusAdmin
+  matchedAt: string
+  updatedAt: string
+  candidateId: string
+  candidateFirstName: string
+  candidateLastName: string
+  candidateEmail: string
+  jobId: string
+  jobTitle: string
+  jobLocation: string | null
+  jobType: string
+  organizationName: string
 }
 
 export interface ApiMeInterview {
