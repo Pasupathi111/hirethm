@@ -20,6 +20,14 @@ export const user = pgTable('user', {
   email: text('email').notNull().unique(),
   emailVerified: boolean('email_verified').notNull().default(false),
   image: text('image'),
+  /**
+   * HireThm-internal staff flag — grants access to the cross-tenant
+   * platform-admin console (all organizations, plans, payments, etc.),
+   * entirely separate from any org's own member/role. Never self-service —
+   * set via `npm run grant-platform-admin -- <email>` only. Checked by
+   * requirePlatformAdmin(), never by the org-scoped requirePermission().
+   */
+  isPlatformAdmin: boolean('is_platform_admin').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
