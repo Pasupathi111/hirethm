@@ -92,7 +92,22 @@ export const job = pgTable('job', {
  */
 export const candidate = pgTable('candidate', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
+  /**
+   * Owning employer org, or NULL for a platform-level self-serve candidate
+   * (issue #46).
+   *
+   * BRD §2 lists "Candidate and Client Registration" as separate concerns:
+   * a candidate registers on HireThm itself, not into an employer's database.
+   * Employer-sourced candidates (created by a recruiter, or implicitly when
+   * someone applies to a job) stay scoped to that org exactly as before.
+   *
+   * Nullable is deliberately additive: every existing recruiter query filters
+   * `eq(organizationId, orgId)`, and NULL never matches an equality test — so
+   * platform-level candidates are invisible to recruiters until they actually
+   * apply. That is the consent-first behaviour the BRD requires, not an
+   * oversight.
+   */
+  organizationId: text('organization_id').references(() => organization.id, { onDelete: 'cascade' }),
   firstName: text('first_name').notNull(),
   lastName: text('last_name').notNull(),
   /** Optional display name override (e.g. for localized name ordering) */
@@ -161,7 +176,14 @@ export const application = pgTable('application', {
  */
 export const document = pgTable('document', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
+  /**
+   * Owning org, or NULL when the document belongs to a platform-level
+   * self-serve candidate (issue #46). Follows candidate.organizationId —
+   * a candidate who registered on HireThm rather than through an employer
+   * must still be able to upload a CV, since resume parsing and skills
+   * extraction are what make matching work at all.
+   */
+  organizationId: text('organization_id').references(() => organization.id, { onDelete: 'cascade' }),
   candidateId: text('candidate_id').notNull().references(() => candidate.id, { onDelete: 'cascade' }),
   type: documentTypeEnum('type').notNull().default('resume'),
   storageKey: text('storage_key').notNull().unique(),
@@ -414,7 +436,12 @@ export const retentionAuditActionEnum = pgEnum('retention_audit_action', [
  */
 export const retentionAudit = pgTable('retention_audit', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  organizationId: text('organization_id').notNull().references(() => organization.id, { onDelete: 'cascade' }),
+  /**
+   * NULL for a platform-level self-serve candidate (issue #46), who has no
+   * owning employer. The compliance record is still written — losing the audit
+   * trail entirely would be worse than having one without an org attached.
+   */
+  organizationId: text('organization_id').references(() => organization.id, { onDelete: 'cascade' }),
   /** Opaque candidate UUID — intentionally NOT a foreign key so it outlives erasure. */
   candidateId: text('candidate_id').notNull(),
   action: retentionAuditActionEnum('action').notNull(),

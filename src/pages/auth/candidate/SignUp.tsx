@@ -36,10 +36,8 @@ export function CandidateSignUp() {
       return
     }
     // Hard navigation — ensures the onboarding page reads a fresh session, not a stale client cache.
-    // NOTE: there is no real "create candidate profile" flow yet (CreateProfile.tsx is
-    // fully mock, no API calls) — this matches the original SignUp.tsx behavior rather
-    // than routing into that fake wizard. See issue filed for the real gap.
-    window.location.href = "/onboarding/create-org"
+    // Candidates go to real profile creation (#46), NOT the employer org-creation flow.
+    window.location.href = "/create-profile"
   }
 
   return (

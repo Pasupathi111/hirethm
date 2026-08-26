@@ -331,7 +331,8 @@ async function eraseOne(
 }
 
 async function writeAudit(
-  orgId: string,
+  /** NULL for platform-level self-serve candidates with no owning org (#46). */
+  orgId: string | null,
   candidateId: string,
   action: 'erased' | 'quarantined' | 'restored' | 'exempted' | 'unexempted' | 'exported',
   result: string,
@@ -354,7 +355,7 @@ async function writeAudit(
     // not a warning — escalate to error so it is alerted on, and report back to
     // the caller (the result carries `auditFailed`) rather than swallowing it.
     logError('retention.audit_write_failed', {
-      org_id: orgId,
+      org_id: orgId ?? undefined,
       candidate_id: candidateId,
       action,
       error_message: err instanceof Error ? err.message : String(err),
