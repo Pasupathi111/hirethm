@@ -59,7 +59,12 @@ export default defineEventHandler(async (event) => {
       }
     : DEFAULT_MATCH_PREFERENCE
 
-  const scored = openJobs.map(({ organization: org, skills, ...j }) => {
+  // Same BRD precondition on the JD side: a job with no description and no
+  // skills hasn't been through any real analysis, so it can't meaningfully
+  // participate in matching either.
+  const analyzedJobs = openJobs.filter(j => !!j.description?.trim() || j.skills.length > 0)
+
+  const scored = analyzedJobs.map(({ organization: org, skills, ...j }) => {
     const match = computeMatch(
       { skills, remoteStatus: j.remoteStatus, location: j.location, salaryMin: j.salaryMin, salaryMax: j.salaryMax },
       { skills: candidate.skills },

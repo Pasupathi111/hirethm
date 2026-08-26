@@ -5,6 +5,7 @@ import { toast } from "sonner"
 
 import { AdminListPage, type AdminColumn } from "@/components/tables/AdminListPage"
 import { ErrorState } from "@/components/feedback/ErrorState"
+import { Badge } from "@/components/ui/badge"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { Button } from "@/components/ui/button"
 import { type PaginatedResponse, api } from "@/lib/api"
@@ -38,6 +39,16 @@ const columns: AdminColumn<ApiJob>[] = [
   { header: "Interviews", sortValue: (j) => j.pipeline.interview, render: (j) => j.pipeline.interview },
   { header: "Hired", sortValue: (j) => j.pipeline.hired, render: (j) => j.pipeline.hired },
   { header: "Created", sortValue: (j) => j.createdAt, render: (j) => new Date(j.createdAt).toLocaleDateString() },
+  {
+    header: "JD completeness",
+    sortValue: (j) => j.completenessScore ?? 0,
+    render: (j) =>
+      j.completenessScore != null ? (
+        <Badge variant={j.completenessScore >= 70 ? "success" : "warning"}>{j.completenessScore}%</Badge>
+      ) : (
+        "—"
+      ),
+  },
 ]
 
 export function AdminJobs() {
