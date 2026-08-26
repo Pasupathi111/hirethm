@@ -7,7 +7,7 @@ Append-only log of what the autonomous loop shipped. Newest first.
   #36, #68, #69, #70; follow-up comment on #35). Also filed #56–#70 from a
   clause-by-clause comparison of `bussines_doc/hirethm_brd.txt` against the
   codebase.
-- **PR:** pending (branch `feature/brd-gap-audit-dynamic-data`)
+- **PR:** https://github.com/Pasupathi111/hirethm/pull/72
 - **Summary:** Removed the last fabricated data from the admin console.
   System Health now reads a new `GET /api/platform/health` that probes the
   database, object storage, AI configuration, analysis-run history, email
