@@ -532,6 +532,49 @@ export interface ApiDocument {
   parsedContent?: ParsedResume | null
 }
 
+export interface ApiPlatformEmployer {
+  id: string
+  name: string
+  slug: string
+  logo: string | null
+  createdAt: string
+  memberCount: number
+  activeJobCount: number
+  applicationCount: number
+}
+
+export interface ApiPlatformEmployerMember {
+  id: string
+  userId: string
+  name: string
+  email: string
+  role: "owner" | "admin" | "member"
+  createdAt: string
+}
+
+export interface ApiPlatformEmployerDetail extends ApiPlatformEmployer {
+  metadata: string | null
+  members: ApiPlatformEmployerMember[]
+  jobs: { id: string; title: string; status: ApiJobStatus; createdAt: string }[]
+}
+
+export interface ApiPlatformMember {
+  id: string
+  userId: string
+  name: string
+  email: string
+  role: "owner" | "admin" | "member"
+  createdAt: string
+  organizationId: string
+  organizationName: string
+  activeJobCount: number
+}
+
+export interface ApiPlatformMemberDetail extends ApiPlatformMember {
+  jobs: { id: string; title: string; status: ApiJobStatus; createdAt: string }[]
+  activity: { id: string; action: ApiActivityAction; resourceType: ApiActivityResourceType; resourceId: string; createdAt: string }[]
+}
+
 export type ApiActivityAction =
   | "created"
   | "updated"
