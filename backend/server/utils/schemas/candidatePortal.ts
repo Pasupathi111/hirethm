@@ -59,4 +59,7 @@ export const updateSelfCandidateSchema = z.object({
   displayName: z.string().trim().max(200).nullish(),
   phone: z.string().trim().max(50).nullish(),
   skills: z.array(z.string().trim().min(1).max(100)).max(100).optional(),
+  // The portal's "About" section writes here. Omitting it meant Zod stripped
+  // the key silently, so the edit dialog reported success while saving nothing.
+  quickNotes: z.string().trim().max(5000).nullish(),
 })

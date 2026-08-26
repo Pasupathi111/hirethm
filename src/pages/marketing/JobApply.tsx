@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError, type PaginatedResponse, api } from "@/lib/api"
+import { useMyCandidateOptional } from "@/lib/candidateSession"
 import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
 import type { ApiJob } from "@/types"
 
@@ -31,9 +32,14 @@ export function JobApply({ basePath = "/jobs" }: { basePath?: string }) {
   const navigate = useNavigate()
   const reduced = useReducedMotion()
 
+  // Null on the public marketing route (no provider); populated inside /app.
+  const candidateSession = useMyCandidateOptional()
+  const candidate = candidateSession?.candidate ?? null
+
   const [job, setJob] = useState<PublicJobForApply | null>(null)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
+  const [prefilled, setPrefilled] = useState(false)
 
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
@@ -63,6 +69,19 @@ export function JobApply({ basePath = "/jobs" }: { basePath?: string }) {
       .catch(() => setNotFound(true))
       .finally(() => setLoading(false))
   }, [id])
+
+  // Signed-in candidates shouldn't retype their details for every application —
+  // seed the identity fields from the profile once it arrives. Guarded by
+  // `prefilled` so it runs a single time and never clobbers edits the user
+  // makes afterwards (they can still override anything for one application).
+  useEffect(() => {
+    if (!candidate || prefilled) return
+    setFirstName((v) => v || candidate.firstName || "")
+    setLastName((v) => v || candidate.lastName || "")
+    setEmail((v) => v || candidate.email || "")
+    setPhone((v) => v || candidate.phone || "")
+    setPrefilled(true)
+  }, [candidate, prefilled])
 
   if (notFound) return <Navigate to={basePath} replace />
 
@@ -147,6 +166,12 @@ export function JobApply({ basePath = "/jobs" }: { basePath?: string }) {
             autoComplete="off"
             aria-hidden="true"
           />
+
+          {candidate && (
+            <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+              Filled in from your profile — edit anything below if it should differ for this application.
+            </p>
+          )}
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">

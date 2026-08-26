@@ -218,6 +218,43 @@ export interface ApiJobPipeline {
   rejected: number
 }
 
+/** GET /api/dashboard/stats — org-scoped, all figures computed live. */
+export interface ApiDashboardStats {
+  counts: {
+    openJobs: number
+    totalCandidates: number
+    totalApplications: number
+    newApplications: number
+  }
+  pipeline: ApiJobPipeline
+  jobsByStatus: Record<ApiJobStatus, number>
+  recentApplications: {
+    id: string
+    status: ApiApplicationStatus
+    createdAt: string
+    candidateId: string
+    candidateFirstName: string
+    candidateLastName: string
+    candidateEmail: string
+    jobId: string
+    jobTitle: string
+  }[]
+  topJobs: {
+    id: string
+    title: string
+    slug: string
+    status: ApiJobStatus
+    createdAt: string
+    applicationCount: number
+    newCount: number
+    screeningCount: number
+    interviewCount: number
+    offerCount: number
+    hiredCount: number
+    rejectedCount: number
+  }[]
+}
+
 export interface ApiJob {
   id: string
   title: string

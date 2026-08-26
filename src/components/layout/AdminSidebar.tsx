@@ -4,6 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { Badge } from "@/components/ui/badge"
 import { signOut, useSession } from "@/lib/authClient"
 import { adminNav } from "@/lib/navigation"
+import { useActiveOrganization } from "@/lib/useActiveOrganization"
 import { usePlatformAdmin } from "@/lib/usePlatformAdmin"
 import { cn } from "@/lib/utils"
 
@@ -12,6 +13,7 @@ export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void })
   const { isPlatformAdmin } = usePlatformAdmin()
   const { data: session } = useSession()
   const hasOrg = Boolean(session?.session.activeOrganizationId)
+  const { organization, isPending: orgPending } = useActiveOrganization()
 
   // Filter both ways so nobody is shown a link that only ever leads to a
   // redirect or a 403. Cross-tenant destinations need the platform-admin flag
@@ -45,6 +47,22 @@ export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void })
           ADMIN
         </Badge>
       </div>
+
+      {/* Which company this session is acting as. Platform admins belong to no
+          organization, so this block is simply absent for them rather than
+          showing a misleading placeholder. */}
+      {hasOrg && (
+        <div className="-mt-2 mb-2 px-6">
+          <p className="text-[10px] font-bold tracking-wide text-slate-label uppercase">Organization</p>
+          {orgPending ? (
+            <span className="mt-1 block h-4 w-28 animate-pulse rounded bg-white/10" />
+          ) : (
+            <p className="truncate text-sm font-semibold" title={organization?.name ?? undefined}>
+              {organization?.name ?? "Unknown organization"}
+            </p>
+          )}
+        </div>
+      )}
       <nav className="flex-1 space-y-5 overflow-y-auto px-4 pb-4">
         {visibleNav.map((group, i) => (
           <div key={i} className={cn(i > 0 && "border-t border-white/10 pt-4")}>
