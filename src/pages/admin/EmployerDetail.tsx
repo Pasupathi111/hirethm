@@ -1,14 +1,16 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Navigate, useParams } from "react-router-dom"
+import { toast } from "sonner"
 
 import { MetricTile } from "@/components/cards/MetricTile"
 import { Skeleton } from "@/components/feedback/Skeleton"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ApiError, api } from "@/lib/api"
-import type { ApiPlatformEmployerDetail } from "@/types"
+import type { ApiOrganizationSubscription, ApiPlan, ApiPlatformEmployerDetail } from "@/types"
 
 const roleLabel: Record<string, string> = {
   owner: "Owner",
@@ -21,6 +23,9 @@ export function AdminEmployerDetail() {
   const [employer, setEmployer] = useState<ApiPlatformEmployerDetail | null>(null)
   const [notFound, setNotFound] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [subscription, setSubscription] = useState<ApiOrganizationSubscription | null>(null)
+  const [plans, setPlans] = useState<ApiPlan[]>([])
+  const [changingPlan, setChangingPlan] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -32,6 +37,30 @@ export function AdminEmployerDetail() {
       })
       .finally(() => setLoading(false))
   }, [id])
+
+  const loadSubscription = useCallback(() => {
+    if (!id) return
+    api.get<ApiOrganizationSubscription | null>(`/api/platform/employers/${id}/subscription`).then(setSubscription)
+  }, [id])
+
+  useEffect(() => {
+    loadSubscription()
+    api.get<{ data: ApiPlan[] }>("/api/platform/plans").then((res) => setPlans(res.data.filter((p) => p.isActive)))
+  }, [loadSubscription])
+
+  const handlePlanChange = async (planId: string) => {
+    if (!id) return
+    setChangingPlan(true)
+    try {
+      await api.patch(`/api/platform/employers/${id}/subscription`, { planId })
+      toast.success("Plan updated")
+      loadSubscription()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to change plan")
+    } finally {
+      setChangingPlan(false)
+    }
+  }
 
   if (notFound) return <Navigate to="/admin/employers" replace />
   if (loading || !employer) {
@@ -55,10 +84,26 @@ export function AdminEmployerDetail() {
         meta={`${employer.slug} · Created ${new Date(employer.createdAt).toLocaleDateString()}`}
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <MetricTile label="Active jobs" value={activeJobs} />
         <MetricTile label="Total jobs" value={employer.jobs.length} />
         <MetricTile label="Members" value={employer.members.length} />
+        <div className="rounded-lg border border-border bg-card p-5">
+          <p className="text-sm text-muted-foreground">Plan</p>
+          <Select value={subscription?.planId ?? ""} onValueChange={handlePlanChange} disabled={changingPlan}>
+            <SelectTrigger className="mt-1 w-full">
+              <SelectValue placeholder="No plan assigned" />
+            </SelectTrigger>
+            <SelectContent>
+              {plans.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {subscription && <p className="mt-1 text-xs text-muted-foreground capitalize">{subscription.status}</p>}
+        </div>
       </div>
 
       <Tabs defaultValue="jobs">
