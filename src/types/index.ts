@@ -600,6 +600,8 @@ export interface ApiOrgUsage {
 export type ApiNameDisplayFormat = "first_last" | "last_first"
 export type ApiDateFormat = "mdy" | "dmy" | "ymd"
 
+export type ApiMatchNotificationChannel = "in_app" | "email" | "both"
+
 export interface ApiOrgSettings {
   nameDisplayFormat: ApiNameDisplayFormat
   dateFormat: ApiDateFormat
@@ -607,6 +609,10 @@ export interface ApiOrgSettings {
   retentionMonths: number
   quarantineDays: number
   retentionActivatedAt: string | null
+  matchNotificationChannel: ApiMatchNotificationChannel
+  minReadinessScore: number
+  consentExpiryEnabled: boolean
+  consentExpiryDays: number
   privacyPolicyUrl: string | null
   privacyPolicyText: string | null
   privacyContactEmail: string | null

@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { ApiError, api } from "@/lib/api"
-import type { ApiCalendarStatus, ApiDateFormat, ApiNameDisplayFormat, ApiOrgSettings, ApiSsoProvider } from "@/types"
+import type { ApiCalendarStatus, ApiDateFormat, ApiMatchNotificationChannel, ApiNameDisplayFormat, ApiOrgSettings, ApiSsoProvider } from "@/types"
 
 function GeneralAndRetentionTab() {
   const [settings, setSettings] = useState<ApiOrgSettings | null>(null)
@@ -87,6 +87,99 @@ function GeneralAndRetentionTab() {
                   <SelectItem value="mdy">MM/DD/YYYY</SelectItem>
                   <SelectItem value="dmy">DD/MM/YYYY</SelectItem>
                   <SelectItem value="ymd">YYYY-MM-DD</SelectItem>
+                </SelectContent>
+              </Select>
+            }
+          />
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Match notifications</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          How candidates are told about matches against this organization's roles.
+        </p>
+        <div className="mt-2">
+          <SettingRow
+            label="Notification channel"
+            description="Where a candidate is notified when they reach a qualifying match."
+            control={
+              <Select
+                value={settings.matchNotificationChannel}
+                onValueChange={(v) => save({ matchNotificationChannel: v as ApiMatchNotificationChannel }, "Notification channel")}
+                disabled={saving}
+              >
+                <SelectTrigger className="w-44">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="in_app">In-app only</SelectItem>
+                  <SelectItem value="email">Email only</SelectItem>
+                  <SelectItem value="both">Email + In-app</SelectItem>
+                </SelectContent>
+              </Select>
+            }
+          />
+          <SettingRow
+            label="Minimum readiness to notify"
+            description="Matches scoring below this are never created and never notify the candidate."
+            control={
+              <Select
+                value={String(settings.minReadinessScore)}
+                onValueChange={(v) => save({ minReadinessScore: Number(v) }, "Minimum readiness")}
+                disabled={saving}
+              >
+                <SelectTrigger className="w-28">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="50">50%</SelectItem>
+                  <SelectItem value="60">60%</SelectItem>
+                  <SelectItem value="70">70%</SelectItem>
+                  <SelectItem value="80">80%</SelectItem>
+                  <SelectItem value="90">90%</SelectItem>
+                </SelectContent>
+              </Select>
+            }
+          />
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Consent expiry</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Candidate visibility lapses after a period of inactivity. Nothing is deleted — any new
+          activity restores visibility immediately.
+        </p>
+        <div className="mt-2">
+          <SettingRow
+            label="Auto-revoke visibility"
+            description="Hide inactive candidates from recruiters until their consent is renewed."
+            control={
+              <Switch
+                checked={settings.consentExpiryEnabled}
+                onCheckedChange={(v) => save({ consentExpiryEnabled: v }, "Consent expiry")}
+                disabled={saving}
+              />
+            }
+          />
+          <SettingRow
+            label="Consent window"
+            description="Days of inactivity before visibility is revoked."
+            control={
+              <Select
+                value={String(settings.consentExpiryDays)}
+                onValueChange={(v) => save({ consentExpiryDays: Number(v) }, "Consent window")}
+                disabled={saving || !settings.consentExpiryEnabled}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="90">90 days</SelectItem>
+                  <SelectItem value="180">180 days</SelectItem>
+                  <SelectItem value="365">365 days</SelectItem>
                 </SelectContent>
               </Select>
             }

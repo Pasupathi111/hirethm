@@ -4,6 +4,7 @@ import { candidateIdParamSchema } from '../../utils/schemas/candidate'
 import { loadPropertyEntriesForEntity } from '../../utils/properties'
 import { computeRetentionState } from '../../utils/retention'
 import { computeCandidateCompleteness } from '../../utils/candidateCompleteness'
+import { assertCandidateVisible } from '../../utils/candidateVisibility'
 
 export default defineEventHandler(async (event) => {
   const session = await requirePermission(event, { candidate: ['read'] })
@@ -55,6 +56,10 @@ export default defineEventHandler(async (event) => {
   if (!result) {
     throw createError({ statusCode: 404, statusMessage: 'Not found' })
   }
+
+  // Consent expiry (issue #27): closes the detail-view bypass — a recruiter
+  // must not reach an expired candidate by navigating directly to their id.
+  await assertCandidateVisible({ organizationId: orgId, candidateId: id })
 
   recordActivity({
     organizationId: orgId,

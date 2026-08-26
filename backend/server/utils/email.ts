@@ -178,6 +178,127 @@ export async function sendPasswordResetEmail(data: {
 }
 
 /**
+ * Notify a candidate that they have a new qualifying match (issue #27, part A).
+ *
+ * BRD candidate-first rule: the candidate hears about a match before the
+ * employer gains any visibility, so this is deliberately sent to the candidate
+ * and never to the employer. Throws on transport failure so the caller can
+ * decide whether the dispatch counts as delivered.
+ */
+export async function sendMatchNotificationEmail(data: {
+  to: string
+  candidateFirstName: string
+  jobTitle: string
+  organizationName: string
+  score: number
+  matchesUrl: string
+}): Promise<void> {
+  await sendEmail({
+    to: data.to,
+    subject: `New match: ${data.jobTitle} at ${data.organizationName}`,
+    html: buildMatchNotificationHtml(data),
+    text: buildMatchNotificationText(data),
+    resendTags: [{ name: 'category', value: 'match-notification' }],
+    logFallback: `Match notification email suppressed — no email provider configured (candidate: ${data.to}, job: ${data.jobTitle})`,
+    errorCategory: 'email.match_notification_send_failed',
+  })
+}
+
+function buildMatchNotificationHtml(params: {
+  candidateFirstName: string
+  jobTitle: string
+  organizationName: string
+  score: number
+  matchesUrl: string
+}): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You have a new match</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f5;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;background-color:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e4e4e7;">
+          <tr>
+            <td style="padding:32px 32px 24px;text-align:center;border-bottom:1px solid #f4f4f5;">
+              <h1 style="margin:0;font-size:20px;font-weight:600;color:#09090b;">HireThm</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px;">
+              <h2 style="margin:0 0 16px;font-size:18px;font-weight:600;color:#09090b;">You have a new match</h2>
+              <p style="margin:0 0 20px;font-size:14px;line-height:1.6;color:#3f3f46;">
+                Hi ${escapeHtml(params.candidateFirstName)}, a role matching your profile just opened up.
+              </p>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#fafafa;border:1px solid #e4e4e7;border-radius:8px;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:16px;">
+                    <p style="margin:0 0 4px;font-size:15px;font-weight:600;color:#09090b;">${escapeHtml(params.jobTitle)}</p>
+                    <p style="margin:0 0 12px;font-size:13px;color:#71717a;">${escapeHtml(params.organizationName)}</p>
+                    <p style="margin:0;font-size:13px;color:#3f3f46;">
+                      <strong style="color:#059669;">${params.score}%</strong> Mutual Readiness
+                    </p>
+                  </td>
+                </tr>
+              </table>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <a href="${escapeHtml(params.matchesUrl)}" target="_blank" rel="noopener noreferrer"
+                       style="display:inline-block;padding:12px 32px;background-color:#059669;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;border-radius:8px;line-height:1;">
+                      Review this match
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:24px 0 0;font-size:12px;line-height:1.5;color:#71717a;">
+                The employer cannot see your profile unless you accept. Decline and nothing is shared.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:16px 32px;text-align:center;border-top:1px solid #f4f4f5;background-color:#fafafa;">
+              <p style="margin:0;font-size:12px;color:#a1a1aa;">Sent by HireThm &mdash; candidate-first hiring</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`
+}
+
+function buildMatchNotificationText(params: {
+  candidateFirstName: string
+  jobTitle: string
+  organizationName: string
+  score: number
+  matchesUrl: string
+}): string {
+  return [
+    'You have a new match',
+    '',
+    `Hi ${params.candidateFirstName}, a role matching your profile just opened up.`,
+    '',
+    `${params.jobTitle}`,
+    `${params.organizationName}`,
+    `${params.score}% Mutual Readiness`,
+    '',
+    'Review this match:',
+    params.matchesUrl,
+    '',
+    'The employer cannot see your profile unless you accept. Decline and nothing is shared.',
+    '',
+    '— HireThm',
+  ].join('\n')
+}
+
+/**
  * Send an organization invitation email.
  * Falls back to console.info when no email provider is configured.
  */

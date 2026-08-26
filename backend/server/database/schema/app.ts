@@ -36,6 +36,8 @@ export const genderEnum = pgEnum('gender', ['male', 'female', 'other', 'prefer_n
 export const experienceLevelEnum = pgEnum('experience_level', ['junior', 'mid', 'senior', 'lead'])
 export const nameDisplayFormatEnum = pgEnum('name_display_format', ['first_last', 'last_first'])
 export const dateFormatEnum = pgEnum('date_format', ['mdy', 'dmy', 'ymd'])
+/** Channels used to notify a candidate when they reach a qualifying match (BRD: candidate-first). */
+export const matchNotificationChannelEnum = pgEnum('match_notification_channel', ['in_app', 'email', 'both'])
 export const candidateNotificationCategoryEnum = pgEnum('candidate_notification_category', [
   'matches', 'applications', 'interviews', 'profile', 'system',
 ])
@@ -373,6 +375,16 @@ export const orgSettings = pgTable('org_settings', {
   /** First time retention was enabled — anchors the review window so existing data
    *  is never deleted immediately. NULL until the org first enables retention. */
   retentionActivatedAt: timestamp('retention_activated_at'),
+  // ── Match notification policy (issue #27) ──
+  /** Channel(s) a candidate is notified on when a qualifying match is created. */
+  matchNotificationChannel: matchNotificationChannelEnum('match_notification_channel').notNull().default('in_app'),
+  /** Matches scoring below this never notify the candidate, and are not created. */
+  minReadinessScore: integer('min_readiness_score').notNull().default(70),
+  // ── Consent expiry (issue #27) ──
+  /** When true, candidates inactive beyond consentExpiryDays lose recruiter visibility. */
+  consentExpiryEnabled: boolean('consent_expiry_enabled').notNull().default(false),
+  /** Days of inactivity after which candidate visibility is auto-revoked. */
+  consentExpiryDays: integer('consent_expiry_days').notNull().default(90),
   // ── Application-form privacy notice (org-configurable) ──
   privacyPolicyUrl: text('privacy_policy_url'),
   privacyPolicyText: text('privacy_policy_text'),

@@ -7,6 +7,7 @@ import {
   loadPropertyEntriesForEntities,
   type PropertyFilter,
 } from '../../utils/properties'
+import { consentVisibilityCondition, loadConsentPolicy } from '../../utils/candidateVisibility'
 
 export default defineEventHandler(async (event) => {
   const session = await requirePermission(event, { candidate: ['read'] })
@@ -18,6 +19,11 @@ export default defineEventHandler(async (event) => {
   // Quarantined candidates (pending GDPR erasure) are hidden from the main list;
   // they're managed from the retention review screen in settings.
   const conditions = [eq(candidate.organizationId, orgId), isNull(candidate.quarantinedAt)]
+
+  // Consent expiry (issue #27): candidates inactive beyond the org's configured
+  // window lose recruiter visibility until activity renews it. No-op when off.
+  const consentCondition = consentVisibilityCondition(await loadConsentPolicy(orgId))
+  if (consentCondition) conditions.push(consentCondition)
 
   if (query.search) {
     // Escape LIKE meta-characters to prevent pattern injection
