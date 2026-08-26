@@ -1,6 +1,7 @@
 import { eq, and } from 'drizzle-orm'
 import { job } from '../../database/schema'
 import { idParamSchema } from '../../utils/schemas/job'
+import { computeJobCompleteness } from '../../utils/jobCompleteness'
 
 export default defineEventHandler(async (event) => {
   const session = await requirePermission(event, { job: ['read'] })
@@ -46,5 +47,16 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Not found' })
   }
 
-  return result
+  const completeness = computeJobCompleteness({
+    description: result.description,
+    skills: result.skills,
+    location: result.location,
+    remoteStatus: result.remoteStatus,
+    salaryMin: result.salaryMin,
+    salaryMax: result.salaryMax,
+    salaryNegotiable: result.salaryNegotiable,
+    experienceLevel: result.experienceLevel,
+  })
+
+  return { ...result, completeness }
 })

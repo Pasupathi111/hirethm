@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
       where: eq(job.status, 'open'),
       columns: {
         id: true, title: true, location: true, type: true, remoteStatus: true,
-        salaryMin: true, salaryMax: true, skills: true,
+        salaryMin: true, salaryMax: true, skills: true, description: true,
       },
     }),
     db.query.candidatePreference.findFirst({
@@ -40,10 +40,13 @@ export default defineEventHandler(async (event) => {
 
   const existingJobIds = new Set(existingMatches.map((m) => m.jobId))
 
-  // BRD business rule: matching can only occur once the candidate's resume/
-  // profile has been analyzed. Skip generating NEW matches for a zero-signal
-  // profile (existing matches, if any, are still returned below).
-  const toInsert = candidate.skills.length === 0 ? [] : openJobs
+  // BRD business rule: matching can only occur once both the candidate's
+  // resume and the job's JD have been analyzed. Skip generating NEW matches
+  // for a zero-signal candidate profile, or against a job with no
+  // description and no skills (existing matches, if any, are still
+  // returned below).
+  const analyzedJobs = openJobs.filter(j => !!j.description?.trim() || j.skills.length > 0)
+  const toInsert = candidate.skills.length === 0 ? [] : analyzedJobs
     .map((j) => ({ j, match: computeMatch(j, { skills: candidate.skills }, preference) }))
     .filter(({ j, match }) => !existingJobIds.has(j.id) && match.score >= 70)
     .map(({ j, match }) => ({

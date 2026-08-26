@@ -6,7 +6,9 @@ import { MetricTile } from "@/components/cards/MetricTile"
 import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog"
 import { StatusBadge } from "@/components/feedback/StatusBadge"
 import { AdminDetailHeader } from "@/components/tables/AdminDetailHeader"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Progress } from "@/components/ui/progress"
 import { Skeleton } from "@/components/feedback/Skeleton"
 import { ApiError, api } from "@/lib/api"
 import type { ApiJob } from "@/types"
@@ -109,6 +111,28 @@ export function AdminJobDetail() {
         <MetricTile label="Interviews" value={interviewCount} />
         <MetricTile label="Hired" value={hiredCount} />
       </div>
+
+      {job.completeness && (
+        <div className="rounded-lg border border-border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <h2>Job description completeness</h2>
+            <Badge variant={job.completeness.isComplete ? "success" : "warning"}>{job.completeness.score}%</Badge>
+          </div>
+          <Progress value={job.completeness.score} className="mt-3" />
+          {job.completeness.hints.length > 0 ? (
+            <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
+              {job.completeness.hints.map((hint) => (
+                <li key={hint} className="flex items-start gap-2">
+                  <span className="mt-0.5 text-warning">!</span>
+                  {hint}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">This job description is complete.</p>
+          )}
+        </div>
+      )}
 
       <div className="rounded-lg border border-border bg-card p-6 space-y-4">
         <div>

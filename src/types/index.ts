@@ -296,6 +296,10 @@ export interface ApiJob {
   createdAt: string
   updatedAt: string
   pipeline: ApiJobPipeline
+  /** Present on GET /api/jobs/:id (single-job detail), absent on the list endpoint */
+  completeness?: CandidateCompleteness
+  /** Present on GET /api/jobs (list endpoint) as a cheaper score-only summary */
+  completenessScore?: number
 }
 
 export type ApiGender = "male" | "female" | "other" | "prefer_not_to_say"

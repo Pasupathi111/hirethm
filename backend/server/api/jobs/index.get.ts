@@ -1,6 +1,7 @@
 import { eq, and, desc, count, inArray } from 'drizzle-orm'
 import { job, application } from '../../database/schema'
 import { jobQuerySchema } from '../../utils/schemas/job'
+import { computeJobCompleteness } from '../../utils/jobCompleteness'
 
 interface PipelineCounts {
   new: number
@@ -37,6 +38,10 @@ export default defineEventHandler(async (event) => {
         status: true,
         experienceLevel: true,
         remoteStatus: true,
+        skills: true,
+        salaryMin: true,
+        salaryMax: true,
+        salaryNegotiable: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -71,6 +76,16 @@ export default defineEventHandler(async (event) => {
   const enrichedData = data.map((j) => ({
     ...j,
     pipeline: pipelineMap[j.id] ?? { new: 0, screening: 0, interview: 0, offer: 0, hired: 0, rejected: 0 },
+    completenessScore: computeJobCompleteness({
+      description: j.description,
+      skills: j.skills,
+      location: j.location,
+      remoteStatus: j.remoteStatus,
+      salaryMin: j.salaryMin,
+      salaryMax: j.salaryMax,
+      salaryNegotiable: j.salaryNegotiable,
+      experienceLevel: j.experienceLevel,
+    }).score,
   }))
 
   return { data: enrichedData, total, page: query.page, limit: query.limit }
