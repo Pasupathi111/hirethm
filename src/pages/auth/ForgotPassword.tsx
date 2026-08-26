@@ -7,11 +7,14 @@ import { Logo } from "@/components/layout/Logo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { requestPasswordReset } from "@/lib/authClient"
 import { fadeInUp, useReducedMotion, withReducedMotion } from "@/lib/motion"
 
 export function ForgotPassword() {
   const [email, setEmail] = useState("")
   const [sent, setSent] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const reduced = useReducedMotion()
 
   return (
@@ -44,17 +47,34 @@ export function ForgotPassword() {
 
             <form
               className="mt-8 space-y-5 rounded-lg border border-border bg-card p-6 text-left"
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault()
+                setError("")
+                setIsLoading(true)
+                const { error: resetError } = await requestPasswordReset({ email, redirectTo: "/reset-password" })
+                setIsLoading(false)
+                if (resetError) {
+                  setError(resetError.message ?? "Failed to send reset link.")
+                  return
+                }
                 setSent(true)
               }}
             >
+              {error && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive"
+                >
+                  {error}
+                </motion.p>
+              )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required />
               </div>
-              <Button type="submit" variant="dark" size="lg" className="w-full">
-                Send reset link
+              <Button type="submit" variant="dark" size="lg" className="w-full" disabled={isLoading}>
+                {isLoading ? "Sending…" : "Send reset link"}
               </Button>
               <p className="text-center text-sm text-muted-foreground">
                 <Link to="/sign-in" className="font-semibold text-primary">
