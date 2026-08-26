@@ -32,6 +32,12 @@ export interface NavItem {
   label: string
   to: string
   icon: LucideIcon
+  /**
+   * Cross-tenant platform-admin destination (issue #43). Hidden from users
+   * without the HireThm-internal isPlatformAdmin flag, so recruiters aren't
+   * shown links that only ever lead to a redirect.
+   */
+  platformAdminOnly?: boolean
 }
 
 export interface NavGroup {
@@ -71,9 +77,9 @@ export const adminNav: NavGroup[] = [
     label: "Users",
     items: [
       { label: "Candidates", to: "/admin/candidates", icon: BookUser },
-      { label: "Employers", to: "/admin/employers", icon: Building2 },
-      { label: "Recruiters", to: "/admin/recruiters", icon: Users },
-      { label: "Hiring Managers", to: "/admin/hiring-managers", icon: UserCircle },
+      { label: "Employers", to: "/admin/employers", icon: Building2, platformAdminOnly: true },
+      { label: "Recruiters", to: "/admin/recruiters", icon: Users, platformAdminOnly: true },
+      { label: "Hiring Managers", to: "/admin/hiring-managers", icon: UserCircle, platformAdminOnly: true },
     ],
   },
   {
@@ -90,9 +96,9 @@ export const adminNav: NavGroup[] = [
   {
     label: "Commercial",
     items: [
-      { label: "Plans", to: "/admin/plans", icon: Puzzle },
-      { label: "Payments", to: "/admin/payments", icon: Banknote },
-      { label: "Usage", to: "/admin/usage", icon: Activity },
+      { label: "Plans", to: "/admin/plans", icon: Puzzle, platformAdminOnly: true },
+      { label: "Payments", to: "/admin/payments", icon: Banknote, platformAdminOnly: true },
+      { label: "Usage", to: "/admin/usage", icon: Activity, platformAdminOnly: true },
     ],
   },
   {
