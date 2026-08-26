@@ -1,299 +1,382 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { toast } from "sonner"
 
 import { SettingRow } from "@/components/forms/SettingRow"
+import { ErrorState } from "@/components/feedback/ErrorState"
+import { Skeleton } from "@/components/feedback/Skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Textarea } from "@/components/ui/textarea"
+import { ApiError, api } from "@/lib/api"
+import type { ApiCalendarStatus, ApiDateFormat, ApiNameDisplayFormat, ApiOrgSettings, ApiSsoProvider } from "@/types"
 
-const integrations = [
-  { name: "Slack", description: "Post new applications and matches to a channel.", connected: true },
-  { name: "Google Calendar", description: "Sync interview slots to interviewer calendars.", connected: true },
-  { name: "Greenhouse", description: "Two-way sync with your existing ATS.", connected: false },
-  { name: "Zapier", description: "Trigger custom workflows on platform events.", connected: false },
-]
+function GeneralAndRetentionTab() {
+  const [settings, setSettings] = useState<ApiOrgSettings | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
-export function AdminPlatformSettings() {
-  const [consentExpiry, setConsentExpiry] = useState("90")
-  const [notifyChannel, setNotifyChannel] = useState("email-inapp")
-  const [minReadiness, setMinReadiness] = useState("65")
-  const [matchWindow, setMatchWindow] = useState("02:00")
+  const load = () => {
+    setLoading(true)
+    api.get<ApiOrgSettings>("/api/org-settings").then(setSettings).finally(() => setLoading(false))
+  }
+  useEffect(load, [])
 
-  const [connections, setConnections] = useState(integrations)
+  const save = async (patch: Partial<ApiOrgSettings>, label: string) => {
+    setSaving(true)
+    try {
+      const updated = await api.patch<ApiOrgSettings>("/api/org-settings", patch)
+      setSettings(updated)
+      toast.success(`${label} updated`)
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : `Failed to update ${label.toLowerCase()}`)
+    } finally {
+      setSaving(false)
+    }
+  }
 
-  const [locale, setLocale] = useState("en-US")
-  const [timezone, setTimezone] = useState("America/Chicago")
-  const [dateFormat, setDateFormat] = useState("MM/DD/YYYY")
-
-  const [retentionPeriod, setRetentionPeriod] = useState("24")
-  const [autoPurge, setAutoPurge] = useState(true)
-  const [anonymizeInactive, setAnonymizeInactive] = useState(true)
-
-  const [ssoEnabled, setSsoEnabled] = useState(false)
-  const [ssoProvider, setSsoProvider] = useState("okta")
-  const [ssoDomain, setSsoDomain] = useState("")
+  if (loading || !settings) {
+    return <Skeleton className="h-64 w-full" />
+  }
 
   return (
     <div className="space-y-6">
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Display</h2>
+        <div className="mt-2">
+          <SettingRow
+            label="Candidate-first notification"
+            description="Candidates are always notified of a match before the employer. Enforced. Cannot be disabled."
+            control={<Badge variant="success">Locked on</Badge>}
+          />
+          <SettingRow
+            label="Name display format"
+            description="How candidate names are shown across the org's dashboard."
+            control={
+              <Select
+                value={settings.nameDisplayFormat}
+                onValueChange={(v) => save({ nameDisplayFormat: v as ApiNameDisplayFormat }, "Name display format")}
+                disabled={saving}
+              >
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="first_last">First Last</SelectItem>
+                  <SelectItem value="last_first">Last, First</SelectItem>
+                </SelectContent>
+              </Select>
+            }
+          />
+          <SettingRow
+            label="Date format"
+            description="How dates are displayed across the org's dashboard."
+            control={
+              <Select
+                value={settings.dateFormat}
+                onValueChange={(v) => save({ dateFormat: v as ApiDateFormat }, "Date format")}
+                disabled={saving}
+              >
+                <SelectTrigger className="w-36">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="mdy">MM/DD/YYYY</SelectItem>
+                  <SelectItem value="dmy">DD/MM/YYYY</SelectItem>
+                  <SelectItem value="ymd">YYYY-MM-DD</SelectItem>
+                </SelectContent>
+              </Select>
+            }
+          />
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Data retention</h2>
+        <div className="mt-2">
+          <SettingRow
+            label="Enable retention & auto-purge"
+            description="Quarantines inactive candidates, then permanently erases them after the quarantine window. Runs nightly."
+            control={
+              <Switch
+                checked={settings.retentionEnabled}
+                onCheckedChange={(v) => save({ retentionEnabled: v }, "Retention")}
+                disabled={saving}
+              />
+            }
+          />
+          <SettingRow
+            label="Retention period"
+            description="How long a candidate can be inactive before quarantine begins."
+            control={
+              <Select
+                value={String(settings.retentionMonths)}
+                onValueChange={(v) => save({ retentionMonths: Number(v) }, "Retention period")}
+                disabled={saving || !settings.retentionEnabled}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12">12 months</SelectItem>
+                  <SelectItem value="24">24 months</SelectItem>
+                  <SelectItem value="36">36 months</SelectItem>
+                </SelectContent>
+              </Select>
+            }
+          />
+          <SettingRow
+            label="Quarantine window"
+            description="Days a candidate stays quarantined (recoverable) before permanent erasure."
+            control={
+              <Select
+                value={String(settings.quarantineDays)}
+                onValueChange={(v) => save({ quarantineDays: Number(v) }, "Quarantine window")}
+                disabled={saving || !settings.retentionEnabled}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="14">14 days</SelectItem>
+                  <SelectItem value="30">30 days</SelectItem>
+                  <SelectItem value="90">90 days</SelectItem>
+                </SelectContent>
+              </Select>
+            }
+          />
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-border bg-card p-6">
+        <h2 className="text-lg">Application-form privacy notice</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Shown to candidates on this org's public job application forms.</p>
+        <div className="mt-4 space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="privacy-url">Privacy policy URL</label>
+            <Input
+              id="privacy-url"
+              defaultValue={settings.privacyPolicyUrl ?? ""}
+              placeholder="https://example.com/privacy"
+              onBlur={(e) => {
+                if (e.target.value !== (settings.privacyPolicyUrl ?? "")) save({ privacyPolicyUrl: e.target.value || null }, "Privacy policy URL")
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="privacy-contact">Privacy contact email</label>
+            <Input
+              id="privacy-contact"
+              defaultValue={settings.privacyContactEmail ?? ""}
+              placeholder="privacy@example.com"
+              onBlur={(e) => {
+                if (e.target.value !== (settings.privacyContactEmail ?? "")) save({ privacyContactEmail: e.target.value || null }, "Privacy contact email")
+              }}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="privacy-text">Additional notice text</label>
+            <Textarea
+              id="privacy-text"
+              rows={4}
+              defaultValue={settings.privacyPolicyText ?? ""}
+              onBlur={(e) => {
+                if (e.target.value !== (settings.privacyPolicyText ?? "")) save({ privacyPolicyText: e.target.value || null }, "Privacy notice text")
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SsoTab() {
+  const [providers, setProviders] = useState<ApiSsoProvider[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState("")
+  const [showForm, setShowForm] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ providerId: "", issuer: "", domain: "", clientId: "", clientSecret: "" })
+
+  const load = () => {
+    setLoading(true)
+    setError("")
+    api
+      .get<ApiSsoProvider[]>("/api/sso/providers")
+      .then(setProviders)
+      .catch((err) => setError(err instanceof Error ? err.message : "Failed to load SSO providers"))
+      .finally(() => setLoading(false))
+  }
+  useEffect(load, [])
+
+  const handleCreate = async () => {
+    setSaving(true)
+    try {
+      await api.post("/api/sso/providers", form)
+      toast.success("SSO provider registered")
+      setShowForm(false)
+      setForm({ providerId: "", issuer: "", domain: "", clientId: "", clientSecret: "" })
+      load()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to register SSO provider")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (provider: ApiSsoProvider) => {
+    try {
+      await api.del(`/api/sso/providers/${provider.id}`)
+      toast.success(`${provider.providerId} removed`)
+      load()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to remove provider")
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg">Single sign-on (OIDC)</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Users signing in with an email at a registered domain are routed through that provider.</p>
+        </div>
+        <Button variant="dark" size="sm" onClick={() => setShowForm((s) => !s)}>
+          {showForm ? "Cancel" : "Add provider"}
+        </Button>
+      </div>
+
+      {showForm && (
+        <div className="mt-4 space-y-3 rounded-md border border-border p-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Input placeholder="Provider ID (e.g. okta)" value={form.providerId} onChange={(e) => setForm((f) => ({ ...f, providerId: e.target.value }))} />
+            <Input placeholder="Domain (e.g. company.com)" value={form.domain} onChange={(e) => setForm((f) => ({ ...f, domain: e.target.value }))} />
+          </div>
+          <Input placeholder="Issuer URL (OIDC discovery)" value={form.issuer} onChange={(e) => setForm((f) => ({ ...f, issuer: e.target.value }))} />
+          <div className="grid grid-cols-2 gap-3">
+            <Input placeholder="Client ID" value={form.clientId} onChange={(e) => setForm((f) => ({ ...f, clientId: e.target.value }))} />
+            <Input type="password" placeholder="Client secret" value={form.clientSecret} onChange={(e) => setForm((f) => ({ ...f, clientSecret: e.target.value }))} />
+          </div>
+          <Button size="sm" onClick={handleCreate} disabled={saving}>
+            {saving ? "Registering…" : "Register provider"}
+          </Button>
+        </div>
+      )}
+
+      <div className="mt-4">
+        {loading ? (
+          <Skeleton className="h-20 w-full" />
+        ) : error ? (
+          <ErrorState description={error} onRetry={load} />
+        ) : providers.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No SSO providers registered for this org.</p>
+        ) : (
+          providers.map((p) => (
+            <SettingRow
+              key={p.id}
+              label={p.providerId}
+              description={`Domain: ${p.domain} · Issuer: ${p.issuer}`}
+              control={
+                <Button variant="outline" size="sm" className="text-destructive" onClick={() => handleDelete(p)}>
+                  Remove
+                </Button>
+              }
+            />
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
+function IntegrationsTab() {
+  const [status, setStatus] = useState<ApiCalendarStatus | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const load = () => {
+    setLoading(true)
+    api.get<ApiCalendarStatus>("/api/calendar/status").then(setStatus).finally(() => setLoading(false))
+  }
+  useEffect(load, [])
+
+  const handleDisconnect = async () => {
+    try {
+      await api.post("/api/calendar/disconnect")
+      toast.success("Google Calendar disconnected")
+      load()
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Failed to disconnect")
+    }
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-6">
+      <h2 className="text-lg">Connected apps</h2>
+      <p className="mt-1 text-sm text-muted-foreground">Calendar connections are personal to your signed-in account, used to sync interview slots.</p>
+      <div className="mt-2">
+        {loading || !status ? (
+          <Skeleton className="h-16 w-full" />
+        ) : !status.available ? (
+          <SettingRow
+            label="Google Calendar"
+            description="Not configured on this server — Google OAuth credentials have not been provided."
+            control={<Badge variant="warning">Unavailable</Badge>}
+          />
+        ) : status.connected ? (
+          <SettingRow
+            label="Google Calendar"
+            description={`Connected as ${status.accountEmail ?? "unknown account"}`}
+            control={
+              <Button variant="outline" size="sm" onClick={handleDisconnect}>
+                Disconnect
+              </Button>
+            }
+          />
+        ) : (
+          <SettingRow
+            label="Google Calendar"
+            description="Sync interview slots to your calendar."
+            control={
+              <Button variant="dark" size="sm" onClick={() => { window.location.href = "/api/calendar/google/connect" }}>
+                Connect
+              </Button>
+            }
+          />
+        )}
+      </div>
+    </div>
+  )
+}
+
+export function AdminPlatformSettings() {
+  return (
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl">Platform settings</h1>
-        <p className="mt-1 text-muted-foreground">Operational configuration for the HireThm marketplace.</p>
+        <h1 className="text-3xl">Organization settings</h1>
+        <p className="mt-1 text-muted-foreground">Configuration for your active organization — display, retention, SSO, and integrations.</p>
       </div>
 
       <Tabs defaultValue="general">
         <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="integrations">Integrations</TabsTrigger>
-          <TabsTrigger value="localization">Localization</TabsTrigger>
-          <TabsTrigger value="retention">Retention</TabsTrigger>
+          <TabsTrigger value="general">General & Retention</TabsTrigger>
           <TabsTrigger value="sso">SSO</TabsTrigger>
+          <TabsTrigger value="integrations">Integrations</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="general" className="space-y-6">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg">Consent and visibility</h2>
-            <div className="mt-2">
-              <SettingRow
-                label="Candidate-first notification"
-                description="Enforced. Cannot be disabled."
-                control={<Badge variant="success">Locked on</Badge>}
-              />
-              <SettingRow
-                label="Consent expiry"
-                description="Visibility revoked automatically after this period of inactivity."
-                control={
-                  <Select value={consentExpiry} onValueChange={(v) => { setConsentExpiry(v); toast.success("Consent expiry updated") }}>
-                    <SelectTrigger className="w-36">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="30">30 days</SelectItem>
-                      <SelectItem value="90">90 days</SelectItem>
-                      <SelectItem value="180">180 days</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-              <SettingRow
-                label="Match notification channel"
-                description="Channels used to notify the candidate first."
-                control={
-                  <Select value={notifyChannel} onValueChange={(v) => { setNotifyChannel(v); toast.success("Notification channel updated") }}>
-                    <SelectTrigger className="w-44">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="email-inapp">Email + In-app</SelectItem>
-                      <SelectItem value="email">Email only</SelectItem>
-                      <SelectItem value="inapp">In-app only</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg">Matching</h2>
-            <div className="mt-2">
-              <SettingRow
-                label="Minimum readiness to notify"
-                description="Matches below this score are never surfaced."
-                control={
-                  <Select value={minReadiness} onValueChange={(v) => { setMinReadiness(v); toast.success("Minimum readiness updated") }}>
-                    <SelectTrigger className="w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="50">50%</SelectItem>
-                      <SelectItem value="65">65%</SelectItem>
-                      <SelectItem value="75">75%</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-              <SettingRow
-                label="Matching window"
-                description="Nightly batch run time, platform timezone."
-                control={
-                  <Select value={matchWindow} onValueChange={(v) => { setMatchWindow(v); toast.success("Matching window updated") }}>
-                    <SelectTrigger className="w-28">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="01:00">01:00</SelectItem>
-                      <SelectItem value="02:00">02:00</SelectItem>
-                      <SelectItem value="03:00">03:00</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="integrations">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg">Connected apps</h2>
-            <div className="mt-2">
-              {connections.map((app, i) => (
-                <SettingRow
-                  key={app.name}
-                  label={app.name}
-                  description={app.description}
-                  control={
-                    <Button
-                      variant={app.connected ? "outline" : "dark"}
-                      size="sm"
-                      onClick={() => {
-                        setConnections((prev) => prev.map((c, idx) => (idx === i ? { ...c, connected: !c.connected } : c)))
-                        toast.success(app.connected ? `${app.name} disconnected` : `${app.name} connected`)
-                      }}
-                    >
-                      {app.connected ? "Disconnect" : "Connect"}
-                    </Button>
-                  }
-                />
-              ))}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="localization">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg">Locale and formatting</h2>
-            <div className="mt-2">
-              <SettingRow
-                label="Language"
-                description="Default language for platform emails and UI."
-                control={
-                  <Select value={locale} onValueChange={(v) => { setLocale(v); toast.success("Language updated") }}>
-                    <SelectTrigger className="w-36">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en-US">English (US)</SelectItem>
-                      <SelectItem value="en-GB">English (UK)</SelectItem>
-                      <SelectItem value="es-ES">Spanish</SelectItem>
-                      <SelectItem value="fr-FR">French</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-              <SettingRow
-                label="Timezone"
-                description="Used for scheduling and reporting."
-                control={
-                  <Select value={timezone} onValueChange={(v) => { setTimezone(v); toast.success("Timezone updated") }}>
-                    <SelectTrigger className="w-52">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="America/Chicago">Central Time (US)</SelectItem>
-                      <SelectItem value="America/New_York">Eastern Time (US)</SelectItem>
-                      <SelectItem value="America/Los_Angeles">Pacific Time (US)</SelectItem>
-                      <SelectItem value="Europe/London">London</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-              <SettingRow
-                label="Date format"
-                description="How dates are displayed across the platform."
-                control={
-                  <Select value={dateFormat} onValueChange={(v) => { setDateFormat(v); toast.success("Date format updated") }}>
-                    <SelectTrigger className="w-36">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="MM/DD/YYYY">MM/DD/YYYY</SelectItem>
-                      <SelectItem value="DD/MM/YYYY">DD/MM/YYYY</SelectItem>
-                      <SelectItem value="YYYY-MM-DD">YYYY-MM-DD</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="retention">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg">Data retention</h2>
-            <div className="mt-2">
-              <SettingRow
-                label="Retention period"
-                description="How long inactive candidate data is kept before purge."
-                control={
-                  <Select value={retentionPeriod} onValueChange={(v) => { setRetentionPeriod(v); toast.success("Retention period updated") }}>
-                    <SelectTrigger className="w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="12">12 months</SelectItem>
-                      <SelectItem value="24">24 months</SelectItem>
-                      <SelectItem value="36">36 months</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-              <SettingRow
-                label="Auto-purge expired data"
-                description="Automatically delete data once the retention period elapses."
-                control={<Switch checked={autoPurge} onCheckedChange={(v) => { setAutoPurge(v); toast.success("Auto-purge updated") }} />}
-              />
-              <SettingRow
-                label="Anonymize inactive candidates"
-                description="Strip PII from candidates inactive for over 12 months instead of deleting."
-                control={<Switch checked={anonymizeInactive} onCheckedChange={(v) => { setAnonymizeInactive(v); toast.success("Anonymization policy updated") }} />}
-              />
-            </div>
-          </div>
+        <TabsContent value="general">
+          <GeneralAndRetentionTab />
         </TabsContent>
 
         <TabsContent value="sso">
-          <div className="rounded-lg border border-border bg-card p-6">
-            <h2 className="text-lg">Single sign-on</h2>
-            <div className="mt-2">
-              <SettingRow
-                label="Enforce SSO"
-                description="Require Enterprise-plan employers to sign in via SSO."
-                control={<Switch checked={ssoEnabled} onCheckedChange={(v) => { setSsoEnabled(v); toast.success(v ? "SSO enforced" : "SSO enforcement disabled") }} />}
-              />
-              <SettingRow
-                label="Provider"
-                description="Identity provider used for SAML/OIDC."
-                control={
-                  <Select value={ssoProvider} onValueChange={setSsoProvider} disabled={!ssoEnabled}>
-                    <SelectTrigger className="w-36">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="okta">Okta</SelectItem>
-                      <SelectItem value="azure-ad">Azure AD</SelectItem>
-                      <SelectItem value="google">Google Workspace</SelectItem>
-                    </SelectContent>
-                  </Select>
-                }
-              />
-              <SettingRow
-                label="Allowed domain"
-                description="Users with this email domain are routed through SSO."
-                control={
-                  <Input
-                    value={ssoDomain}
-                    onChange={(e) => setSsoDomain(e.target.value)}
-                    placeholder="abc-tech.com"
-                    disabled={!ssoEnabled}
-                    className="w-48"
-                  />
-                }
-              />
-            </div>
-          </div>
+          <SsoTab />
+        </TabsContent>
+
+        <TabsContent value="integrations">
+          <IntegrationsTab />
         </TabsContent>
       </Tabs>
     </div>
