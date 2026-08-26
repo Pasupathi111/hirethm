@@ -56,6 +56,14 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, statusMessage: 'Not found' })
   }
 
+  recordActivity({
+    organizationId: orgId,
+    actorId: session.user.id,
+    action: 'profile_viewed',
+    resourceType: 'candidate',
+    resourceId: result.id,
+  })
+
   // Replace heavy parsedContent with a lightweight `parsed` boolean
   const { documents, ...rest } = result
 

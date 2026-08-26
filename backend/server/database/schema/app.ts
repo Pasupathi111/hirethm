@@ -613,7 +613,7 @@ export const comment = pgTable('comment', {
 export const activityActionEnum = pgEnum('activity_action', [
   'created', 'updated', 'deleted', 'status_changed',
   'comment_added', 'member_invited', 'member_removed', 'member_role_changed',
-  'scored',
+  'scored', 'profile_viewed',
 ])
 
 // ─────────────────────────────────────────────

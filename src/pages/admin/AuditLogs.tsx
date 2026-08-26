@@ -17,6 +17,7 @@ const actionLabel: Record<string, string> = {
   member_role_changed: "Role changed",
   scored: "Scored",
   scheduled: "Scheduled",
+  profile_viewed: "Profile viewed",
 }
 
 const resourceTypeLabel: Record<ApiActivityResourceType, string> = {
