@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+backend
+bussines_doc
+.git
+.vscode
+.idea
+*.log
+.env
+.env.*

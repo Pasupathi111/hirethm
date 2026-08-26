@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Internal business reference docs — not part of the codebase
+bussines_doc/
