@@ -25,6 +25,43 @@ export interface MatchResult {
   gap?: string
 }
 
+/**
+ * The eight BRD §3.3 criteria, in the order they are scored and displayed.
+ * Exported so the settings API and the admin UI stay in lockstep with the
+ * engine rather than each keeping their own copy of the list.
+ */
+export const MATCH_CRITERIA_LABELS = [
+  'Skills Match',
+  'Experience Match',
+  'Career Goals',
+  'Location Preference',
+  'Salary Fit',
+  'Availability',
+  'Culture & Role Fit',
+  'Potential & Growth',
+] as const
+
+export type MatchCriterionLabel = (typeof MATCH_CRITERIA_LABELS)[number]
+
+/** Per-criterion weight, 0–100. Missing entries fall back to `DEFAULT_MATCH_WEIGHTS`. */
+export type MatchWeights = Partial<Record<MatchCriterionLabel, number>>
+
+/**
+ * Default weighting (issue #69). Sums to 100 for a readable UI, but nothing
+ * depends on that — `weightedScore` normalizes by the total weight actually
+ * present, so any positive set of weights produces a 0–100 score.
+ */
+export const DEFAULT_MATCH_WEIGHTS: Record<MatchCriterionLabel, number> = {
+  'Skills Match': 25,
+  'Experience Match': 20,
+  'Career Goals': 15,
+  'Location Preference': 15,
+  'Salary Fit': 10,
+  'Availability': 5,
+  'Culture & Role Fit': 5,
+  'Potential & Growth': 5,
+}
+
 export interface MatchJobInput {
   skills: string[] | null | undefined
   remoteStatus: string | null | undefined
@@ -116,12 +153,56 @@ function salaryFit(job: MatchJobInput, preference: MatchPreferenceInput): number
 }
 
 /**
- * Compute a candidate <-> job match score across 8 fixed criteria.
+ * Fill in any criterion the caller didn't specify, and drop unknown labels so
+ * a stale stored config can't inject a phantom criterion into the score.
+ */
+export function resolveWeights(weights: MatchWeights | null | undefined): Record<MatchCriterionLabel, number> {
+  const resolved = { ...DEFAULT_MATCH_WEIGHTS }
+  if (!weights) return resolved
+
+  for (const label of MATCH_CRITERIA_LABELS) {
+    const w = weights[label]
+    if (typeof w === 'number' && Number.isFinite(w) && w >= 0) {
+      resolved[label] = w
+    }
+  }
+  return resolved
+}
+
+/**
+ * Weighted mean of the criteria, normalized by total weight so weights need
+ * not sum to 100. Falls back to a flat mean when every weight is zero —
+ * an all-zero config should not silently score every candidate 0.
+ */
+function weightedScore(criteria: MatchCriterion[], weights: Record<MatchCriterionLabel, number>): number {
+  let weightedSum = 0
+  let totalWeight = 0
+
+  for (const c of criteria) {
+    const w = weights[c.label as MatchCriterionLabel] ?? 0
+    weightedSum += c.value * w
+    totalWeight += w
+  }
+
+  if (totalWeight === 0) {
+    return Math.round(criteria.reduce((sum, c) => sum + c.value, 0) / criteria.length)
+  }
+
+  return Math.round(weightedSum / totalWeight)
+}
+
+/**
+ * Compute a candidate <-> job match score across the 8 BRD criteria.
+ *
+ * `weights` comes from the job organization's Matching Rules settings
+ * (issue #69). Passing null uses `DEFAULT_MATCH_WEIGHTS`, which keeps every
+ * existing caller's behaviour intact apart from the weighting itself.
  */
 export function computeMatch(
   job: MatchJobInput,
   candidate: MatchCandidateInput,
   preference: MatchPreferenceInput = DEFAULT_MATCH_PREFERENCE,
+  weights: MatchWeights | null = null,
 ): MatchResult {
   const jobSkills = job.skills ?? []
   const candidateSkills = candidate.skills ?? []
@@ -146,7 +227,7 @@ export function computeMatch(
     { label: 'Potential & Growth', value: NO_SIGNAL_DEFAULT },
   ]
 
-  const score = Math.round(criteria.reduce((sum, c) => sum + c.value, 0) / criteria.length)
+  const score = weightedScore(criteria, resolveWeights(weights))
 
   const reasons = buildReasons(criteria, skills.overlap, preference)
   const gap = buildGap(criteria)

@@ -43,6 +43,8 @@ const statusMap: Record<string, Variant> = {
   error: "destructive",
   // neutral
   applied: "default",
+  // A dependency that was never set up — distinct from one that is failing.
+  "not configured": "default",
   free: "default",
   completed: "default",
   cancelled: "default",

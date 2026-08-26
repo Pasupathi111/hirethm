@@ -402,6 +402,13 @@ export const orgSettings = pgTable('org_settings', {
   matchNotificationChannel: matchNotificationChannelEnum('match_notification_channel').notNull().default('in_app'),
   /** Matches scoring below this never notify the candidate, and are not created. */
   minReadinessScore: integer('min_readiness_score').notNull().default(70),
+  /**
+   * Per-criterion weighting for the Mutual Readiness Score (issue #69).
+   * Keys are the BRD §3.3 criterion labels; values are 0–100. NULL means
+   * "use `DEFAULT_MATCH_WEIGHTS`" — see `server/utils/matching.ts`, which
+   * normalizes by total weight so the numbers need not sum to 100.
+   */
+  matchWeights: jsonb('match_weights').$type<Record<string, number>>(),
   // ── Consent expiry (issue #27) ──
   /** When true, candidates inactive beyond consentExpiryDays lose recruiter visibility. */
   consentExpiryEnabled: boolean('consent_expiry_enabled').notNull().default(false),

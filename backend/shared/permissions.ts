@@ -56,8 +56,24 @@ export const ac = createAccessControl(statements)
 // admin   — hiring managers.  Full CRUD on ATS resources + invite members.
 // member  — recruiters.  Read jobs, manage candidates/applications in pipeline.
 
-export const owner = ac.newRole({
-  ...ownerAc.statements,
+// ─── Per-role ATS grants ───────────────────────────────────────────
+//
+// Typed against `atsStatements` so each value is a MUTABLE array of that
+// resource's literal actions — which is exactly what `ac.newRole()` expects.
+// (`as const` would produce readonly tuples and fail to type-check there.)
+// The annotation also means a typo like `job: ['reed']` is a compile error.
+
+type AtsGrants = {
+  [K in keyof typeof atsStatements]: (typeof atsStatements)[K][number][]
+}
+
+//
+// Declared as standalone constants (rather than inline in `newRole`) so the
+// admin console's "Roles & permissions" screen can render the real matrix
+// straight from this file via `GET /api/platform/permissions`, instead of
+// keeping a hand-maintained copy that silently drifts out of date.
+
+export const ownerAtsGrants: AtsGrants = {
   organization: ['read', 'update', 'delete'],
   job: ['create', 'read', 'update', 'delete'],
   candidate: ['create', 'read', 'update', 'delete'],
@@ -69,10 +85,9 @@ export const owner = ac.newRole({
   activityLog: ['read'],
   scoring: ['create', 'read', 'update', 'delete'],
   sourceTracking: ['create', 'read', 'update', 'delete'],
-})
+}
 
-export const admin = ac.newRole({
-  ...adminAc.statements,
+export const adminAtsGrants: AtsGrants = {
   organization: ['read', 'update', 'delete'],
   job: ['create', 'read', 'update', 'delete'],
   candidate: ['create', 'read', 'update', 'delete'],
@@ -84,10 +99,9 @@ export const admin = ac.newRole({
   activityLog: ['read'],
   scoring: ['create', 'read', 'update', 'delete'],
   sourceTracking: ['create', 'read', 'update', 'delete'],
-})
+}
 
-export const member = ac.newRole({
-  ...memberAc.statements,
+export const memberAtsGrants: AtsGrants = {
   organization: ['read'],
   job: ['read'],
   candidate: ['create', 'read', 'update'],
@@ -99,4 +113,28 @@ export const member = ac.newRole({
   activityLog: ['read'],
   scoring: ['create', 'read'],
   sourceTracking: ['read'],
+}
+
+/** Every ATS role, in ascending order of privilege. */
+export const atsRoleGrants = {
+  member: memberAtsGrants,
+  admin: adminAtsGrants,
+  owner: ownerAtsGrants,
+} as const
+
+export type AtsRoleName = keyof typeof atsRoleGrants
+
+export const owner = ac.newRole({
+  ...ownerAc.statements,
+  ...ownerAtsGrants,
+})
+
+export const admin = ac.newRole({
+  ...adminAc.statements,
+  ...adminAtsGrants,
+})
+
+export const member = ac.newRole({
+  ...memberAc.statements,
+  ...memberAtsGrants,
 })

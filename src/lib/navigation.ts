@@ -112,21 +112,23 @@ export const adminNav: NavGroup[] = [
     label: "AI",
     items: [
       { label: "AI Assistant", to: "/admin/ai-chat", icon: MessageCircle, orgOnly: true },
-      { label: "AI Management", to: "/admin/ai-management", icon: Sparkles },
-      { label: "Matching Rules", to: "/admin/matching-rules", icon: Loader2 },
+      // Both read org-scoped settings (`ai_config`, `org_settings`), so they
+      // 403 for platform-admin staff who belong to no organization.
+      { label: "AI Management", to: "/admin/ai-management", icon: Sparkles, orgOnly: true },
+      { label: "Matching Rules", to: "/admin/matching-rules", icon: Loader2, orgOnly: true },
     ],
   },
   {
     label: "Platform",
     items: [
-      { label: "Notifications", to: "/admin/notifications", icon: Bell },
       { label: "Timeline", to: "/admin/timeline", icon: History, orgOnly: true },
+      // Release notes for the running build — same for every viewer, org or not.
       { label: "Updates", to: "/admin/updates", icon: Rss },
-      { label: "Reports", to: "/admin/reports", icon: ScrollText },
       { label: "Audit Logs", to: "/admin/audit-logs", icon: ShieldCheck, orgOnly: true },
+      // The access-control model is global and identical per tenant.
       { label: "Roles & Permissions", to: "/admin/roles-permissions", icon: KeyRound },
       { label: "Platform Settings", to: "/admin/platform-settings", icon: Settings, orgOnly: true },
-      { label: "System Health", to: "/admin/system-health", icon: Activity },
+      { label: "System Health", to: "/admin/system-health", icon: Activity, platformAdminOnly: true },
     ],
   },
 ]

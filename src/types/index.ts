@@ -1,159 +1,3 @@
-export type WorkMode = "Remote" | "Hybrid" | "On-site"
-export type EmploymentType = "Full Time" | "Contract" | "Part Time"
-
-export interface Job {
-  id: string
-  reqId: string
-  title: string
-  company: string
-  companyInitials: string
-  companyColor: string
-  location: string
-  workMode: WorkMode
-  employmentType: EmploymentType
-  experience: string
-  salaryMin: number
-  salaryMax: number
-  skills: string[]
-  postedAt: string
-  about: string
-  responsibilities: string[]
-  requirements: string[]
-  benefits: string[]
-  companyBlurb: string
-  status: "Published" | "Draft" | "Closed" | "Processing" | "AI Failed"
-  jdComplete: number
-  aiStatus: "Analysed" | "Queued" | "Enhancement offered" | "Processing"
-  applications: number
-  matches: number
-}
-
-export interface ReadinessCriterion {
-  label: string
-  value: number
-}
-
-export type ApplicationStage = "Applied" | "Viewed" | "Employer Review" | "Shortlisted" | "Interview"
-
-export interface Application {
-  id: string
-  jobId: string
-  title: string
-  company: string
-  companyInitials: string
-  companyColor: string
-  appliedAt: string
-  status: "Applied" | "Under Review" | "Shortlisted" | "Interview"
-  stage: ApplicationStage
-}
-
-export interface NotificationItem {
-  id: string
-  category: "Matches" | "Applications" | "Interviews" | "Profile" | "System"
-  title: string
-  description: string
-  timeAgo: string
-  action: string
-  unread: boolean
-}
-
-export interface ConsentEvent {
-  id: string
-  timestamp: string
-  event: string
-  employer: string
-  tone: "positive" | "negative" | "neutral"
-}
-
-export interface CandidateProfile {
-  name: string
-  initials: string
-  title: string
-  location: string
-  email: string
-  phone: string
-  completeness: number
-  summary: string
-  experience: { role: string; company: string; period: string }[]
-  education: { school: string; period: string }[]
-  skills: string[]
-  certifications: { name: string; year: string }[]
-  languages: { name: string; level: string }[]
-}
-
-export interface AdminCandidate {
-  id: string
-  name: string
-  initials: string
-  email: string
-  location: string
-  profilePercent: number
-  cvStatus: "Analysed" | "Processing" | "Failed"
-  applications: number
-  matches: number
-  status: "Active" | "Needs attention" | "Suspended"
-  created: string
-}
-
-export interface AdminEmployer {
-  id: string
-  company: string
-  domain: string
-  recruiters: number
-  activeJobs: number
-  applications: number
-  plan: "Enterprise" | "Premium" | "Free"
-  usage: number
-  status: "Active" | "Trial" | "Past due" | "Quota reached" | "Suspended"
-  created: string
-}
-
-export interface SystemService {
-  name: string
-  status: "Healthy" | "Degraded" | "Down"
-  detail: string
-}
-
-export interface AdminRecruiter {
-  id: string
-  name: string
-  initials: string
-  email: string
-  employer: string
-  activeJobs: number
-  status: "Active" | "Invited" | "Suspended"
-  created: string
-}
-
-export interface AdminHiringManager {
-  id: string
-  name: string
-  initials: string
-  email: string
-  employer: string
-  department: string
-  status: "Active" | "Invited" | "Suspended"
-  created: string
-}
-
-export interface AdminApplication {
-  id: string
-  candidate: string
-  job: string
-  employer: string
-  status: "Applied" | "Under Review" | "Shortlisted" | "Interview" | "Rejected"
-  applied: string
-}
-
-export interface Plan {
-  id: string
-  name: string
-  price: string
-  billingPeriod: string
-  employers: number
-  features: string[]
-}
-
 export interface ApiSourceChannelBreakdown {
   channel: string
   count: number
@@ -179,23 +23,6 @@ export interface ApiSourceStats {
   summary: { totalTracked: number; totalUntracked: number; attributionRate: number }
 }
 
-export interface TimelineEvent {
-  id: string
-  timestamp: string
-  actor: string
-  action: string
-  resource: string
-  category: "Consent" | "Visibility" | "Admin action" | "Auth" | "Billing"
-}
-
-export interface UpdateItem {
-  id: string
-  date: string
-  title: string
-  description: string
-  tag: "Feature" | "Improvement" | "Fix"
-}
-
 export interface OrgSearchResult {
   id: string
   name: string
@@ -216,6 +43,43 @@ export interface ApiJobPipeline {
   offer: number
   hired: number
   rejected: number
+}
+
+/** GET /api/dashboard/stats — org-scoped, all figures computed live. */
+export interface ApiDashboardStats {
+  counts: {
+    openJobs: number
+    totalCandidates: number
+    totalApplications: number
+    newApplications: number
+  }
+  pipeline: ApiJobPipeline
+  jobsByStatus: Record<ApiJobStatus, number>
+  recentApplications: {
+    id: string
+    status: ApiApplicationStatus
+    createdAt: string
+    candidateId: string
+    candidateFirstName: string
+    candidateLastName: string
+    candidateEmail: string
+    jobId: string
+    jobTitle: string
+  }[]
+  topJobs: {
+    id: string
+    title: string
+    slug: string
+    status: ApiJobStatus
+    createdAt: string
+    applicationCount: number
+    newCount: number
+    screeningCount: number
+    interviewCount: number
+    offerCount: number
+    hiredCount: number
+    rejectedCount: number
+  }[]
 }
 
 export interface ApiJob {
@@ -419,6 +283,12 @@ export interface ApiRecommendedJobSummary {
   organizationName?: string | null
 }
 
+/** One entry of a Mutual Readiness Score breakdown, as returned by the API. */
+export interface ReadinessCriterion {
+  label: string
+  value: number
+}
+
 export interface ApiRecommendedJob {
   job: ApiRecommendedJobSummary
   score: number
@@ -604,6 +474,8 @@ export interface ApiOrgSettings {
   retentionActivatedAt: string | null
   matchNotificationChannel: ApiMatchNotificationChannel
   minReadinessScore: number
+  /** Per-criterion Mutual Readiness weighting. Server substitutes engine defaults when unset. */
+  matchWeights: ApiMatchWeights
   consentExpiryEnabled: boolean
   consentExpiryDays: number
   privacyPolicyUrl: string | null
@@ -731,4 +603,155 @@ export interface ApiActivityTimelineResponse {
   hasMore: boolean
   oldestTimestamp: string | null
   newestTimestamp: string | null
+}
+
+// ─────────────────────────────────────────────
+// Platform health — GET /api/platform/health
+// ─────────────────────────────────────────────
+
+/** `not_configured` is deliberately distinct from `down`: nothing is broken, nothing is set up. */
+export type ApiServiceStatus = "healthy" | "degraded" | "down" | "not_configured"
+
+export interface ApiServiceHealth {
+  key: string
+  name: string
+  status: ApiServiceStatus
+  detail: string
+}
+
+export type ApiHealthStatTone = "neutral" | "warning" | "negative"
+
+export interface ApiHealthStat {
+  key: string
+  label: string
+  value: number
+  tone: ApiHealthStatTone
+}
+
+export interface ApiPlatformHealth {
+  checkedAt: string
+  services: ApiServiceHealth[]
+  stats: ApiHealthStat[]
+  runtime: {
+    version: string | null
+    nodeVersion: string
+    platform: string
+    uptimeSeconds: number
+    memory: { usedBytes: number; totalBytes: number; percent: number }
+  }
+}
+
+// ─────────────────────────────────────────────
+// Release notes — GET /api/platform/updates
+// ─────────────────────────────────────────────
+
+export type ApiChangeKind = "feature" | "improvement" | "fix" | "removal" | "other"
+
+export interface ApiChangelogSection {
+  heading: string
+  kind: ApiChangeKind
+  items: string[]
+}
+
+export interface ApiChangelogEntry {
+  title: string
+  date: string | null
+  version: string | null
+  link: string | null
+  sections: ApiChangelogSection[]
+}
+
+export interface ApiPlatformUpdates {
+  entries: ApiChangelogEntry[]
+  currentVersion: string | null
+}
+
+// ─────────────────────────────────────────────
+// AI configuration — GET /api/ai-config
+// ─────────────────────────────────────────────
+
+export interface ApiAiConfig {
+  id: string
+  name: string
+  provider: string
+  model: string
+  baseUrl: string | null
+  maxTokens: number
+  inputPricePer1m: number | null
+  outputPricePer1m: number | null
+  isDefaultChatbot: boolean
+  isDefaultAnalysis: boolean
+  hasApiKey: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ApiAiProvider {
+  name: string
+  tagline: string
+  modelsUrl: string
+  apiKeyUrl: string
+  signupUrl?: string
+  supportsBaseUrl: boolean
+  defaultModel: string
+  models: { id: string; label: string; description?: string }[]
+}
+
+/** Only the slice of GET /api/ai-analysis/stats that the AI management screen reads. */
+export interface ApiAiAnalysisStats {
+  summary: {
+    totalRuns: number
+    completedRuns: number
+    failedRuns: number
+    totalTokens: number
+  }
+  modelBreakdown: {
+    provider: string
+    model: string
+    runCount: number
+    totalTokens: number
+  }[]
+}
+
+// ─────────────────────────────────────────────
+// Matching rules — the 8 BRD §3.3 criteria
+// ─────────────────────────────────────────────
+
+export const MATCH_CRITERIA_LABELS = [
+  "Skills Match",
+  "Experience Match",
+  "Career Goals",
+  "Location Preference",
+  "Salary Fit",
+  "Availability",
+  "Culture & Role Fit",
+  "Potential & Growth",
+] as const
+
+export type ApiMatchCriterionLabel = (typeof MATCH_CRITERIA_LABELS)[number]
+
+export type ApiMatchWeights = Partial<Record<ApiMatchCriterionLabel, number>>
+
+// ─────────────────────────────────────────────
+// Authorization model — GET /api/platform/permissions
+// ─────────────────────────────────────────────
+
+export interface ApiPermissionResource {
+  key: string
+  label: string
+  allActions: string[]
+  /** role name → the actions that role is granted on this resource */
+  grants: Record<string, string[]>
+}
+
+export interface ApiPlatformPermissions {
+  orgRoles: { name: string; label: string; description: string }[]
+  resources: ApiPermissionResource[]
+  platformAdmin: {
+    label: string
+    description: string
+    grantedBy: string
+    selfService: boolean
+  }
+  notes: string[]
 }
