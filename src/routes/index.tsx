@@ -4,7 +4,11 @@ import { RequireAuth } from "@/components/auth/RequireAuth"
 import { RequireCandidateAuth } from "@/components/auth/RequireCandidateAuth"
 import { AcceptInvitation } from "@/pages/auth/AcceptInvitation"
 import { AdminSignIn } from "@/pages/auth/AdminSignIn"
+import { CandidateSignIn } from "@/pages/auth/candidate/SignIn"
+import { CandidateSignUp } from "@/pages/auth/candidate/SignUp"
 import { CreateProfile } from "@/pages/auth/CreateProfile"
+import { EmployerSignIn } from "@/pages/auth/employer/SignIn"
+import { EmployerSignUp } from "@/pages/auth/employer/SignUp"
 import { ForgotPassword } from "@/pages/auth/ForgotPassword"
 import { ResetPassword } from "@/pages/auth/ResetPassword"
 import { SignIn } from "@/pages/auth/SignIn"
@@ -85,6 +89,10 @@ export const router = createBrowserRouter([
   },
   { path: "/sign-in", element: <SignIn /> },
   { path: "/sign-up", element: <SignUp /> },
+  { path: "/candidate/sign-in", element: <CandidateSignIn /> },
+  { path: "/candidate/sign-up", element: <CandidateSignUp /> },
+  { path: "/employer/sign-in", element: <EmployerSignIn /> },
+  { path: "/employer/sign-up", element: <EmployerSignUp /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
   { path: "/reset-password", element: <ResetPassword /> },
   { path: "/accept-invitation/:id", element: <AcceptInvitation /> },

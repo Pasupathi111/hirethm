@@ -12,7 +12,7 @@ export function AdminSidebarContent({ onNavigate }: { onNavigate?: () => void })
   const handleSignOut = async () => {
     await signOut()
     onNavigate?.()
-    navigate("/sign-in")
+    navigate("/employer/sign-in")
   }
 
   return (
