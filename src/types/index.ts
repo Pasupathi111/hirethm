@@ -202,15 +202,6 @@ export interface Plan {
   features: string[]
 }
 
-export interface Payment {
-  id: string
-  employer: string
-  amount: string
-  plan: string
-  status: "Paid" | "Failed" | "Refunded" | "Pending"
-  date: string
-}
-
 export interface InterviewTemplate {
   id: string
   name: string
@@ -588,6 +579,23 @@ export interface ApiOrgSettings {
   privacyPolicyUrl: string | null
   privacyPolicyText: string | null
   privacyContactEmail: string | null
+}
+
+export type ApiPaymentStatus = "pending" | "paid" | "failed" | "refunded"
+
+export interface ApiPayment {
+  id: string
+  organizationId: string
+  planId: string | null
+  amountCents: number
+  currency: string
+  status: ApiPaymentStatus
+  provider: "paypal"
+  providerTransactionId: string | null
+  createdAt: string
+  settledAt: string | null
+  organization: { id: string; name: string; slug: string }
+  plan: { id: string; name: string } | null
 }
 
 export interface ApiSsoProvider {
