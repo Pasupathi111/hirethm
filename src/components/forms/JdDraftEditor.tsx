@@ -29,26 +29,26 @@ export function JdDraftEditor({
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label>Job title</Label>
-        <Input value={draft.title} onChange={(e) => onChange({ ...draft, title: e.target.value })} />
+        <Label htmlFor="jd-title">Job title</Label>
+        <Input id="jd-title" value={draft.title} onChange={(e) => onChange({ ...draft, title: e.target.value })} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Department</Label>
-          <Input value={draft.department ?? ""} onChange={(e) => onChange({ ...draft, department: e.target.value })} />
+          <Label htmlFor="jd-department">Department</Label>
+          <Input id="jd-department" value={draft.department ?? ""} onChange={(e) => onChange({ ...draft, department: e.target.value })} />
         </div>
         <div className="space-y-2">
-          <Label>Location</Label>
-          <Input value={draft.location ?? ""} onChange={(e) => onChange({ ...draft, location: e.target.value })} />
+          <Label htmlFor="jd-location">Location</Label>
+          <Input id="jd-location" value={draft.location ?? ""} onChange={(e) => onChange({ ...draft, location: e.target.value })} />
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Employment type</Label>
+          <Label htmlFor="jd-employment-type">Employment type</Label>
           <Select value={draft.employmentType} onValueChange={(v) => onChange({ ...draft, employmentType: v as ApiJobType })}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="jd-employment-type" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -61,9 +61,9 @@ export function JdDraftEditor({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Experience level</Label>
+          <Label htmlFor="jd-experience-level">Experience level</Label>
           <Select value={draft.experienceLevel} onValueChange={(v) => onChange({ ...draft, experienceLevel: v as ApiExperienceLevel })}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="jd-experience-level" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -78,12 +78,12 @@ export function JdDraftEditor({
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label>Workplace</Label>
+          <Label htmlFor="jd-workplace">Workplace</Label>
           <Select
             value={draft.remoteStatus ?? "unspecified"}
             onValueChange={(v) => onChange({ ...draft, remoteStatus: v === "unspecified" ? null : (v as ApiRemoteStatus) })}
           >
-            <SelectTrigger className="w-full">
+            <SelectTrigger id="jd-workplace" className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -95,12 +95,13 @@ export function JdDraftEditor({
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Salary range</Label>
+          <Label htmlFor="jd-salary-min">Salary range</Label>
           <div className="flex items-center gap-1.5">
             <Input
               type="number"
               min={0}
               placeholder="Min"
+              id="jd-salary-min"
               value={draft.salaryMin ?? ""}
               onChange={(e) => onChange({ ...draft, salaryMin: e.target.value ? Number(e.target.value) : null })}
             />
@@ -108,6 +109,7 @@ export function JdDraftEditor({
               type="number"
               min={0}
               placeholder="Max"
+              id="jd-salary-max"
               value={draft.salaryMax ?? ""}
               onChange={(e) => onChange({ ...draft, salaryMax: e.target.value ? Number(e.target.value) : null })}
             />
@@ -116,8 +118,9 @@ export function JdDraftEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Required skills</Label>
+        <Label htmlFor="jd-skills">Required skills</Label>
         <Input
+          id="jd-skills"
           value={draft.skills.join(", ")}
           onChange={(e) =>
             onChange({
@@ -134,8 +137,8 @@ export function JdDraftEditor({
       </div>
 
       <div className="space-y-2">
-        <Label>Full description</Label>
-        <Textarea value={draft.description} onChange={(e) => onChange({ ...draft, description: e.target.value })} rows={descriptionRows} />
+        <Label htmlFor="jd-description">Full description</Label>
+        <Textarea id="jd-description" value={draft.description} onChange={(e) => onChange({ ...draft, description: e.target.value })} rows={descriptionRows} />
         <p className="text-xs text-muted-foreground">Includes responsibilities, qualifications, and preferred skills. Edit freely.</p>
       </div>
     </div>
