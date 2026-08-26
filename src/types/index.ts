@@ -532,6 +532,37 @@ export interface ApiDocument {
   parsedContent?: ParsedResume | null
 }
 
+export type ApiPlanTier = "free" | "premium" | "enterprise"
+export type ApiSubscriptionStatus = "active" | "past_due" | "cancelled" | "trialing"
+
+export interface ApiPlan {
+  id: string
+  name: string
+  tier: ApiPlanTier
+  priceMonthlyCents: number | null
+  currency: string
+  activeJobLimit: number | null
+  profileViewQuota: number | null
+  features: string[]
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
+  subscriberCount?: number
+}
+
+export interface ApiOrganizationSubscription {
+  id: string
+  organizationId: string
+  planId: string
+  status: ApiSubscriptionStatus
+  currentPeriodStart: string
+  currentPeriodEnd: string | null
+  cancelledAt: string | null
+  createdAt: string
+  updatedAt: string
+  plan?: ApiPlan
+}
+
 export interface ApiPlatformEmployer {
   id: string
   name: string
